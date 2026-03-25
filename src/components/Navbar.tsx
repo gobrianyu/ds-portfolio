@@ -1,0 +1,113 @@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { Server, BookOpen, Home, Menu, X, Sun, Moon, Terminal, Cpu } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { useTheme } from '../context/ThemeContext';
+
+export default function Navbar() {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
+
+  const navLinks = [
+    { name: 'Home', path: '/', icon: Home, cmd: 'cd ~' },
+    { name: 'Projects', path: '/projects', icon: Server, cmd: 'ls ./projects' },
+    { name: 'Blog', path: '/blog', icon: BookOpen, cmd: 'cat ./research' },
+  ];
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10 h-14 flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-md border border-white/10 group-hover:border-primary/50 transition-colors">
+              <Terminal className="w-4 h-4 text-primary" />
+              <span className="font-mono text-xs font-bold tracking-tighter text-white">
+                brian@dist-sys:<span className="text-primary">~</span>$
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  "relative px-4 py-1.5 text-[10px] font-black transition-all hover:bg-white/5 rounded-md uppercase tracking-[0.2em] flex items-center space-x-2",
+                  location.pathname === link.path ? "text-primary bg-white/5" : "text-gray-400"
+                )}
+              >
+                <span className="opacity-50 font-mono">{link.cmd}</span>
+                {location.pathname === link.path && (
+                  <motion.div
+                    layoutId="nav-indicator"
+                    className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+                  />
+                )}
+              </Link>
+            ))}
+            
+            <div className="w-px h-4 bg-white/10 mx-4" />
+
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md hover:bg-white/5 transition-colors text-gray-400 hover:text-primary"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md hover:bg-white/5 transition-colors text-gray-400"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 rounded-md text-gray-400 hover:text-primary hover:bg-white/5 focus:outline-none"
+            >
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Nav */}
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden absolute top-14 left-0 right-0 bg-black/95 border-b border-white/10 px-4 py-6 space-y-2"
+        >
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "flex items-center justify-between px-4 py-4 rounded-md text-xs font-black uppercase tracking-widest border border-transparent",
+                location.pathname === link.path
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "text-gray-400 hover:bg-white/5"
+              )}
+            >
+              <div className="flex items-center space-x-3">
+                <link.icon className="w-4 h-4" />
+                <span>{link.name}</span>
+              </div>
+              <span className="font-mono opacity-30 text-[10px]">{link.cmd}</span>
+            </Link>
+          ))}
+        </motion.div>
+      )}
+    </nav>
+  );
+}
