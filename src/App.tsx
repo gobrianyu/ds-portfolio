@@ -6,11 +6,13 @@ import ProjectPage from './pages/ProjectPage';
 import BlogListPage from './pages/BlogListPage';
 import BlogPage from './pages/BlogPage';
 import { ThemeProvider } from './context/ThemeContext';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   return (
     <ThemeProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />

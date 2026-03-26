@@ -1,0 +1,12 @@
+{
+  "title": "Design Document – Lab 3: Multi-Paxos Consensus",
+  "author": "Brian S. Yu",
+  "date": "3/05/2026",
+  "course": "CSE 452",
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "This document outlines the design for a Multi-Paxos consensus algorithm to maintain a consistent log across distributed nodes."
+    }
+  ]
+}

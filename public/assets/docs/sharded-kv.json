@@ -1,0 +1,12 @@
+{
+  "title": "Design Document – Lab 4: Sharded Key-Value Store",
+  "author": "Brian S. Yu",
+  "date": "3/20/2026",
+  "course": "CSE 452",
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "This document outlines the design for a sharded key-value store that partitions data across multiple replica groups."
+    }
+  ]
+}
