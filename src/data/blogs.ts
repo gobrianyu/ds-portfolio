@@ -3,10 +3,13 @@ export interface BlogPost {
   title: string;
   citation: string;
   preview: string;
+  overview: string;
   content: string;
   aiSummary: string;
   imageUrl: string;
+  pdfUrl?: string;
   date: string;
+  tags: string[];
 }
 
 export const blogPosts: BlogPost[] = [
@@ -14,60 +17,90 @@ export const blogPosts: BlogPost[] = [
     id: "bigtable",
     title: "BigTable: A Distributed Storage System for Structured Data",
     citation: "Chang, F., et al. (2006). Bigtable: A distributed storage system for structured data. OSDI.",
+    pdfUrl: "https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf",
     preview: "BigTable is a sparse, distributed, multi-dimensional sorted map designed to scale to petabytes of data across thousands of commodity servers.",
-    content: "BigTable was developed at Google to handle massive amounts of data. It provides a simple data model that gives clients dynamic control over data layout and format. It uses the Google File System (GFS) for storage and Chubby for distributed lock management. The system is designed to be highly scalable and available, supporting applications like Google Search, Google Earth, and Google Finance.",
-    aiSummary: "BigTable is Google's solution for massive structured data storage. It uses a multi-dimensional sorted map (Row, Column, Timestamp) and relies on GFS for persistence. Key innovations include SSTables, Memtables, and the use of Bloom filters for efficient lookups. It scales horizontally by splitting tables into 'Tablets' managed by a master and multiple tablet servers.",
+    overview: "An in-depth analysis of Google's foundational distributed storage system, exploring its hierarchical metadata structure and the impact of modern hardware on its original design assumptions.",
+    content: `One notable aspect of Bigtable’s design is how it locates the machine that stores a requested piece of data without relying on a single centralised directory. Instead, it divides each table into row range partitions called tablets, and each tablet is served by exactly one tablet server. To track them, the system uses a three-level hierarchy similar to a B+ tree. At the top level, a small file in the Chubby lock service stores the location of the root tablet. The root tablet contains pointers to METADATA tablets, which in turn each stores mappings of row ranges to tablet servers. Through this, locating a tablet requires only a small number of network steps. Additionally, clients cache tablet locations in practice so most requests go directly to the correct tablet server without repeatedly traversing the hierarchy. In summary, Bigtable spreads metadata across multiple levels, avoiding a central bottleneck and is a key design component that enables it to scale to thousands of machines.
+
+One implicit technical assumption in the paper is that network transfers and reads from disk are the main performance bottlenecks. These seem to influence many of Bigtable’s design choices such as block caching, memtables, and Bloom filters. When reading the paper, I noted the publish date of 2006 and could not help but wonder whether the improved SSDs and faster modern networks in 2026 would have any significant impact on the protocols and design choices made for the system if it were to be redesigned today. While I doubt the high-level architecture (i.e. tablets and hierarchical metadata) would change fundamentally, perhaps shifts and fine-tuning of system parameters such as memory allocation to certain processes may be made. With cheaper random access, it may make sense to reduce read block sizes to avoid over-fetching data, as an example. Overall, core ideas would probably stay, but it is my opinion that the cost model may benefit from slight updates to optimise for newer hardware.`,
+    aiSummary: "BigTable is Google's solution for massive structured data storage. It uses a multi-dimensional sorted map (Row, Column, Timestamp) and relies on GFS for persistence. Key innovations include SSTables, Memtables, and the use of Bloom filters for efficient lookups.",
     imageUrl: "https://picsum.photos/seed/bigtable-paper/800/600",
-    date: "2024.03.15"
-  },
-  {
-    id: "dynamo",
-    title: "Dynamo: Amazon's Highly Available Key-value Store",
-    citation: "DeCandia, G., et al. (2007). Dynamo: Amazon's highly available key-value store. SOSP.",
-    preview: "Dynamo is a highly available key-value storage system that some of Amazon's core services use to provide an 'always-on' experience.",
-    content: "Dynamo was built to address the need for a storage system that is always available, even in the face of network partitions or server failures. It uses a combination of techniques like consistent hashing, vector clocks, and Merkle trees to achieve high availability and eventual consistency. It is a leaderless system where any node can handle any request, prioritizing availability over strict consistency (AP in CAP theorem).",
-    aiSummary: "Dynamo is a decentralized, highly available key-value store. It uses consistent hashing for data distribution, vector clocks for versioning and conflict resolution, and 'sloppy quorums' with hinted handoff to maintain availability during failures. It popularized the 'eventual consistency' model for high-scale web applications.",
-    imageUrl: "https://picsum.photos/seed/dynamo-paper/800/600",
-    date: "2024.03.10"
-  },
-  {
-    id: "mapreduce",
-    title: "MapReduce: Simplified Data Processing on Large Clusters",
-    citation: "Dean, J., & Ghemawat, S. (2004). MapReduce: Simplified data processing on large clusters. OSDI.",
-    preview: "MapReduce is a programming model and an associated implementation for processing and generating large data sets.",
-    content: "MapReduce allows developers to write simple Map and Reduce functions while the underlying system handles the complexities of parallelization, fault tolerance, data distribution, and load balancing. It revolutionized big data processing by enabling computations on thousands of machines with minimal effort from the programmer.",
-    aiSummary: "MapReduce simplifies large-scale data processing by abstracting parallel computation into two primitives: Map (filtering/sorting) and Reduce (summary). The framework handles data partitioning, task scheduling, and machine failures. It relies on a 'moving computation to data' philosophy to minimize network overhead.",
-    imageUrl: "https://picsum.photos/seed/mapreduce-paper/800/600",
-    date: "2024.03.05"
-  },
-  {
-    id: "spanner",
-    title: "Spanner: Google's Globally-Distributed Database",
-    citation: "Corbett, J. C., et al. (2012). Spanner: Google's globally-distributed database. OSDI.",
-    preview: "Spanner is Google's scalable, multi-version, globally-distributed, and synchronously-replicated database.",
-    content: "Spanner is the first system to distribute data at global scale and support externally-consistent distributed transactions. It uses a unique combination of Paxos replication and hardware-assisted time synchronization (TrueTime API) to provide strong consistency across data centers worldwide.",
-    aiSummary: "Spanner is a global-scale database that provides external consistency (linearizability) for distributed transactions. Its 'killer feature' is TrueTime, which uses atomic clocks and GPS to bound clock uncertainty, allowing the system to assign globally meaningful timestamps and support consistent snapshots without global locking.",
-    imageUrl: "https://picsum.photos/seed/spanner-paper/800/600",
-    date: "2024.02.28"
-  },
-  {
-    id: "raft",
-    title: "In Search of an Understandable Consensus Algorithm",
-    citation: "Ongaro, D., & Ousterhout, J. (2014). In search of an understandable consensus algorithm. USENIX ATC.",
-    preview: "Raft is a consensus algorithm that is designed to be easy to understand, equivalent to Paxos in fault-tolerance and performance.",
-    content: "Raft was developed as an alternative to Paxos, which is notoriously difficult to understand and implement. Raft decomposes the consensus problem into three subproblems: leader election, log replication, and safety. It uses a stronger form of leadership than Paxos to simplify log management.",
-    aiSummary: "Raft is a consensus algorithm designed for understandability. It operates through a strong leader model: the leader handles all client requests and log replication. Key components include Term numbers, Heartbeats for leader election, and the 'Log Matching Property' to ensure consistency across the cluster.",
-    imageUrl: "https://picsum.photos/seed/raft-paper/800/600",
-    date: "2024.02.20"
+    date: "2024.03.15",
+    tags: ["Distributed Systems", "Storage", "Google Research"]
   },
   {
     id: "gfs",
     title: "The Google File System",
     citation: "Ghemawat, S., et al. (2003). The Google file system. SOSP.",
+    pdfUrl: "https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp03.pdf",
     preview: "GFS is a scalable distributed file system for large distributed data-intensive applications.",
-    content: "GFS was designed to run on clusters of commodity hardware and handle massive files. It prioritizes high aggregate throughput over low latency and is optimized for large sequential reads and appends. It uses a single master to manage metadata and multiple chunkservers to store data.",
-    aiSummary: "GFS is a distributed file system optimized for Google's specific workloads (large files, sequential appends). It features a single Master for metadata and multiple Chunkservers for data. It uses 64MB chunks and triple replication for fault tolerance, sacrificing small-file performance for massive aggregate throughput.",
+    overview: "Examining the architecture of GFS, designed to handle massive files on commodity hardware with high aggregate throughput and fault tolerance.",
+    content: `The Google File System (GFS) was a radical departure from traditional file system design. It was built with the assumption that component failures are the norm rather than the exception. By using a single master to manage metadata and multiple chunkservers to store data, GFS achieved massive scale. Files are divided into fixed-size chunks of 64MB, each identified by an immutable and globally unique 64-bit chunk handle.
+
+One of the most interesting aspects of GFS is its consistency model. It was optimized for large sequential appends rather than random writes. This choice reflects the needs of Google's internal workloads, like the indexing of the web. The master maintains all file system metadata, including the namespace, access control information, and the mapping from files to chunks. To minimize the master's involvement in data transfers, clients cache chunk locations and communicate directly with chunkservers for data operations.`,
+    aiSummary: "GFS is a distributed file system optimized for large-scale data processing. It uses a single Master for metadata and multiple Chunkservers for data. It features 64MB chunks and triple replication for fault tolerance.",
     imageUrl: "https://picsum.photos/seed/gfs-paper/800/600",
-    date: "2024.02.15"
+    date: "2024.02.15",
+    tags: ["File Systems", "Scalability", "Google"]
+  },
+  {
+    id: "dynamo",
+    title: "Dynamo: Amazon's Highly Available Key-value Store",
+    citation: "DeCandia, G., et al. (2007). Dynamo: Amazon's highly available key-value store. SOSP.",
+    pdfUrl: "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf",
+    preview: "Dynamo is a highly available key-value storage system that some of Amazon's core services use to provide an 'always-on' experience.",
+    overview: "Exploring Amazon's decentralized key-value store that pioneered eventual consistency and consistent hashing for high availability.",
+    content: `Dynamo was built to address the need for a storage system that is always available, even in the face of network partitions or server failures. It uses a combination of techniques like consistent hashing, vector clocks, and Merkle trees to achieve high availability and eventual consistency. 
+
+A key innovation in Dynamo is the use of virtual nodes (vnodes) in its consistent hashing ring. This allows for better load balancing and easier scaling. When a node is added or removed, only a fraction of the keys need to be moved, minimizing the impact on the system. Dynamo prioritizes availability over strict consistency, making it an AP system in the CAP theorem. This design choice was driven by the business requirement of never losing a shopping cart addition, even if it meant resolving conflicts later.`,
+    aiSummary: "Dynamo is a decentralized, highly available key-value store. It uses consistent hashing with virtual nodes for data distribution and vector clocks for versioning and conflict resolution.",
+    imageUrl: "https://picsum.photos/seed/dynamo-paper/800/600",
+    date: "2024.03.10",
+    tags: ["High Availability", "NoSQL", "Amazon"]
+  },
+  {
+    id: "bitcoin",
+    title: "Bitcoin: A Peer-to-Peer Electronic Cash System",
+    citation: "Nakamoto, S. (2008). Bitcoin: A peer-to-peer electronic cash system.",
+    pdfUrl: "https://bitcoin.org/bitcoin.pdf",
+    preview: "Bitcoin is a purely peer-to-peer version of electronic cash that allows online payments to be sent directly from one party to another without going through a financial institution.",
+    overview: "Analyzing the revolutionary whitepaper that introduced the blockchain, proof-of-work, and a decentralized consensus mechanism for digital currency.",
+    content: `The Bitcoin whitepaper introduced a solution to the double-spending problem using a peer-to-peer network. The core of the system is the blockchain, a distributed ledger that records all transactions. Consensus is achieved through Proof-of-Work (PoW), where miners compete to solve complex mathematical puzzles to add new blocks to the chain.
+
+Bitcoin's security relies on the assumption that the majority of the network's computing power is controlled by honest nodes. By linking blocks together using cryptographic hashes, the system makes it computationally expensive to alter past transactions. This creates a trustless environment where participants can transact directly without a central authority. The fixed supply of 21 million coins and the halving mechanism are key economic components designed to prevent inflation.`,
+    aiSummary: "Bitcoin is a decentralized digital currency using a peer-to-peer network and Proof-of-Work consensus. It solves the double-spending problem without a central authority through a cryptographic blockchain ledger.",
+    imageUrl: "https://picsum.photos/seed/bitcoin-paper/800/600",
+    date: "2024.01.20",
+    tags: ["Blockchain", "Cryptography", "Decentralization"]
+  },
+  {
+    id: "mapreduce",
+    title: "MapReduce: Simplified Data Processing on Large Clusters",
+    citation: "Dean, J., & Ghemawat, S. (2004). MapReduce: Simplified data processing on large clusters. OSDI.",
+    pdfUrl: "https://static.googleusercontent.com/media/research.google.com/en//archive/mapreduce-osdi04.pdf",
+    preview: "MapReduce is a programming model and an associated implementation for processing and generating large data sets.",
+    overview: "A look at the programming model that democratized large-scale data processing by abstracting away the complexities of parallelization.",
+    content: `MapReduce allows developers to write simple Map and Reduce functions while the underlying system handles the complexities of parallelization, fault tolerance, data distribution, and load balancing. The Map function processes a key/value pair to generate a set of intermediate key/value pairs, and the Reduce function merges all intermediate values associated with the same intermediate key.
+
+The framework's strength lies in its ability to scale to thousands of machines. It uses a 'moving computation to data' strategy, where tasks are scheduled on nodes that already store the required data chunks (often from GFS). This significantly reduces network traffic. MapReduce was the primary engine for Google's search index generation for many years before being succeeded by more real-time systems.`,
+    aiSummary: "MapReduce simplifies large-scale data processing by abstracting parallel computation into Map and Reduce primitives. It handles task scheduling, data partitioning, and machine failures automatically.",
+    imageUrl: "https://picsum.photos/seed/mapreduce-paper/800/600",
+    date: "2024.03.05",
+    tags: ["Parallel Computing", "Big Data", "Google"]
+  },
+  {
+    id: "tensorflow",
+    title: "TensorFlow: Large-Scale Machine Learning on Heterogeneous Distributed Systems",
+    citation: "Abadi, M., et al. (2016). TensorFlow: Large-scale machine learning on heterogeneous distributed systems. OSDI.",
+    pdfUrl: "https://www.usenix.org/system/files/conference/osdi16/osdi16-abadi.pdf",
+    preview: "TensorFlow is an interface for expressing machine learning algorithms, and an implementation for executing such algorithms.",
+    overview: "Exploring the design of TensorFlow, a system that represents computations as dataflow graphs to enable efficient execution across diverse hardware.",
+    content: `TensorFlow was designed to support a wide range of machine learning tasks, from research to production. It represents computations as directed graphs where nodes are operations and edges are tensors (multi-dimensional data arrays). This dataflow model allows TensorFlow to automatically identify opportunities for parallel execution and distribute tasks across CPUs, GPUs, and TPUs.
+
+One of the most powerful features of TensorFlow is its support for distributed training. It can scale from a single smartphone to a cluster of thousands of GPUs. The system uses a parameter server architecture for managing shared state across multiple workers. By abstracting the hardware details, TensorFlow allows researchers to focus on model architecture while the system optimizes the execution for performance and efficiency.`,
+    aiSummary: "TensorFlow is a flexible dataflow-based machine learning framework. It represents computations as graphs of tensors and operations, enabling efficient execution across heterogeneous hardware and distributed clusters.",
+    imageUrl: "https://picsum.photos/seed/tensorflow-paper/800/600",
+    date: "2024.02.10",
+    tags: ["Machine Learning", "Dataflow", "Distributed Systems"]
   }
 ];
