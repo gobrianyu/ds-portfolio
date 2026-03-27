@@ -18,9 +18,10 @@ const BlogTerminal: React.FC<BlogTerminalProps> = ({ text, title = "AI_SUMMARY.b
     if (isTyping) {
       setDisplayedText('');
       intervalId = setInterval(() => {
-        setDisplayedText((prev) => prev + text[index]);
-        index++;
-        if (index >= text.length) {
+        if (index < text.length) {
+          setDisplayedText(text.substring(0, index + 1));
+          index++;
+        } else {
           clearInterval(intervalId);
           setIsTyping(false);
         }

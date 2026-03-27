@@ -19,13 +19,19 @@ import {
   Zap,
   Lock,
   Share2,
-  Activity
+  Activity,
+  RotateCcw,
+  X,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { blogPosts } from '../data/blogs';
 import BlogTerminal from '../components/BlogTerminal';
+import BigtableReadPath from '../components/interactive/BigtableReadPath';
 import { useState, useMemo, useEffect } from 'react';
 
 // --- Interactive Element: Tablet Hierarchy Visualization (BigTable) ---
+// (Keeping this as a secondary visualization if needed, but replacing main interactive)
 const TabletHierarchy = () => {
   const [activeLevel, setActiveLevel] = useState<number | null>(null);
 
@@ -536,12 +542,49 @@ export default function BlogPage() {
   const { id } = useParams();
   const post = blogPosts.find(p => p.id === id);
   const [showPdf, setShowPdf] = useState(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfKey, setPdfKey] = useState(0);
+  const [activeViz, setActiveViz] = useState<'readPath' | 'hierarchy'>('readPath');
+
+  useEffect(() => {
+    if (isPdfModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isPdfModalOpen]);
 
   if (!post) return <Navigate to="/blog" />;
 
   const renderInteractive = () => {
     switch (post.id) {
-      case 'bigtable': return <TabletHierarchy />;
+      case 'bigtable': 
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-center gap-4 mb-4">
+              <button 
+                onClick={() => setActiveViz('readPath')}
+                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  activeViz === 'readPath' ? 'bg-primary text-black' : 'bg-white/5 text-gray-500'
+                }`}
+              >
+                Read Path Explorer
+              </button>
+              <button 
+                onClick={() => setActiveViz('hierarchy')}
+                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  activeViz === 'hierarchy' ? 'bg-primary text-black' : 'bg-white/5 text-gray-500'
+                }`}
+              >
+                Tablet Hierarchy
+              </button>
+            </div>
+            {activeViz === 'readPath' ? <BigtableReadPath /> : <TabletHierarchy />}
+          </div>
+        );
       case 'gfs': return <GFSVisualization />;
       case 'dynamo': return <DynamoRing />;
       case 'bitcoin': return <BitcoinVisualization />;
@@ -552,7 +595,7 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <Link
         to="/blog"
         className="inline-flex items-center text-gray-500 hover:text-primary mb-12 transition-colors font-bold uppercase tracking-widest text-[10px] group"
@@ -564,171 +607,300 @@ export default function BlogPage() {
       <motion.article
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-12"
+        className="max-w-5xl mx-auto"
       >
-        <div className="lg:col-span-8">
-          <header className="mb-16">
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              <div className="px-3 py-1 bg-violet-500/10 rounded-md border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
-                <Terminal className="w-3 h-3" />
-                <span>Log: {post.id}</span>
-              </div>
-              <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
-                Status: Analyzed
-              </div>
-              <div className="px-3 py-1 bg-primary/10 rounded-md border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
-                {post.date}
-              </div>
+        <header className="mb-16">
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            <div className="px-3 py-1 bg-violet-500/10 rounded-md border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
+              <Terminal className="w-3 h-3" />
+              <span>Log: {post.id}</span>
             </div>
-
-            <h1 className="text-5xl md:text-8xl font-black mb-8 leading-[0.85] text-white tracking-tighter">
-              {post.title.split(':').map((part, i) => (
-                <span key={i} className={i === 1 ? "block text-primary/80 text-4xl md:text-5xl mt-4" : ""}>
-                  {part}{i === 0 && post.title.includes(':') ? ':' : ''}
-                </span>
-              ))}
-            </h1>
-
-            <p className="text-xl text-gray-400 font-medium leading-relaxed mb-12 border-l-4 border-primary/30 pl-6 italic">
-              {post.overview}
-            </p>
-          </header>
-
-          <div className="mb-16">
-            <BlogTerminal text={post.aiSummary} />
+            <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+              Status: Analyzed
+            </div>
+            <div className="px-3 py-1 bg-primary/10 rounded-md border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
+              {post.date}
+            </div>
           </div>
 
-          <div className="mb-16">
+          <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[0.8] text-white tracking-tighter">
+            {post.title.split(':').map((part, i) => (
+              <span key={i} className={i === 1 ? "block text-primary/80 text-4xl md:text-6xl mt-6 font-bold tracking-tight" : ""}>
+                {part}{i === 0 && post.title.includes(':') ? ':' : ''}
+              </span>
+            ))}
+          </h1>
+
+          <p className="text-2xl text-gray-400 font-medium leading-relaxed mb-12 border-l-4 border-primary/30 pl-8 italic">
+            {post.overview}
+          </p>
+
+          <div className="flex flex-wrap gap-3 mb-12">
+            {post.tags.map(tag => (
+              <span key={tag} className="px-4 py-2 bg-white/5 text-gray-400 rounded-md text-[10px] font-black uppercase tracking-widest border border-white/10 hover:border-primary/30 hover:text-primary transition-all cursor-default">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </header>
+
+        <div className="mb-20">
+          <BlogTerminal text={post.aiSummary} />
+        </div>
+
+        {/* Interactive Widget Section - Full Width Breakout */}
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-px flex-grow bg-white/10" />
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest text-center">Interactive Simulation Environment</span>
+              </div>
+              <div className="h-px flex-grow bg-white/10" />
+            </div>
             {renderInteractive()}
           </div>
+        </div>
 
-          <div className="prose prose-invert max-w-none">
-            <div className="flex items-center space-x-4 mb-10">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <FileText className="w-7 h-7 text-primary" />
-              </div>
-              <h2 className="text-3xl font-black m-0 text-white tracking-tight uppercase tracking-widest">Analysis & Discussion</h2>
-            </div>
-            
-            <div className="text-gray-300 leading-relaxed text-xl space-y-10 font-medium">
-              {post.content.split('\n\n').map((paragraph, i) => (
-                <div key={i} className="relative group">
-                  <div className="absolute -left-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
-                    <ChevronRight className="w-5 h-5" />
-                  </div>
-                  <p className="relative">
-                    {paragraph}
-                  </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          <div className="lg:col-span-8">
+            <div className="prose prose-invert max-w-none">
+              <div className="flex items-center space-x-4 mb-12">
+                <div className="p-3 bg-primary/10 rounded-xl">
+                  <FileText className="w-8 h-8 text-primary" />
                 </div>
-              ))}
+                <h2 className="text-4xl font-black m-0 text-white tracking-tight uppercase tracking-widest">Analysis & Discussion</h2>
+              </div>
+              
+              <div className="text-gray-300 leading-relaxed text-xl space-y-12 font-medium">
+                {post.content.split('\n\n').map((paragraph, i) => (
+                  <div key={i} className="relative group">
+                    <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
+                      <ChevronRight className="w-6 h-6" />
+                    </div>
+                    <p className="relative">
+                      {paragraph}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-24 pt-12 border-t border-white/5 flex items-center space-x-6">
+              <div className="w-20 h-20 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg group hover:border-primary/30 transition-colors">
+                <BookOpen className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-black tracking-widest mb-1">Written by</p>
+                <p className="font-black text-2xl text-white tracking-tight">Brian S. Yu</p>
+                <p className="text-sm text-gray-500 font-medium italic">Distributed Systems Researcher</p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-20 pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center space-x-5">
-              <div className="w-16 h-16 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg group hover:border-primary/30 transition-colors">
-                <BookOpen className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
+          <div className="lg:col-span-4 space-y-10">
+            <div className="terminal-window p-8 bg-violet-950/10 border-violet-500/20 shadow-xl relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 to-transparent" />
+              <div className="flex items-center space-x-3 mb-8">
+                <Quote className="w-6 h-6 text-violet-400" />
+                <h3 className="text-sm font-black text-white uppercase tracking-widest">Original Citation</h3>
               </div>
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Written by</p>
-                <p className="font-black text-xl text-white tracking-tight">Brian S. Yu</p>
-              </div>
+              <p className="text-gray-400 italic text-base font-medium leading-relaxed mb-8">
+                "{post.citation}"
+              </p>
+              
+              {post.pdfUrl && (
+                <div className="space-y-4">
+                  <div className="h-px bg-white/5 w-full my-6" />
+                  
+                  <div className="grid grid-cols-1 gap-3">
+                    <a 
+                      href={post.pdfUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between w-full p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-400 text-sm font-bold hover:bg-violet-500/20 transition-all group"
+                    >
+                      <span className="flex items-center">
+                        <ExternalLink className="w-5 h-5 mr-3" />
+                        View Original Paper
+                      </span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </a>
+                    
+                    <a 
+                      href={post.pdfUrl} 
+                      download
+                      className="flex items-center justify-between w-full p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-sm font-bold hover:bg-emerald-500/20 transition-all group"
+                    >
+                      <span className="flex items-center">
+                        <Download className="w-5 h-5 mr-3" />
+                        Download Paper
+                      </span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </a>
+
+                    <button 
+                      onClick={() => setShowPdf(!showPdf)}
+                      className="flex items-center justify-between w-full p-4 bg-primary/10 border border-primary/20 rounded-xl text-primary text-sm font-bold hover:bg-primary/20 transition-all group"
+                    >
+                      <span className="flex items-center">
+                        <Layers className="w-5 h-5 mr-3" />
+                        Interactive Reader
+                      </span>
+                      <ChevronRight className={`w-5 h-5 transition-transform ${showPdf ? 'rotate-90' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <div className="flex flex-wrap gap-3">
-              {post.tags.map(tag => (
-                <span key={tag} className="px-4 py-2 bg-white/5 text-gray-400 rounded-md text-[10px] font-black uppercase tracking-widest border border-white/10 hover:border-primary/30 hover:text-primary transition-all cursor-default">
-                  {tag}
-                </span>
-              ))}
+
+            <AnimatePresence>
+              {showPdf && post.pdfUrl && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, y: -20 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -20 }}
+                  className="overflow-hidden"
+                >
+                  <div className="terminal-window border-primary/30 bg-black/40 shadow-2xl flex flex-col h-[800px]">
+                    <div className="terminal-header bg-white/5 px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-3 h-3 text-primary" />
+                        <span className="text-[10px] font-black text-white uppercase tracking-widest">Preview: {post.id}.pdf</span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-white/10" />
+                        <div className="w-2 h-2 rounded-full bg-white/10" />
+                        <div className="w-2 h-2 rounded-full bg-white/10" />
+                      </div>
+                    </div>
+                    
+                    <div className="flex-grow relative overflow-hidden">
+                      <iframe 
+                        src={`${post.pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`} 
+                        className="w-full h-full opacity-90"
+                        title="Mini Preview"
+                      />
+                    </div>
+
+                    <div className="p-4 bg-black/60 border-t border-white/10">
+                      <button 
+                        onClick={() => setIsPdfModalOpen(true)}
+                        className="w-full py-3 bg-primary text-black font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 group"
+                      >
+                        <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
+                        Expand Full-Scale Reader
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="terminal-window p-8 bg-white/5 border-white/10">
+              <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8 flex items-center">
+                <Info className="w-5 h-5 mr-3 text-primary" />
+                System Metadata
+              </h3>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center py-3 border-b border-white/5">
+                  <span className="text-xs text-gray-500 uppercase font-bold">Word Count</span>
+                  <span className="text-sm font-mono text-gray-300">{post.content.split(/\s+/).length} words</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-white/5">
+                  <span className="text-xs text-gray-500 uppercase font-bold">Read Time</span>
+                  <span className="text-sm font-mono text-gray-300">{Math.ceil(post.content.split(/\s+/).length / 200)} min</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-white/5">
+                  <span className="text-xs text-gray-500 uppercase font-bold">Complexity</span>
+                  <span className="text-sm font-mono text-emerald-500">O(log N)</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-4 space-y-8">
-          <div className="terminal-window p-6 bg-violet-950/10 border-violet-500/20 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 to-transparent" />
-            <div className="flex items-center space-x-3 mb-6">
-              <Quote className="w-5 h-5 text-violet-400" />
-              <h3 className="text-xs font-black text-white uppercase tracking-widest">Original Citation</h3>
-            </div>
-            <p className="text-gray-400 italic text-sm font-medium leading-relaxed mb-6">
-              "{post.citation}"
-            </p>
-            {post.pdfUrl && (
-              <div className="space-y-3">
-                <a 
-                  href={post.pdfUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full p-3 bg-violet-500/10 border border-violet-500/20 rounded-lg text-violet-400 text-xs font-bold hover:bg-violet-500/20 transition-all group"
-                >
-                  <span className="flex items-center">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Original Paper
-                  </span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
-                <button 
-                  onClick={() => setShowPdf(!showPdf)}
-                  className="flex items-center justify-center w-full p-3 bg-primary/10 border border-primary/20 rounded-lg text-primary text-xs font-bold hover:bg-primary/20 transition-all"
-                >
-                  <Layers className="w-4 h-4 mr-2" />
-                  {showPdf ? "Hide PDF Viewer" : "Show PDF Viewer"}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {showPdf && post.pdfUrl && (
+        <AnimatePresence>
+          {isPdfModalOpen && post.pdfUrl && (
+            <>
+              {/* Backdrop */}
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsPdfModalOpen(false)}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
+              />
+
+              {/* Modal Window */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, x: -100 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.9, x: -100 }}
+                className="fixed top-10 left-10 bottom-10 w-[70%] z-[101] flex flex-col"
               >
-                <div className="terminal-window border-white/10 bg-black/40 h-[600px] relative">
-                  <iframe 
-                    src={`${post.pdfUrl}#toolbar=0`} 
-                    className="w-full h-full rounded-lg"
-                    title="Research Paper PDF"
-                  />
-                  <div className="absolute bottom-4 right-4">
-                    <a 
-                      href={post.pdfUrl} 
-                      download 
-                      className="p-3 bg-primary text-black rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
-                    >
-                      <Download className="w-5 h-5" />
-                    </a>
+                <div className="terminal-window border-primary/30 bg-[#020617] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
+                  <div className="terminal-header bg-white/5 flex items-center justify-between px-6 py-4 border-b border-white/10">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                        <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                        <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                      </div>
+                      <div className="h-4 w-[1px] bg-white/10 mx-2" />
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-black text-white uppercase tracking-widest">Research Document: {post.id}.pdf</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <button 
+                        onClick={() => setPdfKey(prev => prev + 1)}
+                        className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-all"
+                        title="Refresh View"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setIsPdfModalOpen(false)}
+                        className="p-2 hover:bg-red-500/20 rounded-lg text-gray-400 hover:text-red-500 transition-all"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-grow relative bg-black">
+                    <iframe 
+                      key={pdfKey}
+                      src={`${post.pdfUrl}#toolbar=1`} 
+                      className="w-full h-full"
+                      title="Research Paper PDF"
+                    />
+                    
+                    {/* Floating Controls */}
+                    <div className="absolute bottom-8 right-8 flex flex-col gap-4">
+                      <a 
+                        href={post.pdfUrl} 
+                        download 
+                        className="w-14 h-14 bg-primary text-black rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
+                      >
+                        <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
+                      </a>
+                      <button 
+                        onClick={() => setIsPdfModalOpen(false)}
+                        className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
+                      >
+                        <Minimize2 className="w-6 h-6" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="terminal-window p-6 bg-white/5 border-white/10">
-            <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6 flex items-center">
-              <Info className="w-4 h-4 mr-2 text-primary" />
-              System Metadata
-            </h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] text-gray-500 uppercase font-bold">Word Count</span>
-                <span className="text-xs font-mono text-gray-300">{post.content.split(/\s+/).length} words</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] text-gray-500 uppercase font-bold">Read Time</span>
-                <span className="text-xs font-mono text-gray-300">{Math.ceil(post.content.split(/\s+/).length / 200)} min</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="text-[10px] text-gray-500 uppercase font-bold">Complexity</span>
-                <span className="text-xs font-mono text-emerald-500">O(log N)</span>
-              </div>
-            </div>
-          </div>
-        </div>
+            </>
+          )}
+        </AnimatePresence>
       </motion.article>
     </div>
   );
