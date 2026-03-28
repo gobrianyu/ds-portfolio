@@ -49,7 +49,7 @@ const BigtableReadPath: React.FC = () => {
 
   const initSimulation = useCallback(() => {
     const newSteps: Step[] = [
-      { id: 'routing', title: 'Request Routing', description: 'Locating tablet server via metadata...', status: 'pending', latency: 0.2 },
+      { id: 'routing', title: 'Request Routing', description: 'Locating tablet server via metadata service...', status: 'pending', latency: 0.2 },
       { id: 'row_cache', title: 'Row Cache', description: 'Checking in-memory row cache...', status: 'pending', latency: 0.1 },
       { id: 'block_cache', title: 'Block Cache', description: 'Checking cached SSTable blocks...', status: 'pending', latency: 0.1 },
       { id: 'memtable', title: 'Memtable', description: 'Searching active memtable...', status: 'pending', latency: 0.5 },
@@ -271,7 +271,7 @@ const BigtableReadPath: React.FC = () => {
             <Settings2 className="w-5 h-5 text-primary" />
             <h3 className="text-sm font-black text-white uppercase tracking-widest">Simulation Config</h3>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2">
                 Bloom Filters 
@@ -310,7 +310,7 @@ const BigtableReadPath: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2">
                   SSTables 
@@ -328,46 +328,51 @@ const BigtableReadPath: React.FC = () => {
                 onChange={(e) => setSstableCount(parseInt(e.target.value))}
                 disabled={isSimulating}
                 className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                style={{
+                  background: `linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ${(sstableCount - 1) / 4 * 100}%, rgba(255, 255, 255, 0.1) ${(sstableCount - 1) / 4 * 100}%, rgba(255, 255, 255, 0.1) 100%)`
+                }}
               />
             </div>
           </div>
         </div>
 
-        <div className="space-y-6 mt-12">
-          <div className="flex items-center gap-3 mb-2">
-            <Layers className="w-5 h-5 text-primary" />
-            <h3 className="text-sm font-black text-white uppercase tracking-widest">Batch Progress</h3>
-          </div>
+        <div className="mt-auto space-y-6">
           <div className="space-y-4">
-            <div className="w-full bg-white/5 rounded-full h-3 overflow-hidden border border-white/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-primary" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Batch Progress</span>
+              </div>
+              <span className="text-[10px] font-mono text-gray-500 font-bold">
+                {metrics.completedQueries} / {queries.length}
+              </span>
+            </div>
+            <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/10">
               <motion.div 
                 className="bg-primary h-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${(metrics.completedQueries / queries.length) * 100}%` }}
               />
             </div>
-            <p className="text-xs font-mono text-gray-500 text-center font-bold">
-              {metrics.completedQueries} / {queries.length} Queries Processed
-            </p>
           </div>
-        </div>
 
-        <div className="flex gap-2 mt-auto pt-8">
-          <button 
-            onClick={runBatchSimulation}
-            disabled={isSimulating}
-            className="flex-1 bg-primary text-black font-black uppercase tracking-widest text-[10px] py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-hover transition-all disabled:opacity-50"
-          >
-            <Play size={14} fill="currentColor" />
-            Run Batch Test
-          </button>
-          <button 
-            onClick={initSimulation}
-            disabled={isSimulating}
-            className="p-4 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white transition-all"
-          >
-            <RotateCcw size={14} />
-          </button>
+          <div className="flex gap-2 pt-2">
+            <button 
+              onClick={runBatchSimulation}
+              disabled={isSimulating}
+              className="flex-1 bg-primary text-black font-black uppercase tracking-widest text-[10px] py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-hover transition-all disabled:opacity-50"
+            >
+              <Play size={14} fill="currentColor" />
+              Run Batch Test
+            </button>
+            <button 
+              onClick={initSimulation}
+              disabled={isSimulating}
+              className="p-4 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white transition-all"
+            >
+              <RotateCcw size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
