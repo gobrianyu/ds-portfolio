@@ -81,6 +81,17 @@ export const GFSSimulator: React.FC = () => {
   const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const masterRef = useRef<HTMLDivElement>(null);
 
+  const nodesRef = useRef<Node[]>(nodes);
+  const chunksRef = useRef<Chunk[]>(chunks);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  useEffect(() => {
+    chunksRef.current = chunks;
+  }, [chunks]);
+
   // --- Helpers ---
   const updateNodePositions = useCallback(() => {
     if (!visualizerRef.current) return;
@@ -300,6 +311,22 @@ export const GFSSimulator: React.FC = () => {
     setTimeout(updateNodePositions, 50);
   }, [nodes, chunks, triggerReReplication, updateNodePositions]);
 
+  const evaluateRef = useRef(evaluateSystemState);
+  const triggerReReplicationRef = useRef(triggerReReplication);
+  const isReplicatingRef = useRef(isReplicating);
+
+  useEffect(() => {
+    evaluateRef.current = evaluateSystemState;
+  }, [evaluateSystemState]);
+
+  useEffect(() => {
+    triggerReReplicationRef.current = triggerReReplication;
+  }, [triggerReReplication]);
+
+  useEffect(() => {
+    isReplicatingRef.current = isReplicating;
+  }, [isReplicating]);
+
   // --- User Actions ---
   const startSystem = () => {
     if (systemStatus === "IDLE") {
@@ -328,17 +355,17 @@ export const GFSSimulator: React.FC = () => {
 
   const failNode = (nodeId: string) => {
     const recoveryCountdown = autoRecoveryEnabled ? Math.floor(Math.random() * 9) + 2 : undefined;
-    const newNodes = nodes.map(n => n.id === nodeId ? { ...n, status: "FAILED" as const, recoveryCountdown } : n);
+    const newNodes = nodesRef.current.map(n => n.id === nodeId ? { ...n, status: "FAILED" as const, recoveryCountdown } : n);
     setNodes(newNodes);
     addLog(`Chunkserver ${nodeId} failed!${recoveryCountdown ? ` Auto-recovery in ${recoveryCountdown}s.` : ''}`, "error");
-    setTimeout(() => evaluateSystemState(newNodes, chunks), 100);
+    setTimeout(() => evaluateSystemState(newNodes, chunksRef.current), 100);
   };
 
   const recoverNode = (nodeId: string) => {
-    const newNodes = nodes.map(n => n.id === nodeId ? { ...n, status: "HEALTHY" as const, recoveryCountdown: undefined } : n);
+    const newNodes = nodesRef.current.map(n => n.id === nodeId ? { ...n, status: "HEALTHY" as const, recoveryCountdown: undefined } : n);
     setNodes(newNodes);
     // Simplified recovery: clear chunks from node as per simplified model
-    const newChunks = chunks.map(c => ({
+    const newChunks = chunksRef.current.map(c => ({
       ...c,
       replicas: c.replicas.filter(r => r.nodeId !== nodeId)
     }));
@@ -383,8 +410,8 @@ export const GFSSimulator: React.FC = () => {
       // Health Check Loop
       simulationRef.current = setInterval(() => {
         // 1. Check for missing primaries
-        chunks.forEach(c => {
-          const primaryNode = nodes.find(n => n.id === c.primaryNodeId);
+        chunksRef.current.forEach(c => {
+          const primaryNode = nodesRef.current.find(n => n.id === c.primaryNodeId);
           const primaryReplica = c.replicas.find(r => r.nodeId === c.primaryNodeId);
           
           const primaryIsUnhealthy = !primaryNode || 
@@ -392,38 +419,29 @@ export const GFSSimulator: React.FC = () => {
                                     primaryReplica?.status === "CORRUPTED";
 
           if (primaryIsUnhealthy && c.primaryNodeId !== null) {
-            evaluateSystemState(nodes, chunks);
+            evaluateRef.current(nodesRef.current, chunksRef.current);
           }
         });
 
         // 2. Auto Re-replication
-        if (!isReplicating) {
-          const needsReplication = chunks.some(c => {
+        if (!isReplicatingRef.current) {
+          const needsReplication = chunksRef.current.some(c => {
             const validCount = c.replicas.filter(r => {
-              const node = nodes.find(n => n.id === r.nodeId);
+              const node = nodesRef.current.find(n => n.id === r.nodeId);
               return r.status === "HEALTHY" && node?.status === "HEALTHY";
             }).length;
             return validCount < REPLICATION_FACTOR;
           });
 
           if (needsReplication) {
-            triggerReReplication();
+            triggerReReplicationRef.current();
           }
         }
 
-        // 3. Chaos Mode
-        if (autoChaos && Math.random() < 0.05) {
-          const healthyNodes = nodes.filter(n => n.status === "HEALTHY");
-          if (healthyNodes.length > 0) {
-            const nodeToFail = healthyNodes[Math.floor(Math.random() * healthyNodes.length)];
-            failNode(nodeToFail.id);
-          }
-        }
-
-        // 4. System Failure Check
-        const allChunksLost = chunks.length > 0 && chunks.every(c => {
+        // 3. System Failure Check
+        const allChunksLost = chunksRef.current.length > 0 && chunksRef.current.every(c => {
           const healthyCount = c.replicas.filter(r => {
-            const node = nodes.find(n => n.id === r.nodeId);
+            const node = nodesRef.current.find(n => n.id === r.nodeId);
             return r.status === "HEALTHY" && node?.status === "HEALTHY";
           }).length;
           return healthyCount === 0;
@@ -444,7 +462,7 @@ export const GFSSimulator: React.FC = () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (simulationRef.current) clearInterval(simulationRef.current);
     };
-  }, [systemStatus, chunks, nodes, evaluateSystemState, isReplicating, triggerReReplication, autoChaos]);
+  }, [systemStatus]);
 
   useEffect(() => {
     if (systemStatus !== "RUNNING") return;
@@ -468,6 +486,34 @@ export const GFSSimulator: React.FC = () => {
       setNodes(prev => prev.map(n => ({ ...n, recoveryCountdown: undefined })));
     }
   }, [autoRecoveryEnabled, systemStatus]);
+
+  // --- Chaos Mode Manager ---
+  useEffect(() => {
+    let chaosTimer: NodeJS.Timeout | null = null;
+    
+    if (autoChaos && systemStatus === "RUNNING") {
+      const scheduleNextChaos = (isFirst = false) => {
+        const delay = isFirst 
+          ? Math.random() * 3000 // First error within 3 seconds
+          : 5000 + Math.random() * 10000; // Subsequent errors around 10s (5-15s)
+          
+        chaosTimer = setTimeout(() => {
+          const healthyNodes = nodesRef.current.filter(n => n.status === "HEALTHY");
+          if (healthyNodes.length > 0) {
+            const nodeToFail = healthyNodes[Math.floor(Math.random() * healthyNodes.length)];
+            failNode(nodeToFail.id);
+          }
+          scheduleNextChaos();
+        }, delay);
+      };
+      
+      scheduleNextChaos(true);
+    }
+    
+    return () => {
+      if (chaosTimer) clearTimeout(chaosTimer);
+    };
+  }, [autoChaos, systemStatus]);
 
   // --- Metrics Calculation ---
   const getAvailability = () => {
