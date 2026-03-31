@@ -21,12 +21,12 @@ export default function BlogListPage() {
           </div>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black mb-8 text-white tracking-tighter">
+        <h1 className="text-5xl md:text-7xl font-black mb-8 text-foreground tracking-tighter">
           Paper <span className="text-violet-400">Reviews</span>
         </h1>
         
-        <div className="terminal-window p-8 bg-violet-950/10 border-violet-500/20 max-w-3xl">
-          <p className="text-lg text-gray-400 leading-relaxed font-medium">
+        <div className="terminal-window p-8 bg-muted/40 border-violet-500/20 max-w-3xl">
+          <p className="text-lg text-muted-foreground leading-relaxed font-medium">
             <span className="text-violet-400 font-mono mr-2">{" >>> "}</span>
             Critical reviews and architectural breakdowns of industry-defining research papers 
             in the field of distributed systems.

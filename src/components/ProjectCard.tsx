@@ -24,11 +24,11 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
       <div className="terminal-header">
         <div className="flex items-center space-x-2">
           <FileCode className="w-3 h-3 text-primary" />
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{project.id}.java</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{project.id}.java</span>
         </div>
         <div className="flex space-x-1">
-          <div className="w-2 h-2 rounded-full bg-white/10" />
-          <div className="w-2 h-2 rounded-full bg-white/10" />
+          <div className="w-2 h-2 rounded-full bg-muted" />
+          <div className="w-2 h-2 rounded-full bg-muted" />
         </div>
       </div>
 
@@ -40,18 +40,18 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
           <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest">Process Running</span>
         </div>
 
-        <h3 className="text-2xl font-black mb-4 text-white tracking-tight group-hover:text-primary transition-colors">
+        <h3 className="text-2xl font-black mb-4 text-foreground tracking-tight group-hover:text-primary transition-colors">
           {project.title}
         </h3>
         
-        <p className="text-gray-400 mb-8 line-clamp-2 text-sm font-medium leading-relaxed">
+        <p className="text-muted-foreground mb-8 line-clamp-2 text-sm font-medium leading-relaxed">
           {project.shortDescription}
         </p>
 
-        <div className="flex items-center justify-between pt-6 border-t border-white/5">
+        <div className="flex items-center justify-between pt-6 border-t border-border">
           <div className="flex space-x-2">
             {['Distributed', 'Java', 'Systems'].map((tag) => (
-              <span key={tag} className="text-[9px] font-bold text-gray-500 uppercase tracking-widest px-2 py-1 bg-white/5 rounded-md">
+              <span key={tag} className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest px-2 py-1 bg-muted rounded-md">
                 {tag}
               </span>
             ))}

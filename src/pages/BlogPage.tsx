@@ -29,155 +29,8 @@ import { blogPosts } from '../data/blogs';
 import BlogTerminal from '../components/BlogTerminal';
 import BigtableReadPath from '../components/interactive/BigtableReadPath';
 import GFSSimulator from '../components/GFSSimulator/GFSSimulator';
+import { DynamoRing } from '../components/DynamoRing/DynamoRing';
 import { useState, useMemo, useEffect } from 'react';
-
-// --- Interactive Element: Consistent Hashing Ring (Dynamo) ---
-const DynamoRing = () => {
-  const [nodeCount, setNodeCount] = useState(4);
-  const [vnodesPerNode, setVnodesPerNode] = useState(1);
-  const [keys, setKeys] = useState<{ id: number; pos: number; color: string }[]>([]);
-
-  const colors = ['#00ff9d', '#ffbd2e', '#ff5f56', '#27c93f', '#3b82f6', '#a855f7', '#ec4899'];
-
-  const nodes = useMemo(() => {
-    const result = [];
-    for (let i = 0; i < nodeCount; i++) {
-      for (let v = 0; v < vnodesPerNode; v++) {
-        // Spread vnodes across the ring
-        const pos = ((i * (360 / nodeCount)) + (v * (360 / (nodeCount * vnodesPerNode)))) % 360;
-        result.push({ id: i, vnodeId: v, pos, color: colors[i % colors.length] });
-      }
-    }
-    return result.sort((a, b) => a.pos - b.pos);
-  }, [nodeCount, vnodesPerNode]);
-
-  const addKey = () => {
-    const newKey = {
-      id: Date.now(),
-      pos: Math.random() * 360,
-      color: '#ffffff'
-    };
-    setKeys(prev => [...prev, newKey]);
-  };
-
-  const clearKeys = () => setKeys([]);
-
-  const getOwnerNode = (keyPos: number) => {
-    const owner = nodes.find(n => n.pos >= keyPos) || nodes[0];
-    return owner;
-  };
-
-  const loadImbalance = useMemo(() => {
-    if (keys.length === 0) return 0;
-    const counts: Record<number, number> = {};
-    keys.forEach(k => {
-      const owner = getOwnerNode(k.pos);
-      counts[owner.id] = (counts[owner.id] || 0) + 1;
-    });
-    const values = Object.values(counts);
-    if (values.length === 0) return 0;
-    const max = Math.max(...values);
-    const avg = keys.length / nodeCount;
-    return avg === 0 ? 0 : (max - avg) / avg;
-  }, [keys, nodes, nodeCount]);
-
-  return (
-    <div className="terminal-window p-6 bg-emerald-950/10 border-emerald-500/20 shadow-2xl relative overflow-hidden">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-emerald-500/10 rounded-lg">
-            <Activity className="w-5 h-5 text-emerald-400" />
-          </div>
-          <h3 className="text-xl font-black text-white uppercase tracking-widest">Interactive: Dynamo Ring</h3>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={addKey} className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-500/20 transition-all">
-            <Plus size={16} />
-          </button>
-          <button onClick={clearKeys} className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 hover:bg-red-500/20 transition-all">
-            <Minus size={16} />
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-        <div className="space-y-6">
-          <div>
-            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">Physical Nodes: {nodeCount}</label>
-            <input 
-              type="range" min="2" max="7" value={nodeCount} 
-              onChange={(e) => setNodeCount(parseInt(e.target.value))}
-              className="w-full accent-emerald-500"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">VNodes per Node: {vnodesPerNode}</label>
-            <input 
-              type="range" min="1" max="10" value={vnodesPerNode} 
-              onChange={(e) => setVnodesPerNode(parseInt(e.target.value))}
-              className="w-full accent-emerald-500"
-            />
-          </div>
-          <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Load Imbalance</p>
-            <div className="flex items-end space-x-2">
-              <span className="text-2xl font-black text-white">{(loadImbalance * 100).toFixed(1)}%</span>
-              <span className={`text-[10px] font-bold mb-1 ${loadImbalance > 0.5 ? 'text-red-400' : 'text-emerald-400'}`}>
-                {loadImbalance > 0.5 ? 'High' : 'Optimal'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative flex justify-center py-10">
-          <div className="w-64 h-64 rounded-full border-2 border-dashed border-white/10 relative">
-            <AnimatePresence>
-              {nodes.map((node) => (
-                <motion.div
-                  key={`${node.id}-${node.vnodeId}`}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  className="absolute w-4 h-4 rounded-full border-2 border-black z-20"
-                  style={{
-                    backgroundColor: node.color,
-                    left: `calc(50% + ${Math.cos((node.pos - 90) * (Math.PI / 180)) * 128}px - 8px)`,
-                    top: `calc(50% + ${Math.sin((node.pos - 90) * (Math.PI / 180)) * 128}px - 8px)`,
-                    boxShadow: `0 0 10px ${node.color}44`
-                  }}
-                />
-              ))}
-            </AnimatePresence>
-
-            {keys.map((key) => {
-              const owner = getOwnerNode(key.pos);
-              return (
-                <motion.div
-                  key={key.id}
-                  layout
-                  className="absolute w-2 h-2 rounded-full z-10"
-                  style={{
-                    backgroundColor: owner.color,
-                    left: `calc(50% + ${Math.cos((key.pos - 90) * (Math.PI / 180)) * 110}px - 4px)`,
-                    top: `calc(50% + ${Math.sin((key.pos - 90) * (Math.PI / 180)) * 110}px - 4px)`,
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
-          <h4 className="text-xs font-black text-white uppercase tracking-widest mb-3">Minimal Movement</h4>
-          <p className="text-[10px] text-gray-400 leading-relaxed italic">
-            Notice how adding/removing nodes only affects keys in the immediate vicinity of the change. 
-            Virtual nodes (vnodes) help distribute keys more evenly across physical hardware, reducing "hot spots".
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // --- Interactive Element: Proof of Work (Bitcoin) ---
 const BitcoinVisualization = () => {
@@ -210,28 +63,28 @@ const BitcoinVisualization = () => {
   }, [isMining]);
 
   return (
-    <div className="terminal-window p-6 bg-orange-950/10 border-orange-500/20 shadow-2xl relative overflow-hidden">
+    <div className="terminal-window p-6 bg-muted/40 border-orange-500/20 shadow-2xl relative overflow-hidden">
       <div className="flex items-center space-x-3 mb-8">
         <div className="p-2 bg-orange-500/10 rounded-lg">
           <Lock className="w-5 h-5 text-orange-400" />
         </div>
-        <h3 className="text-xl font-black text-white uppercase tracking-widest">Interactive: Proof of Work</h3>
+        <h3 className="text-xl font-black text-foreground uppercase tracking-widest">Interactive: Proof of Work</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="p-4 bg-white/5 rounded-xl border border-white/10 font-mono">
+          <div className="p-4 bg-background/50 rounded-xl border border-border font-mono">
             <div className="flex justify-between mb-2">
-              <span className="text-[10px] text-gray-500 uppercase font-black">Block #835,421</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-black">Block #835,421</span>
               <span className="text-[10px] text-orange-400 uppercase font-black">{isMining ? 'Mining...' : 'Ready'}</span>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">Nonce:</span>
-                <span className="text-sm text-white">{nonce}</span>
+                <span className="text-xs text-muted-foreground">Nonce:</span>
+                <span className="text-sm text-foreground">{nonce}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs text-gray-400 mb-1">Hash:</span>
+                <span className="text-xs text-muted-foreground mb-1">Hash:</span>
                 <span className="text-[10px] text-orange-400 break-all leading-tight">{hash}</span>
               </div>
             </div>
@@ -248,14 +101,14 @@ const BitcoinVisualization = () => {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-xs font-black text-white uppercase tracking-widest">How it works</h4>
-          <p className="text-[10px] text-gray-400 leading-relaxed">
+          <h4 className="text-xs font-black text-foreground uppercase tracking-widest">How it works</h4>
+          <p className="text-[10px] text-muted-foreground leading-relaxed">
             Miners must find a <span className="text-orange-400">nonce</span> that, when hashed with the block data, produces a result starting with a specific number of zeros. 
             This is the <span className="text-orange-400">difficulty</span>.
           </p>
           <div className="flex items-center space-x-4 p-3 bg-orange-500/5 border border-orange-500/20 rounded-lg">
             <Zap className="w-4 h-4 text-orange-400" />
-            <p className="text-[10px] text-gray-300 italic">
+            <p className="text-[10px] text-muted-foreground italic">
               Safety is guaranteed by the sheer energy required to rewrite history. To alter a block, you must re-mine all subsequent blocks faster than the rest of the network.
             </p>
           </div>
@@ -272,12 +125,12 @@ const MapReduceVisualization = () => {
   const data = ["apple", "banana", "apple", "cherry", "banana", "apple"];
 
   return (
-    <div className="terminal-window p-6 bg-yellow-950/10 border-yellow-500/20 shadow-2xl relative overflow-hidden">
+    <div className="terminal-window p-6 bg-muted/40 border-yellow-500/20 shadow-2xl relative overflow-hidden">
       <div className="flex items-center space-x-3 mb-8">
         <div className="p-2 bg-yellow-500/10 rounded-lg">
           <Share2 className="w-5 h-5 text-yellow-400" />
         </div>
-        <h3 className="text-xl font-black text-white uppercase tracking-widest">Interactive: MapReduce Pipeline</h3>
+        <h3 className="text-xl font-black text-foreground uppercase tracking-widest">Interactive: MapReduce Pipeline</h3>
       </div>
 
       <div className="flex justify-between mb-8">
@@ -286,7 +139,7 @@ const MapReduceVisualization = () => {
             key={s} 
             onClick={() => setStage(i)}
             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-              stage === i ? 'bg-yellow-500 text-black' : 'bg-white/5 text-gray-500'
+              stage === i ? 'bg-yellow-500 text-black' : 'bg-muted text-muted-foreground hover:text-foreground'
             }`}
           >
             {s}
@@ -299,7 +152,7 @@ const MapReduceVisualization = () => {
           {stage === 0 && (
             <motion.div key="input" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex gap-2">
               {data.map((d, i) => (
-                <div key={i} className="px-3 py-2 bg-white/5 border border-white/10 rounded text-xs text-gray-400 font-mono">{d}</div>
+                <div key={i} className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">{d}</div>
               ))}
             </motion.div>
           )}
@@ -312,9 +165,9 @@ const MapReduceVisualization = () => {
           )}
           {stage === 2 && (
             <motion.div key="shuffle" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-2">
-              <div className="px-3 py-2 bg-white/5 border border-white/10 rounded text-xs text-gray-400 font-mono">apple: [1, 1, 1]</div>
-              <div className="px-3 py-2 bg-white/5 border border-white/10 rounded text-xs text-gray-400 font-mono">banana: [1, 1]</div>
-              <div className="px-3 py-2 bg-white/5 border border-white/10 rounded text-xs text-gray-400 font-mono">cherry: [1]</div>
+              <div className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">apple: [1, 1, 1]</div>
+              <div className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">banana: [1, 1]</div>
+              <div className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">cherry: [1]</div>
             </motion.div>
           )}
           {stage === 3 && (
@@ -335,12 +188,12 @@ const TensorFlowVisualization = () => {
   const [isActive, setIsActive] = useState(false);
 
   return (
-    <div className="terminal-window p-6 bg-orange-950/10 border-orange-500/20 shadow-2xl relative overflow-hidden">
+    <div className="terminal-window p-6 bg-muted/40 border-orange-500/20 shadow-2xl relative overflow-hidden">
       <div className="flex items-center space-x-3 mb-8">
         <div className="p-2 bg-orange-500/10 rounded-lg">
           <Activity className="w-5 h-5 text-orange-400" />
         </div>
-        <h3 className="text-xl font-black text-white uppercase tracking-widest">Interactive: Dataflow Graph</h3>
+        <h3 className="text-xl font-black text-foreground uppercase tracking-widest">Interactive: Dataflow Graph</h3>
       </div>
 
       <div className="relative h-64 flex items-center justify-center">
@@ -354,8 +207,8 @@ const TensorFlowVisualization = () => {
 
         <div className="relative z-10 flex w-full justify-around items-center">
           <div className="space-y-12">
-            <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-[10px] font-black text-gray-400">Input A</div>
-            <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-[10px] font-black text-gray-400">Input B</div>
+            <div className="w-16 h-16 bg-background border border-border rounded-full flex items-center justify-center text-[10px] font-black text-muted-foreground">Input A</div>
+            <div className="w-16 h-16 bg-background border border-border rounded-full flex items-center justify-center text-[10px] font-black text-muted-foreground">Input B</div>
           </div>
           <motion.div 
             animate={isActive ? { scale: [1, 1.1, 1] } : {}}
@@ -432,7 +285,7 @@ export default function BlogPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <Link
         to="/blog"
-        className="inline-flex items-center text-gray-500 hover:text-primary mb-12 transition-colors font-bold uppercase tracking-widest text-[10px] group"
+        className="inline-flex items-center text-muted-foreground hover:text-primary mb-12 transition-colors font-bold uppercase tracking-widest text-[10px] group"
       >
         <ArrowLeft className="mr-2 w-3 h-3 group-hover:-translate-x-1 transition-transform" /> 
         <span>cd ..</span>
@@ -457,7 +310,7 @@ export default function BlogPage() {
             </div>
           </div>
 
-          <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[0.8] text-white tracking-tighter">
+          <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[0.8] text-foreground tracking-tighter">
             {post.title.split(':').map((part, i) => (
               <span key={i} className={i === 1 ? "block text-primary/80 text-4xl md:text-6xl mt-6 font-bold tracking-tight" : ""}>
                 {part}{i === 0 && post.title.includes(':') ? ':' : ''}
@@ -465,13 +318,13 @@ export default function BlogPage() {
             ))}
           </h1>
 
-          <p className="text-2xl text-gray-400 font-medium leading-relaxed mb-12 border-l-4 border-primary/30 pl-8 italic">
+          <p className="text-2xl text-muted-foreground font-medium leading-relaxed mb-12 border-l-4 border-primary/30 pl-8 italic">
             {post.overview}
           </p>
 
           <div className="flex flex-wrap gap-3 mb-12">
             {post.tags.map(tag => (
-              <span key={tag} className="px-4 py-2 bg-white/5 text-gray-400 rounded-md text-[10px] font-black uppercase tracking-widest border border-white/10 cursor-default">
+              <span key={tag} className="px-4 py-2 bg-muted text-muted-foreground rounded-md text-[10px] font-black uppercase tracking-widest border border-border cursor-default">
                 {tag}
               </span>
             ))}
@@ -483,15 +336,15 @@ export default function BlogPage() {
         </div>
 
         {/* Interactive Widget Section - Full Width Breakout */}
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24 py-20">
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24 py-20 bg-muted/30 border-y border-border transition-colors">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-4 mb-8">
-              <div className="h-px flex-grow bg-white/10" />
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+              <div className="h-px flex-grow bg-border" />
+              <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full">
                 <Zap className="w-4 h-4 text-primary" />
-                <span className="text-[10px] font-black text-white uppercase tracking-widest text-center">{getInteractiveTitle()}</span>
+                <span className="text-[10px] font-black text-foreground uppercase tracking-widest text-center">{getInteractiveTitle()}</span>
               </div>
-              <div className="h-px flex-grow bg-white/10" />
+              <div className="h-px flex-grow bg-border" />
             </div>
             {renderInteractive()}
           </div>
@@ -504,10 +357,10 @@ export default function BlogPage() {
                 <div className="p-3 bg-primary/10 rounded-xl flex items-center justify-center">
                   <FileText className="w-8 h-8 text-primary" />
                 </div>
-                <h2 className="text-4xl font-black m-0 text-white tracking-tight uppercase tracking-widest leading-none">Analysis & Discussion</h2>
+                <h2 className="text-4xl font-black m-0 text-foreground tracking-tight uppercase tracking-widest leading-none">Analysis & Discussion</h2>
               </div>
               
-              <div className="text-gray-300 leading-relaxed text-xl space-y-12 font-medium">
+              <div className="text-muted-foreground leading-relaxed text-xl space-y-12 font-medium">
                 {post.content.split('\n\n').map((paragraph, i) => (
                   <div key={i} className="relative group">
                     <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
@@ -521,59 +374,59 @@ export default function BlogPage() {
               </div>
             </div>
 
-              <div className="mt-24 pt-12 border-t border-white/5 flex items-center justify-between">
+              <div className="mt-24 pt-12 border-t border-border flex items-center justify-between">
                 <div className="flex items-center space-x-6">
-                  <div className="w-20 h-20 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg group hover:border-primary/30 transition-colors">
+                  <div className="w-20 h-20 bg-muted rounded-2xl border border-border flex items-center justify-center shadow-lg group hover:border-primary/30 transition-colors">
                     <BookOpen className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase font-black tracking-widest mb-1">Written by</p>
-                    <p className="font-black text-2xl text-white tracking-tight">Brian S. Yu</p>
-                    <p className="text-sm text-gray-500 font-medium italic">Distributed Systems Researcher</p>
+                    <p className="text-xs text-muted-foreground uppercase font-black tracking-widest mb-1">Written by</p>
+                    <p className="font-black text-2xl text-foreground tracking-tight">Brian S. Yu</p>
+                    <p className="text-sm text-muted-foreground font-medium italic">Distributed Systems Researcher</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-500 uppercase font-black tracking-widest mb-1">Published</p>
-                  <p className="font-mono text-sm text-gray-400">{formatDate(post.date)}</p>
+                  <p className="text-xs text-muted-foreground uppercase font-black tracking-widest mb-1">Published</p>
+                  <p className="font-mono text-sm text-muted-foreground">{formatDate(post.date)}</p>
                 </div>
               </div>
             </div>
 
           <div className="lg:col-span-4 space-y-10">
-            <div className="terminal-window p-6 bg-white/5 border-white/10 relative overflow-hidden">
+            <div className="terminal-window p-6 bg-muted/40 border-border relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 to-transparent" />
-              <h3 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center">
+              <h3 className="text-[11px] font-black text-foreground uppercase tracking-[0.2em] mb-6 flex items-center">
                 <Activity className="w-4 h-4 mr-3 text-primary" />
                 System Metrics
               </h3>
               <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="text-[9px] text-gray-500 uppercase font-black">Data Volume</span>
-                  <span className="text-xs font-mono text-gray-300">{(post.content.length / 1024).toFixed(1)} KB</span>
+                <div className="flex justify-between items-center py-2 border-b border-border">
+                  <span className="text-[9px] text-muted-foreground uppercase font-black">Data Volume</span>
+                  <span className="text-xs font-mono text-muted-foreground">{(post.content.length / 1024).toFixed(1)} KB</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="text-[9px] text-gray-500 uppercase font-black">Read Time</span>
-                  <span className="text-xs font-mono text-gray-300">{Math.ceil(post.content.split(/\s+/).length / 225)}m</span>
+                <div className="flex justify-between items-center py-2 border-b border-border">
+                  <span className="text-[9px] text-muted-foreground uppercase font-black">Read Time</span>
+                  <span className="text-xs font-mono text-muted-foreground">{Math.ceil(post.content.split(/\s+/).length / 225)}m</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-[9px] text-gray-500 uppercase font-black">Temporal Coordinate</span>
+                  <span className="text-[9px] text-muted-foreground uppercase font-black">Temporal Coordinate</span>
                   <span className="text-xs font-mono text-primary">MAR 2026</span>
                 </div>
               </div>
             </div>
 
-            <div className="terminal-window p-8 bg-violet-950/10 border-violet-500/20 shadow-xl relative overflow-hidden">
+            <div className="terminal-window p-8 bg-violet-500/5 border-violet-500/20 shadow-xl relative overflow-hidden">
               <div className="flex items-center space-x-3 mb-8">
                 <Quote className="w-6 h-6 text-violet-400" />
-                <h3 className="text-[11px] font-black text-white uppercase tracking-widest">Original Citation</h3>
+                <h3 className="text-[11px] font-black text-foreground uppercase tracking-widest">Original Citation</h3>
               </div>
-              <p className="text-gray-400 italic text-base font-medium leading-relaxed mb-8">
+              <p className="text-muted-foreground italic text-base font-medium leading-relaxed mb-8">
                 "{post.citation}"
               </p>
               
               {post.pdfUrl && (
                 <div className="space-y-4">
-                  <div className="h-px bg-white/5 w-full my-6" />
+                  <div className="h-px bg-border w-full my-6" />
                   
                   <div className="grid grid-cols-1 gap-3">
                     <a 
@@ -624,31 +477,31 @@ export default function BlogPage() {
                   exit={{ opacity: 0, height: 0, y: -20 }}
                   className="overflow-hidden"
                 >
-                  <div className="terminal-window border-primary/30 bg-black/40 shadow-2xl flex flex-col h-[800px]">
-                    <div className="terminal-header bg-white/5 px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                  <div className="terminal-window border-primary/30 bg-card shadow-2xl flex flex-col h-[800px]">
+                    <div className="terminal-header bg-muted px-4 py-2 border-b border-border flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FileText className="w-3 h-3 text-primary" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">Preview: {post.id}.pdf</span>
+                        <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Preview: {post.id}.pdf</span>
                       </div>
                       <div className="flex gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-white/10" />
-                        <div className="w-2 h-2 rounded-full bg-white/10" />
-                        <div className="w-2 h-2 rounded-full bg-white/10" />
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/20" />
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/20" />
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/20" />
                       </div>
                     </div>
                     
                     <div className="flex-grow relative overflow-hidden">
                       <iframe 
                         src={`${post.pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`} 
-                        className="w-full h-full opacity-90"
+                        className="w-full h-full opacity-90 dark:invert dark:hue-rotate-180"
                         title="Mini Preview"
                       />
                     </div>
 
-                    <div className="p-4 bg-black/60 border-t border-white/10">
+                    <div className="p-4 bg-muted border-t border-border">
                       <button 
                         onClick={() => setIsPdfModalOpen(true)}
-                        className="w-full py-3 bg-primary text-black font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 group"
+                        className="w-full py-3 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 group"
                       >
                         <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
                         Expand Full-Scale Reader
@@ -681,42 +534,42 @@ export default function BlogPage() {
                 exit={{ opacity: 0, scale: 0.9, x: -100 }}
                 className="fixed top-10 left-10 bottom-10 w-[70%] z-[101] flex flex-col"
               >
-                <div className="terminal-window border-primary/30 bg-[#020617] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
-                  <div className="terminal-header bg-white/5 flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <div className="terminal-window border-primary/30 bg-card shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
+                  <div className="terminal-header bg-muted flex items-center justify-between px-6 py-4 border-b border-border">
                     <div className="flex items-center space-x-4">
                       <div className="flex space-x-2">
                         <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                         <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                         <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
                       </div>
-                      <div className="h-4 w-[1px] bg-white/10 mx-2" />
+                      <div className="h-4 w-[1px] bg-border mx-2" />
                       <div className="flex items-center space-x-3">
                         <FileText className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-black text-white uppercase tracking-widest">Research Document: {post.id}.pdf</span>
+                        <span className="text-xs font-black text-foreground uppercase tracking-widest">Research Document: {post.id}.pdf</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
                       <button 
                         onClick={() => setPdfKey(prev => prev + 1)}
-                        className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-all"
+                        className="p-2 hover:bg-muted-foreground/10 rounded-lg text-muted-foreground hover:text-foreground transition-all"
                         title="Refresh View"
                       >
                         <RotateCcw className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => setIsPdfModalOpen(false)}
-                        className="p-2 hover:bg-red-500/20 rounded-lg text-gray-400 hover:text-red-500 transition-all"
+                        className="p-2 hover:bg-red-500/20 rounded-lg text-muted-foreground hover:text-red-500 transition-all"
                       >
                         <X className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                   
-                  <div className="flex-grow relative bg-black">
+                  <div className="flex-grow relative bg-background">
                     <iframe 
                       key={pdfKey}
                       src={`${post.pdfUrl}#toolbar=1`} 
-                      className="w-full h-full"
+                      className="w-full h-full dark:invert dark:hue-rotate-180"
                       title="Research Paper PDF"
                     />
                     
@@ -725,13 +578,13 @@ export default function BlogPage() {
                       <a 
                         href={post.pdfUrl} 
                         download 
-                        className="w-14 h-14 bg-primary text-black rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
+                        className="w-14 h-14 bg-primary text-primary-foreground rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
                       >
                         <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
                       </a>
                       <button 
                         onClick={() => setIsPdfModalOpen(false)}
-                        className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
+                        className="w-14 h-14 bg-card backdrop-blur-md border border-border text-foreground rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
                       >
                         <Minimize2 className="w-6 h-6" />
                       </button>

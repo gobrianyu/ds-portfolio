@@ -75,8 +75,8 @@ function StatusItem({ icon, label, value, color, className = "" }: {
   className?: string 
 }) {
   return (
-    <div className={`glass p-4 rounded-2xl border-white/5 flex flex-col space-y-2 ${className}`}>
-      <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+    <div className={`glass p-4 rounded-2xl flex flex-col space-y-2 ${className}`}>
+      <div className="flex items-center space-x-2 text-muted-foreground">
         {icon}
         <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
       </div>

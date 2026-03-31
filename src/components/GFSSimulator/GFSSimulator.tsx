@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   Server, 
   Database, 
@@ -59,6 +60,8 @@ const NODE_COUNT = 5;
 const REPLICATION_DELAY = 2000;
 
 export const GFSSimulator: React.FC = () => {
+  const { theme } = useTheme();
+
   // --- State ---
   const [nodes, setNodes] = useState<Node[]>([]);
   const [chunks, setChunks] = useState<Chunk[]>([]);
@@ -551,18 +554,18 @@ export const GFSSimulator: React.FC = () => {
   // --- Render ---
   return (
     <>
-      <div className="w-full max-w-6xl mx-auto h-[100vh] md:h-[700px] bg-[#020617] border border-gray-800 shadow-2xl flex flex-col relative overflow-hidden rounded-none md:rounded-lg font-mono selection:bg-violet-500/30 text-gray-300" ref={containerRef}>
+      <div className="w-full max-w-6xl mx-auto h-[100vh] md:h-[700px] bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-none md:rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors" ref={containerRef}>
       
       {/* Header - Technical Dashboard Style */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-black/40 shrink-0">
+        <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-violet-500" />
-              <h1 className="text-[13px] md:text-[15px] font-black uppercase tracking-[0.25em] text-white">GFS_SIM_V2.1</h1>
+              <Shield className="w-5 h-5 text-primary" />
+              <h1 className="text-[13px] md:text-[15px] font-black uppercase tracking-[0.25em] text-foreground">GFS_SIM_V2.1</h1>
             </div>
             
             {systemStatus !== 'IDLE' && (
-              <div className="flex items-center gap-4 px-3 py-1.5 bg-white/5 border border-gray-800 rounded-sm">
+              <div className="flex items-center gap-4 px-3 py-1.5 bg-background border border-border rounded-sm">
                 <motion.div
                   animate={isSystemAlive && systemStatus === 'RUNNING' ? { 
                     scale: [1, 1.2, 1],
@@ -585,8 +588,8 @@ export const GFSSimulator: React.FC = () => {
           <div className="flex items-center gap-6">
             {systemStatus !== 'IDLE' && (
               <div className="hidden sm:flex items-center gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">UPTIME:</span>
-                <span className="text-[13px] font-bold text-violet-400 tabular-nums">{formatTime(elapsedTime)}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">UPTIME:</span>
+                <span className="text-[13px] font-bold text-primary tabular-nums">{formatTime(elapsedTime)}</span>
               </div>
             )}
             
@@ -594,7 +597,7 @@ export const GFSSimulator: React.FC = () => {
               {systemStatus === 'IDLE' ? (
                 <button 
                   onClick={startSystem}
-                  className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-sm font-bold text-[11px] uppercase hover:bg-violet-500 transition-all border border-violet-400/30"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-sm font-bold text-[11px] uppercase hover:bg-primary/90 transition-all border border-primary/30"
                 >
                   <Play className="w-4 h-4 fill-current" />
                   INIT_SYS
@@ -610,7 +613,7 @@ export const GFSSimulator: React.FC = () => {
                       <Play className="w-4 h-4" />
                     </button>
                   )}
-                  <button onClick={resetSystem} className="p-2 bg-white/5 text-gray-500 border border-gray-800 rounded-sm hover:bg-white/10 transition-all">
+                  <button onClick={resetSystem} className="p-2 bg-muted hover:bg-muted/80 text-muted-foreground border border-border rounded-sm transition-all">
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 </>
@@ -620,26 +623,26 @@ export const GFSSimulator: React.FC = () => {
         </header>
 
         {/* Mobile Tabs */}
-        <div className="md:hidden flex border-b border-gray-800 bg-black/40 shrink-0">
-          <button onClick={() => setActiveTab('config')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'config' ? 'bg-violet-600 text-white' : 'text-gray-600'}`}>Config</button>
-          <button onClick={() => setActiveTab('viz')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'viz' ? 'bg-violet-600 text-white' : 'text-gray-600'}`}>Visualizer</button>
-          <button onClick={() => setActiveTab('logs')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'logs' ? 'bg-violet-600 text-white' : 'text-gray-600'}`}>Status</button>
+        <div className="md:hidden flex border-b border-border bg-muted/50 shrink-0">
+          <button onClick={() => setActiveTab('config')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'config' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Config</button>
+          <button onClick={() => setActiveTab('viz')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'viz' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Visualizer</button>
+          <button onClick={() => setActiveTab('logs')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'logs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Status</button>
         </div>
 
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
           
           {/* Left Panel: Controls */}
-          <aside className={`w-full md:w-64 border-r border-gray-800 bg-black/10 p-5 flex flex-col gap-8 overflow-y-auto custom-scrollbar ${activeTab === 'config' ? 'flex' : 'hidden md:flex'}`}>
+          <aside className={`w-full md:w-64 border-r border-border bg-muted/20 p-5 flex flex-col gap-8 overflow-y-auto custom-scrollbar ${activeTab === 'config' ? 'flex' : 'hidden md:flex'}`}>
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1 opacity-60">
-                <Settings2 className="w-5 h-5 text-violet-400" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em]">Parameters</h3>
+                <Settings2 className="w-5 h-5 text-primary" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">Parameters</h3>
               </div>
               
               <div className="space-y-3">
                 <button 
                   onClick={() => setAutoChaos(!autoChaos)}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 border transition-all ${autoChaos ? 'bg-red-500/10 border-red-500/40 text-red-400' : 'bg-white/5 border-gray-800 text-gray-500'}`}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 border transition-all ${autoChaos ? 'bg-red-500/10 border-red-500/40 text-red-500' : 'bg-background border-border text-muted-foreground'}`}
                 >
                   <span className="text-[11px] font-bold uppercase tracking-tighter">Chaos_Mode</span>
                   {autoChaos ? <Bug className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
@@ -647,7 +650,7 @@ export const GFSSimulator: React.FC = () => {
 
                 <button 
                   onClick={() => setAutoRecoveryEnabled(!autoRecoveryEnabled)}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 border transition-all ${autoRecoveryEnabled ? 'bg-green-500/10 border-green-500/40 text-green-400' : 'bg-white/5 border-gray-800 text-gray-500'}`}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 border transition-all ${autoRecoveryEnabled ? 'bg-green-500/10 border-green-500/40 text-green-500' : 'bg-background border-border text-muted-foreground'}`}
                 >
                   <span className="text-[11px] font-bold uppercase tracking-tighter">Auto_Recovery</span>
                   <RefreshCw className={`w-4 h-4 ${autoRecoveryEnabled ? 'animate-spin-slow' : ''}`} />
@@ -657,15 +660,15 @@ export const GFSSimulator: React.FC = () => {
 
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1 opacity-60">
-                <Activity className="w-5 h-5 text-violet-400" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em]">Direct_Control</h3>
+                <Activity className="w-5 h-5 text-primary" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">Direct_Control</h3>
               </div>
               
               <div className="flex flex-col gap-3">
                 <button
                   disabled={!selectedNodeId || nodes.find(n => n.id === selectedNodeId)?.status === 'FAILED' || systemStatus !== 'RUNNING'}
                   onClick={() => selectedNodeId && failNode(selectedNodeId)}
-                  className="flex items-center justify-center gap-3 py-2.5 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed text-[11px] font-bold uppercase tracking-tighter"
+                  className="flex items-center justify-center gap-3 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed text-[11px] font-bold uppercase tracking-tighter"
                 >
                   <ZapOff className="w-4 h-4" />
                   Kill_Node
@@ -673,7 +676,7 @@ export const GFSSimulator: React.FC = () => {
                 <button
                   disabled={!selectedNodeId || nodes.find(n => n.id === selectedNodeId)?.status === 'HEALTHY' || systemStatus !== 'RUNNING'}
                   onClick={() => selectedNodeId && recoverNode(selectedNodeId)}
-                  className="flex items-center justify-center gap-3 py-2.5 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed text-[11px] font-bold uppercase tracking-tighter"
+                  className="flex items-center justify-center gap-3 py-2.5 bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed text-[11px] font-bold uppercase tracking-tighter"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Restore
@@ -681,7 +684,7 @@ export const GFSSimulator: React.FC = () => {
                 <button
                   disabled={!selectedNodeId || systemStatus !== 'RUNNING'}
                   onClick={() => selectedNodeId && corruptServer(selectedNodeId)}
-                  className="flex items-center justify-center gap-3 py-2.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed text-[11px] font-bold uppercase tracking-tighter"
+                  className="flex items-center justify-center gap-3 py-2.5 bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed text-[11px] font-bold uppercase tracking-tighter"
                 >
                   <Activity className="w-4 h-4" />
                   Inject_Err
@@ -690,21 +693,21 @@ export const GFSSimulator: React.FC = () => {
             </div>
 
             {selectedNodeId && (
-              <div className="mt-auto p-4 border border-gray-800 bg-black/40">
+              <div className="mt-auto p-4 border border-border bg-muted/50">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400">Node::{selectedNodeId}</h4>
-                  <button onClick={() => setSelectedNodeId(null)} className="text-gray-600 hover:text-white text-lg">×</button>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Node::{selectedNodeId}</h4>
+                  <button onClick={() => setSelectedNodeId(null)} className="text-muted-foreground hover:text-foreground text-lg">×</button>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-gray-600 uppercase">STATE</span>
+                    <span className="text-muted-foreground uppercase">STATE</span>
                     <span className={`font-bold ${nodes.find(n => n.id === selectedNodeId)?.status === 'HEALTHY' ? 'text-green-500' : 'text-red-500'}`}>
                       {nodes.find(n => n.id === selectedNodeId)?.status}
                     </span>
                   </div>
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-gray-600 uppercase">DATA</span>
-                    <span className="text-gray-400 truncate max-w-[120px]">
+                    <span className="text-muted-foreground uppercase">DATA</span>
+                    <span className="text-foreground truncate max-w-[120px]">
                       {chunks.filter(c => c.replicas.some(r => r.nodeId === selectedNodeId)).map(c => c.id).join(',') || 'NULL'}
                     </span>
                   </div>
@@ -714,8 +717,8 @@ export const GFSSimulator: React.FC = () => {
           </aside>
 
           {/* Center: Visualizer */}
-          <main className={`flex-1 p-6 flex flex-col relative overflow-hidden bg-black/20 ${activeTab === 'viz' ? 'flex' : 'hidden md:flex'}`} ref={visualizerRef}>
-            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[linear-gradient(rgba(139,92,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+          <main className={`flex-1 p-6 flex flex-col relative overflow-hidden bg-background/50 ${activeTab === 'viz' ? 'flex' : 'hidden md:flex'}`} ref={visualizerRef}>
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px]" />
             
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
               <AnimatePresence>
@@ -725,8 +728,8 @@ export const GFSSimulator: React.FC = () => {
                   if (!start || !end) return null;
                   return (
                     <motion.g key={anim.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke="#8b5cf6" strokeWidth="2" strokeDasharray="6,6" />
-                      <motion.circle r="4" fill="#8b5cf6" initial={{ cx: start.x, cy: start.y }} animate={{ cx: end.x, cy: end.y }} transition={{ duration: REPLICATION_DELAY / 1000, ease: "linear" }} />
+                      <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke="var(--primary)" strokeWidth="2" strokeDasharray="6,6" />
+                      <motion.circle r="4" fill="var(--primary)" initial={{ cx: start.x, cy: start.y }} animate={{ cx: end.x, cy: end.y }} transition={{ duration: REPLICATION_DELAY / 1000, ease: "linear" }} />
                     </motion.g>
                   );
                 })}
@@ -737,12 +740,12 @@ export const GFSSimulator: React.FC = () => {
               {/* Master Node */}
               <motion.div 
                 layout ref={masterRef}
-                className="relative p-6 border border-violet-500/40 bg-violet-500/5 shadow-[0_0_30px_rgba(139,92,246,0.15)]"
+                className="relative p-6 border border-primary/40 bg-primary/5 shadow-[0_0_30px_rgba(var(--primary-rgb),0.15)]"
               >
-                <div className="absolute -top-2.5 px-3 py-1 bg-[#020617] border border-violet-500/40 text-[10px] font-bold uppercase tracking-widest left-1/2 -translate-x-1/2">MASTER_CTRL</div>
+                <div className="absolute -top-2.5 px-3 py-1 bg-card border border-primary/40 text-[10px] font-bold uppercase tracking-widest left-1/2 -translate-x-1/2 text-foreground">MASTER_CTRL</div>
                 <div className="flex flex-col items-center gap-3">
-                  <ShieldCheck className="w-8 h-8 text-violet-500" />
-                  <div className="text-[11px] font-bold uppercase tracking-tighter text-violet-400">ACTIVE</div>
+                  <ShieldCheck className="w-8 h-8 text-primary" />
+                  <div className="text-[11px] font-bold uppercase tracking-tighter text-primary">ACTIVE</div>
                 </div>
               </motion.div>
 
@@ -753,13 +756,13 @@ export const GFSSimulator: React.FC = () => {
                     key={node.id} layout ref={el => { if (el) nodeRefs.current.set(node.id, el); }}
                     onClick={() => setSelectedNodeId(node.id)}
                     className={`cursor-pointer group relative p-4 border transition-all duration-200 ${
-                      selectedNodeId === node.id ? 'border-violet-500 bg-violet-500/10' : 'border-gray-800 bg-black/40'
-                    } ${node.status === 'FAILED' ? 'border-red-500/50 bg-red-500/5' : 'hover:border-gray-600'}`}
+                      selectedNodeId === node.id ? 'border-primary bg-primary/10' : 'border-border bg-muted/30'
+                    } ${node.status === 'FAILED' ? 'border-red-500/50 bg-red-500/5' : 'hover:border-primary/50'}`}
                   >
                     <div className="flex flex-col items-center gap-3">
                       <Server className={`w-7 h-7 ${node.status === 'HEALTHY' ? 'text-blue-500' : 'text-red-500'}`} />
                       <div className="text-center">
-                        <div className="text-[12px] font-bold uppercase tracking-tighter">{node.id}</div>
+                        <div className="text-[12px] font-bold uppercase tracking-tighter text-foreground">{node.id}</div>
                         {node.status === 'FAILED' && node.recoveryCountdown !== undefined && (
                           <div className="text-[10px] font-bold text-orange-500 tabular-nums">R:{node.recoveryCountdown}S</div>
                         )}
@@ -790,7 +793,7 @@ export const GFSSimulator: React.FC = () => {
             </div>
 
             {/* Legend Overlay */}
-            <div className="absolute bottom-4 left-6 right-6 flex flex-wrap items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+            <div className="absolute bottom-4 left-6 right-6 flex flex-wrap items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-blue-500" /> HEALTHY</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-red-500" /> FAILED</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-500" /> PRIMARY</div>
@@ -799,29 +802,29 @@ export const GFSSimulator: React.FC = () => {
           </main>
 
           {/* Right Panel: Metrics & Logs */}
-          <aside className={`w-full md:w-72 border-l border-gray-800 bg-black/10 p-5 flex flex-col gap-8 overflow-hidden ${activeTab === 'logs' ? 'flex' : 'hidden md:flex'}`}>
+          <aside className={`w-full md:w-72 border-l border-border bg-muted/30 p-5 flex flex-col gap-8 overflow-hidden ${activeTab === 'logs' ? 'flex' : 'hidden md:flex'}`}>
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1 opacity-60">
-                <Activity className="w-5 h-5 text-violet-400" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em]">Telemetry</h3>
+                <Activity className="w-5 h-5 text-primary" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">Telemetry</h3>
               </div>
               <div className="space-y-4">
-                <div className="p-4 bg-white/5 border border-gray-800">
+                <div className="p-4 bg-card border border-border">
                   <div className="flex justify-between items-end mb-2">
-                    <span className="text-[10px] font-bold text-gray-600 uppercase">AVAILABILITY</span>
-                    <span className={`text-[13px] font-bold tabular-nums ${getAvailability() < 100 ? 'text-red-500' : 'text-green-500'}`}>{getAvailability().toFixed(1)}%</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">AVAILABILITY</span>
+                    <span className={`text-[13px] font-bold tabular-nums ${getAvailability() < 100 ? 'text-destructive' : 'text-green-500'}`}>{getAvailability().toFixed(1)}%</span>
                   </div>
-                  <div className="h-1.5 w-full bg-gray-900 overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${getAvailability()}%` }} className={`h-full ${getAvailability() < 100 ? 'bg-red-500' : 'bg-green-500'}`} />
+                  <div className="h-1.5 w-full bg-muted overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${getAvailability()}%` }} className={`h-full ${getAvailability() < 100 ? 'bg-destructive' : 'bg-green-500'}`} />
                   </div>
                 </div>
-                <div className="p-4 bg-white/5 border border-gray-800">
+                <div className="p-4 bg-card border border-border">
                   <div className="flex justify-between items-end mb-2">
-                    <span className="text-[10px] font-bold text-gray-600 uppercase">REPL_HEALTH</span>
-                    <span className={`text-[13px] font-bold tabular-nums ${getReplicationHealth() < 100 ? 'text-orange-500' : 'text-blue-500'}`}>{getReplicationHealth().toFixed(1)}%</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">REPL_HEALTH</span>
+                    <span className={`text-[13px] font-bold tabular-nums ${getReplicationHealth() < 100 ? 'text-orange-500' : 'text-primary'}`}>{getReplicationHealth().toFixed(1)}%</span>
                   </div>
-                  <div className="h-1.5 w-full bg-gray-900 overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${getReplicationHealth()}%` }} className={`h-full ${getReplicationHealth() < 100 ? 'bg-orange-500' : 'bg-blue-500'}`} />
+                  <div className="h-1.5 w-full bg-muted overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${getReplicationHealth()}%` }} className={`h-full ${getReplicationHealth() < 100 ? 'bg-orange-500' : 'bg-primary'}`} />
                   </div>
                 </div>
               </div>
@@ -829,8 +832,8 @@ export const GFSSimulator: React.FC = () => {
 
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex items-center gap-2 mb-3 opacity-60">
-                <Info className="w-5 h-5 text-violet-400" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em]">System_Log</h3>
+                <Info className="w-5 h-5 text-primary" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">System_Log</h3>
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                 <AnimatePresence initial={false}>
@@ -838,10 +841,10 @@ export const GFSSimulator: React.FC = () => {
                     <motion.div
                       key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       className={`p-3 border-l-2 text-[11px] leading-tight ${
-                        log.type === 'error' ? 'bg-red-500/5 border-red-500/40 text-red-400' :
-                        log.type === 'warning' ? 'bg-orange-500/5 border-orange-500/40 text-orange-400' :
-                        log.type === 'success' ? 'bg-green-500/5 border-green-500/40 text-green-400' :
-                        'bg-white/5 border-gray-800 text-gray-500'
+                        log.type === 'error' ? 'bg-destructive/10 border-destructive text-destructive' :
+                        log.type === 'warning' ? 'bg-orange-500/10 border-orange-500 text-orange-500' :
+                        log.type === 'success' ? 'bg-green-500/10 border-green-500 text-green-500' :
+                        'bg-muted/50 border-border text-muted-foreground'
                       }`}
                     >
                       <div className="flex justify-between items-start gap-3">
@@ -854,9 +857,9 @@ export const GFSSimulator: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-violet-500/5 border border-gray-800">
-              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">INSIGHT</h4>
-              <p className="text-[9px] text-gray-600 leading-tight italic">
+            <div className="p-4 bg-primary/5 border border-border">
+              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">INSIGHT</h4>
+              <p className="text-[9px] text-muted-foreground/80 leading-tight italic">
                 GFS ensures availability via re-replication. Data loss occurs only if all replicas fail simultaneously.
               </p>
             </div>
@@ -867,8 +870,8 @@ export const GFSSimulator: React.FC = () => {
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar { width: 3px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-slow { animation: spin-slow 8s linear infinite; }
       `}} />

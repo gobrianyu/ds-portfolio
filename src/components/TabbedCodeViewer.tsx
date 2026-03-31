@@ -19,10 +19,10 @@ const TabbedCodeViewer: React.FC<TabbedCodeViewerProps> = ({ files }) => {
   if (files.length === 0) return null;
 
   return (
-    <div className="w-full bg-[#1a1b1e] rounded-lg border border-[#2d2e32] overflow-hidden shadow-2xl">
+    <div className="w-full bg-card rounded-lg border border-border overflow-hidden shadow-2xl">
       {/* Tab Bar */}
-      <div className="flex items-center bg-[#141517] border-b border-[#2d2e32] overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-1.5 px-4 border-r border-[#2d2e32] h-full">
+      <div className="flex items-center bg-muted/50 border-b border-border overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 px-4 border-r border-border h-full">
           <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
           <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
           <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
@@ -31,21 +31,21 @@ const TabbedCodeViewer: React.FC<TabbedCodeViewerProps> = ({ files }) => {
           <button
             key={file.filename}
             onClick={() => setActiveTab(index)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-mono transition-all duration-200 border-r border-[#2d2e32] whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-mono transition-all duration-200 border-r border-border whitespace-nowrap ${
               activeTab === index
-                ? 'bg-[#1a1b1e] text-[#00ff9d] border-b-2 border-b-[#00ff9d]'
-                : 'text-gray-500 hover:text-gray-300 hover:bg-[#1a1b1e]'
+                ? 'bg-card text-primary border-b-2 border-b-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-card'
             }`}
           >
-            <FileCode size={14} className={activeTab === index ? 'text-[#00ff9d]' : 'text-gray-500'} />
+            <FileCode size={14} className={activeTab === index ? 'text-primary' : 'text-muted-foreground'} />
             {file.filename}
           </button>
         ))}
       </div>
 
       {/* Description Bar */}
-      <div className="px-4 py-2 bg-[#1a1b1e] border-b border-[#2d2e32]">
-        <p className="text-xs text-gray-400 font-mono italic">
+      <div className="px-4 py-2 bg-card border-b border-border">
+        <p className="text-xs text-muted-foreground font-mono italic">
           // {files[activeTab].description}
         </p>
       </div>

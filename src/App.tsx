@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import ProjectListPage from './pages/ProjectListPage';
@@ -11,7 +12,7 @@ import ScrollToTop from './components/ScrollToTop';
 export default function App() {
   return (
     <ThemeProvider>
-      <Router>
+      <BrowserRouter>
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -20,9 +21,10 @@ export default function App() {
             <Route path="projects/:id" element={<ProjectPage />} />
             <Route path="blog" element={<BlogListPage />} />
             <Route path="blog/:id" element={<BlogPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
-      </Router>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

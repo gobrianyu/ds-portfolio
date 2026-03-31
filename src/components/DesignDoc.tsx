@@ -52,18 +52,18 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-white/5 rounded-xl border border-white/10">
+      <div className="flex flex-col items-center justify-center p-12 bg-muted/30 rounded-xl border border-border">
         <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-        <p className="text-gray-400 font-mono text-sm tracking-widest uppercase">Fetching System Blueprint...</p>
+        <p className="text-muted-foreground font-mono text-sm tracking-widest uppercase">Fetching System Blueprint...</p>
       </div>
     );
   }
 
   if (error || !doc) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-red-500/5 rounded-xl border border-red-500/20">
-        <AlertCircle className="w-8 h-8 text-red-500 mb-4" />
-        <p className="text-red-400 font-mono text-sm tracking-widest uppercase">{error || 'Document not found'}</p>
+      <div className="flex flex-col items-center justify-center p-12 bg-destructive/5 rounded-xl border border-destructive/20">
+        <AlertCircle className="w-8 h-8 text-destructive mb-4" />
+        <p className="text-destructive font-mono text-sm tracking-widest uppercase">{error || 'Document not found'}</p>
       </div>
     );
   }
@@ -72,7 +72,7 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative bg-[#fdfcf8] text-[#1a1a1a] rounded-sm overflow-hidden font-serif"
+      className="relative bg-[#fdfcf8] dark:bg-zinc-900 text-[#1a1a1a] dark:text-zinc-100 rounded-sm overflow-hidden font-serif transition-colors duration-500"
       style={{
         boxShadow: `
           0 1px 1px rgba(0,0,0,0.11), 
@@ -85,18 +85,18 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
       }}
     >
       {/* Paper Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/p6.png')]" />
+      <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.02] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/p6.png')]" />
       
       {/* Header Section */}
-      <div className="p-12 md:p-20 border-b border-[#e5e5e0] text-center relative bg-[#f9f8f4]">
+      <div className="p-12 md:p-20 border-b border-[#e5e5e0] dark:border-zinc-800 text-center relative bg-[#f9f8f4] dark:bg-zinc-900/50">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-primary/40" />
         <div className="mb-4 text-[10px] uppercase tracking-[0.4em] font-sans font-black text-primary/60">
           Technical Specification
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight text-[#1a1a1a] leading-tight">
+        <h1 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight text-[#1a1a1a] dark:text-zinc-100 leading-tight">
           {doc.title}
         </h1>
-        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-4 text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-[#7a7a74]">
+        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-4 text-[11px] uppercase tracking-[0.2em] font-sans font-bold text-[#7a7a74] dark:text-zinc-400">
           <div className="flex items-center gap-2">
             <span className="text-primary/40">BY</span>
             <span>{doc.author}</span>
@@ -120,13 +120,13 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
               <span className="text-4xl font-sans font-black text-primary/10 select-none">
                 0{sIdx + 1}
               </span>
-              <h2 className="text-sm uppercase tracking-[0.4em] font-sans font-black text-[#1a1a1a]">
+              <h2 className="text-sm uppercase tracking-[0.4em] font-sans font-black text-[#1a1a1a] dark:text-zinc-200">
                 {section.title}
               </h2>
             </div>
 
             {section.content && (
-              <div className="prose prose-stone prose-lg max-w-none mb-10 text-[#2a2a24] leading-[1.8] font-serif">
+              <div className="prose prose-stone dark:prose-invert prose-lg max-w-none mb-10 text-[#2a2a24] dark:text-zinc-300 leading-[1.8] font-serif">
                 <ReactMarkdown>{section.content}</ReactMarkdown>
               </div>
             )}
@@ -134,7 +134,7 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
             {section.list && (
               <ul className="space-y-6 mb-12 list-none pl-0">
                 {section.list.map((item, i) => (
-                  <li key={i} className="flex items-start gap-6 text-xl leading-relaxed text-[#3a3a34]">
+                  <li key={i} className="flex items-start gap-6 text-xl leading-relaxed text-[#3a3a34] dark:text-zinc-300">
                     <span className="text-primary/40 mt-2 font-sans font-black text-xs">0{i + 1}</span>
                     <ReactMarkdown>{item}</ReactMarkdown>
                   </li>
@@ -146,18 +146,18 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
               <div className="space-y-16">
                 {section.subsections.map((sub, subIdx) => (
                   <div key={subIdx} className="relative pl-10 border-l border-primary/10">
-                    <h3 className="text-2xl font-bold mb-6 italic text-[#2a2a24] tracking-tight">
+                    <h3 className="text-2xl font-bold mb-6 italic text-[#2a2a24] dark:text-zinc-200 tracking-tight">
                       {sub.title}
                     </h3>
                     {sub.content && (
-                      <div className="prose prose-stone prose-lg max-w-none mb-6 text-[#3a3a34] leading-[1.8]">
+                      <div className="prose prose-stone dark:prose-invert prose-lg max-w-none mb-6 text-[#3a3a34] dark:text-zinc-300 leading-[1.8]">
                         <ReactMarkdown>{sub.content}</ReactMarkdown>
                       </div>
                     )}
                     {sub.list && (
                       <ul className="space-y-4 list-none pl-0">
                         {sub.list.map((item, i) => (
-                          <li key={i} className="flex items-start gap-4 text-lg leading-relaxed text-[#4a4a44]">
+                          <li key={i} className="flex items-start gap-4 text-lg leading-relaxed text-[#4a4a44] dark:text-zinc-400">
                             <span className="text-primary/30 mt-2 text-[8px]">■</span>
                             <ReactMarkdown>{item}</ReactMarkdown>
                           </li>
@@ -170,12 +170,12 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
             )}
 
             {section.table && (
-              <div className="my-16 overflow-x-auto rounded-xl border border-[#e5e5e0] shadow-sm bg-white">
+              <div className="my-16 overflow-x-auto rounded-xl border border-[#e5e5e0] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950">
                 <table className="w-full border-collapse font-sans text-xs">
                   <thead>
-                    <tr className="bg-[#f9f8f4] border-b border-[#e5e5e0]">
+                    <tr className="bg-[#f9f8f4] dark:bg-zinc-900 border-b border-[#e5e5e0] dark:border-zinc-800">
                       {section.table.headers.map((h, i) => (
-                        <th key={i} className="p-6 text-left font-black uppercase tracking-[0.2em] text-[#5a5a54] border-r border-[#e5e5e0] last:border-r-0">
+                        <th key={i} className="p-6 text-left font-black uppercase tracking-[0.2em] text-[#5a5a54] dark:text-zinc-400 border-r border-[#e5e5e0] dark:border-zinc-800 last:border-r-0">
                           {h}
                         </th>
                       ))}
@@ -183,10 +183,10 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
                   </thead>
                   <tbody>
                     {section.table.rows.map((row, rIdx) => (
-                      <tr key={rIdx} className="border-b border-[#f0f0eb] last:border-0 hover:bg-[#fdfcf8] transition-colors">
+                      <tr key={rIdx} className="border-b border-[#f0f0eb] dark:border-zinc-900 last:border-0 hover:bg-[#fdfcf8] dark:hover:bg-zinc-900/50 transition-colors">
                         {row.map((cell, cIdx) => (
-                          <td key={cIdx} className="p-6 align-top leading-relaxed text-[#4a4a44] border-r border-[#f0f0eb] last:border-r-0">
-                            <div className="prose prose-stone prose-sm max-w-none">
+                          <td key={cIdx} className="p-6 align-top leading-relaxed text-[#4a4a44] dark:text-zinc-300 border-r border-[#f0f0eb] dark:border-zinc-900 last:border-r-0">
+                            <div className="prose prose-stone dark:prose-invert prose-sm max-w-none">
                               <ReactMarkdown>{cell}</ReactMarkdown>
                             </div>
                           </td>
@@ -202,7 +202,7 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
       </div>
 
       {/* Footer */}
-      <div className="p-12 bg-[#f5f5f0] border-t border-[#e5e5e0] flex justify-between items-center font-sans text-[10px] uppercase tracking-widest font-bold text-[#8a8a84]">
+      <div className="p-12 bg-[#f5f5f0] dark:bg-zinc-950 border-t border-[#e5e5e0] dark:border-zinc-800 flex justify-between items-center font-sans text-[10px] uppercase tracking-widest font-bold text-[#8a8a84] dark:text-zinc-500">
         <span>System Design Specification</span>
         <span>© 2026 Distributed Systems Lab</span>
       </div>

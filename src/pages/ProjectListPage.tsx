@@ -21,12 +21,12 @@ export default function ProjectListPage() {
           </div>
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-black mb-8 text-white tracking-tighter">
+        <h1 className="text-5xl md:text-7xl font-black mb-8 text-foreground tracking-tighter">
           Distributed <span className="text-primary">Systems</span>
         </h1>
         
-        <div className="terminal-window p-8 bg-white/5 border-white/10 max-w-3xl">
-          <p className="text-lg text-gray-400 leading-relaxed font-medium">
+        <div className="terminal-window p-8 bg-muted/40 border-border max-w-3xl">
+          <p className="text-lg text-muted-foreground leading-relaxed font-medium">
             <span className="text-primary font-mono mr-2">{" >>> "}</span>
             A collection of core distributed systems components implemented from scratch, 
             focusing on reliability, consistency, and fault tolerance.

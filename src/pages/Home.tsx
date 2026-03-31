@@ -44,14 +44,14 @@ export default function Home() {
               <div className="w-3 h-3 rounded-full bg-amber-500" />
               <div className="w-3 h-3 rounded-full bg-emerald-500" />
             </div>
-            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center space-x-2">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center space-x-2">
               <Terminal className="w-3 h-3" />
               <span>bash — GoBrianYu@uw-cs: ~</span>
             </div>
             <div className="w-12" />
           </div>
           
-          <div className="p-8 md:p-12 font-mono relative overflow-hidden">
+          <div className="p-8 md:p-12 font-mono relative overflow-hidden bg-card/40 backdrop-blur-sm">
             <div className="scanline" />
             
             <div className="relative z-10">
@@ -62,7 +62,7 @@ export default function Home() {
 
               <div className="space-y-8">
                 <div>
-                  <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter text-white">
+                  <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter text-foreground">
                     Brian S. Yu <span className="text-primary">_</span>
                   </h1>
                   <p className="text-xl md:text-2xl text-emerald-500/80 font-bold tracking-tight">
@@ -70,7 +70,7 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="max-w-3xl space-y-6 text-gray-400 text-lg leading-relaxed">
+                <div className="max-w-3xl space-y-6 text-muted-foreground text-lg leading-relaxed">
                   <p>
                     <span className="text-amber-500 font-bold"># About Me</span>
                     <br />
@@ -81,14 +81,14 @@ export default function Home() {
                   <div className="flex flex-wrap gap-4 pt-4">
                     <Link 
                       to="/projects" 
-                      className="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-all flex items-center space-x-2 shadow-lg shadow-primary/20"
+                      className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all flex items-center space-x-2 shadow-lg shadow-primary/20"
                     >
                       <span>./view_projects.sh</span>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                     <Link 
                       to="/blog" 
-                      className="px-6 py-3 bg-white/5 text-white font-bold rounded-xl hover:bg-white/10 transition-all border border-white/10 flex items-center space-x-2"
+                      className="px-6 py-3 bg-muted text-foreground font-bold rounded-xl hover:bg-muted/80 transition-all border border-border flex items-center space-x-2"
                     >
                       <span>./read_papers.sh</span>
                     </Link>
@@ -107,8 +107,8 @@ export default function Home() {
             <Cpu className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h2 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white uppercase">System Modules</h2>
-            <p className="text-gray-500 font-bold text-sm uppercase tracking-widest">Core Technical Competencies</p>
+            <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">System Modules</h2>
+            <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Core Technical Competencies</p>
           </div>
         </div>
         
@@ -142,8 +142,8 @@ export default function Home() {
               <Activity className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Active Processes</h2>
-              <p className="text-gray-500 font-bold text-sm uppercase tracking-widest">Featured Implementations</p>
+              <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">Active Processes</h2>
+              <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Featured Implementations</p>
             </div>
           </div>
           <Link 
@@ -169,19 +169,19 @@ function ModuleCard({ icon, title, description, tag }: { icon: React.ReactNode, 
   return (
     <motion.div
       whileHover={{ y: -5 }}
-      className="terminal-window p-8 border-white/5 group"
+      className="terminal-window p-8 border-border group"
     >
       <div className="flex justify-between items-start mb-6">
         <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
           {icon}
         </div>
-        <span className="text-[10px] font-black text-gray-500 tracking-[0.3em]">{tag}</span>
+        <span className="text-[10px] font-black text-muted-foreground tracking-[0.3em]">{tag}</span>
       </div>
-      <h3 className="text-xl font-black mb-4 text-white tracking-tight uppercase">{title}</h3>
-      <p className="text-gray-400 leading-relaxed text-sm font-medium">
+      <h3 className="text-xl font-black mb-4 text-foreground tracking-tight uppercase">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed text-sm font-medium">
         {description}
       </p>
-      <div className="mt-6 pt-6 border-t border-white/5 flex items-center space-x-2 text-[10px] font-bold text-emerald-500/50 uppercase tracking-widest">
+      <div className="mt-6 pt-6 border-t border-border flex items-center space-x-2 text-[10px] font-bold text-emerald-500/50 uppercase tracking-widest">
         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         <span>Module Operational</span>
       </div>

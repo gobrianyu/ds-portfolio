@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { FileCode, Terminal, Loader2 } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { atomDark, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from '../context/ThemeContext';
 
 interface CodeBlockProps {
   filename: string;
@@ -23,6 +24,7 @@ export default function CodeBlock({
   hideHeader = false,
   hideDescription = false
 }: CodeBlockProps) {
+  const { theme } = useTheme();
   const [code, setCode] = useState<string>(initialCode || '');
   const [loading, setLoading] = useState<boolean>(!!codeUrl && !initialCode);
   const [error, setError] = useState<string | null>(null);
@@ -76,10 +78,10 @@ export default function CodeBlock({
       className={hideHeader ? "" : "mb-8"}
     >
       {!hideHeader && (
-        <div className="flex items-center justify-between bg-slate-900 px-4 py-2 rounded-t-xl border-x border-t border-white/10">
+        <div className="flex items-center justify-between bg-muted px-4 py-2 rounded-t-xl border-x border-t border-border">
           <div className="flex items-center space-x-2">
             <FileCode className="w-4 h-4 text-primary" />
-            <span className="text-xs font-mono text-gray-300 font-bold">{filename}</span>
+            <span className="text-xs font-mono text-foreground font-bold">{filename}</span>
           </div>
           <div className="flex space-x-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50" />
@@ -89,7 +91,7 @@ export default function CodeBlock({
         </div>
       )}
       
-      <div className={`code-block ${hideHeader ? "rounded-xl" : "rounded-t-none rounded-b-xl"} border-white/10 min-h-[100px] flex flex-col overflow-hidden`}>
+      <div className={`code-block ${hideHeader ? "rounded-xl" : "rounded-t-none rounded-b-xl"} border border-border min-h-[100px] flex flex-col overflow-hidden bg-card`}>
         {loading ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -101,7 +103,7 @@ export default function CodeBlock({
         ) : (
           <SyntaxHighlighter
             language={getLanguage(filename)}
-            style={atomDark}
+            style={theme === 'dark' ? atomDark : prism}
             customStyle={{
               margin: 0,
               padding: '1.5rem',
@@ -122,8 +124,8 @@ export default function CodeBlock({
       
       {!hideDescription && description && (
         <div className="mt-2 flex items-start space-x-2 px-2">
-          <Terminal className="w-4 h-4 text-gray-500 mt-0.5" />
-          <p className="text-xs text-gray-500 italic">{description}</p>
+          <Terminal className="w-4 h-4 text-muted-foreground mt-0.5" />
+          <p className="text-xs text-muted-foreground italic">{description}</p>
         </div>
       )}
     </motion.div>
