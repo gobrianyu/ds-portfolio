@@ -20,7 +20,6 @@ export interface PhysicalNode {
   id: string;
   color: string;
   vnodeCount: number;
-  isDown: boolean;
   seed: string; // Used for hashing
 }
 
@@ -34,8 +33,8 @@ export interface Key {
 export const findSuccessors = (hashVal: number, tokens: Token[], replicationFactor: number, nodes: PhysicalNode[]): string[] => {
   if (tokens.length === 0) return [];
   
-  const healthyNodeIds = new Set(nodes.filter(n => !n.isDown).map(n => n.id));
-  if (healthyNodeIds.size === 0) return [];
+  const nodeIds = new Set(nodes.map(n => n.id));
+  if (nodeIds.size === 0) return [];
 
   // Find all tokens starting from hashVal clockwise
   const startIndex = tokens.findIndex(t => t.hash >= hashVal);
@@ -49,7 +48,7 @@ export const findSuccessors = (hashVal: number, tokens: Token[], replicationFact
     const idx = (searchIndex + i) % tokens.length;
     const token = tokens[idx];
     
-    if (healthyNodeIds.has(token.nodeId) && !seenNodeIds.has(token.nodeId)) {
+    if (nodeIds.has(token.nodeId) && !seenNodeIds.has(token.nodeId)) {
       resultNodeIds.push(token.nodeId);
       seenNodeIds.add(token.nodeId);
       if (resultNodeIds.length >= replicationFactor) break;

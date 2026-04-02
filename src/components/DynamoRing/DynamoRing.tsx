@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Settings2, 
   Plus, 
-  Trash2, 
   RefreshCw, 
   Layers, 
   Database, 
@@ -14,7 +13,6 @@ import {
   LayoutGrid,
   AlertTriangle,
   Shield,
-  Zap,
   ChevronRight,
   Play,
   Pause as PauseIcon
@@ -29,13 +27,18 @@ import {
   COLORS 
 } from './utils';
 
-const SVG_SIZE = 600;
+const SVG_SIZE = 500;
 const CENTER = SVG_SIZE / 2;
-const RING_RADIUS = 220;
+const RING_RADIUS = 180;
 
 export const DynamoRing: React.FC = () => {
   // --- State ---
-  const [nodes, setNodes] = useState<PhysicalNode[]>([]);
+  const [nodes, setNodes] = useState<PhysicalNode[]>([
+    { id: 'Node-1', color: COLORS[0], vnodeCount: 12, seed: generateId() },
+    { id: 'Node-2', color: COLORS[1], vnodeCount: 12, seed: generateId() },
+    { id: 'Node-3', color: COLORS[2], vnodeCount: 12, seed: generateId() },
+    { id: 'Node-4', color: COLORS[3], vnodeCount: 12, seed: generateId() },
+  ]);
   const [keys, setKeys] = useState<Key[]>([]);
   const [vnodeCount, setVnodeCount] = useState<number>(12);
   const [useVNodes, setUseVNodes] = useState<boolean>(true);
@@ -84,223 +87,6 @@ export const DynamoRing: React.FC = () => {
     return allTokens.sort((a, b) => a.hash - b.hash);
   }, [nodes, vnodeCount, useVNodes]);
 
-  // --- Helpers ---
-  const addNode = () => {
-    if (nodes.length >= COLORS.length) return;
-    
-    // Find next available index in COLORS
-    let availableIndex = 0;
-    for (let i = 0; i < COLORS.length; i++) {
-      const idToCheck = `Node-${i + 1}`;
-      if (!nodes.some(n => n.id === idToCheck)) {
-        availableIndex = i;
-        break;
-      }
-    }
-
-    const id = `Node-${availableIndex + 1}`;
-    const newNode: PhysicalNode = {
-      id,
-      color: COLORS[availableIndex],
-      vnodeCount: vnodeCount,
-      isDown: false,
-      seed: generateId() // Random seed for placement
-    };
-    setNodes(prev => [...prev, newNode]);
-    setLastAction('add-node');
-    
-    if (isSimulating) {
-      setSimulationMessage(`Rebalancing: ${id} joined and claimed keyspace slices`);
-    }
-  };
-
-  const removeNode = (id?: string) => {
-    if (nodes.length === 0) return;
-    
-    // If no ID provided, or we want to enforce removing the highest numbered node
-    const targetId = id || nodes.reduce((max, node) => {
-      const num = parseInt(node.id.split('-')[1]);
-      const maxNum = parseInt(max.id.split('-')[1]);
-      return num > maxNum ? node : max;
-    }, nodes[0]).id;
-
-    setNodes(prev => prev.filter(n => n.id !== targetId));
-    setLastAction('remove-node');
-  };
-
-  const toggleNodeStatus = (id: string) => {
-    setNodes(prev => prev.map(n => n.id === id ? { ...n, isDown: !n.isDown } : n));
-    setLastAction('toggle-node');
-  };
-
-  const randomizeNodes = () => {
-    setNodes(prev => prev.map(n => ({ ...n, seed: generateId() })));
-    setLastAction('randomize');
-  };
-
-  const addRandomKeys = (count: number = 10) => {
-    const newKeys: Key[] = [];
-    const now = Date.now();
-    for (let i = 0; i < count; i++) {
-      const keyId = `Key-${generateId()}`;
-      const keyHash = Math.random();
-      const successors = findSuccessors(keyHash, tokens, replicationFactor, nodes);
-      newKeys.push({
-        id: keyId,
-        hash: keyHash,
-        assignedNodeIds: successors,
-        expiresAt: now + (Math.random() * 30000 + 20000) // 20-50s TTL
-      });
-    }
-    setKeys(prev => [...prev, ...newKeys].slice(-500)); // Cap at 500
-  };
-
-  const removeRandomKey = () => {
-    if (keys.length === 0) return;
-    const index = Math.floor(Math.random() * keys.length);
-    setKeys(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const toggleSimulation = () => {
-    setIsSimulating(!isSimulating);
-    if (!isSimulating) setSimulationMessage('Simulation Started');
-    else setSimulationMessage('Simulation Paused');
-  };
-
-  const reset = () => {
-    setNodes([
-      { id: 'Node-1', color: COLORS[0], vnodeCount: 12, isDown: false, seed: generateId() },
-      { id: 'Node-2', color: COLORS[1], vnodeCount: 12, isDown: false, seed: generateId() },
-      { id: 'Node-3', color: COLORS[2], vnodeCount: 12, isDown: false, seed: generateId() },
-      { id: 'Node-4', color: COLORS[3], vnodeCount: 12, isDown: false, seed: generateId() },
-    ]);
-    setKeys([]);
-    setLastAction('');
-    setIsSimulating(false);
-    setSimulationMessage('');
-  };
-
-  // --- Effects ---
-  // Re-assign keys when tokens or replication factor change
-  useEffect(() => {
-    if (tokens.length === 0) {
-      if (keys.length > 0) {
-        setKeys(prev => prev.map(k => ({ ...k, assignedNodeIds: [] })));
-      }
-      return;
-    }
-
-    setKeys(prev => {
-      return prev.map(k => {
-        const successors = findSuccessors(k.hash, tokens, replicationFactor, nodes);
-        return {
-          ...k,
-          assignedNodeIds: successors
-        };
-      });
-    });
-  }, [tokens, replicationFactor, nodes.map(n => n.isDown).join(','), lastAction]);
-
-  // Simulation Loop
-  useEffect(() => {
-    if (!isSimulating) return;
-
-    const interval = setInterval(() => {
-      const rand = Math.random();
-      const keyCount = keys.length;
-      const nodeCount = nodes.length;
-
-      // TTL Check: Remove expired keys
-      const now = Date.now();
-      setKeys(prev => prev.filter(k => !k.expiresAt || k.expiresAt > now));
-
-      // Imbalance check for adaptive probabilities (Primary Only)
-      const isImbalanced = metrics.partitionCV > 0.3;
-      
-      // 1. Add Key (60% base, 40% if imbalanced)
-      const addKeyProb = isImbalanced ? 0.40 : 0.60;
-      if (rand < addKeyProb) {
-        if (keyCount < 500) {
-          addRandomKeys(4); // Doubled speed
-        }
-      } 
-      // 2. Remove Key (15%)
-      else if (rand < addKeyProb + 0.15) {
-        removeRandomKey();
-      }
-      // 3. Balancing Actions (Adaptive)
-      else if (isImbalanced) {
-        const balanceRand = Math.random();
-        
-        // Priority 1: Increase VNode density (High impact on balance)
-        if (balanceRand < 0.65) {
-          const increment = vnodeCount < 16 ? 4 : 8;
-          setVnodeCount(prev => Math.min(64, prev + increment));
-          setSimulationMessage('Balancing: Increasing VNode density to equalize ownership');
-          setLastAction('change-vnodes');
-        } 
-        // Priority 2: Scale out (Add physical nodes)
-        else if (balanceRand < 0.90 && nodeCount < 8) {
-          addNode();
-          // Message is handled inside addNode
-        }
-        // Priority 3: Shuffle tokens (Shuffle distribution)
-        else {
-          randomizeNodes();
-          setSimulationMessage('Balancing: Shuffling token distribution to break clusters');
-        }
-      }
-      // 4. Standard Topology changes (Rare when balanced)
-      else if (rand < 0.95) {
-        const delta = Math.random() > 0.5 ? 1 : -1;
-        setVnodeCount(prev => Math.min(64, Math.max(1, prev + delta)));
-        setSimulationMessage(`Topology: VNodes set to ${vnodeCount}`);
-        setLastAction('change-vnodes');
-      }
-      else if (rand < 0.99) {
-        if (keyCount > 400 && nodeCount < 8) {
-          addNode();
-          setSimulationMessage('Scaling: Added physical node');
-        } else if (keyCount < 150 && nodeCount > 4) {
-          // Always remove the highest numbered node
-          const highestNode = nodes.reduce((max, node) => {
-            const num = parseInt(node.id.split('-')[1]);
-            const maxNum = parseInt(max.id.split('-')[1]);
-            return num > maxNum ? node : max;
-          }, nodes[0]);
-          removeNode(highestNode.id);
-          setSimulationMessage('Scaling: Removed physical node');
-        }
-      }
-      // 5. Replication change (1%)
-      else {
-        const delta = Math.random() > 0.5 ? 1 : -1;
-        const newRF = Math.min(nodeCount, Math.max(1, replicationFactor + delta));
-        if (newRF !== replicationFactor) {
-          setReplicationFactor(newRF);
-          setSimulationMessage(`Config: Replication Factor is ${newRF}`);
-          setLastAction('change-replication');
-        }
-      }
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, [isSimulating, keys.length, nodes, vnodeCount, replicationFactor, tokens]);
-
-  // Initial nodes
-  useEffect(() => {
-    if (nodes.length === 0) {
-      const initialNodes = [
-        { id: 'Node-1', color: COLORS[0], vnodeCount: 12, isDown: false, seed: generateId() },
-        { id: 'Node-2', color: COLORS[1], vnodeCount: 12, isDown: false, seed: generateId() },
-        { id: 'Node-3', color: COLORS[2], vnodeCount: 12, isDown: false, seed: generateId() },
-        { id: 'Node-4', color: COLORS[3], vnodeCount: 12, isDown: false, seed: generateId() },
-      ];
-      setNodes(initialNodes);
-    }
-  }, []);
-
-  // --- Metrics ---
   const metrics = useMemo(() => {
     const primaryDistribution: Record<string, number> = {};
     const totalLoadDistribution: Record<string, number> = {};
@@ -397,6 +183,233 @@ export const DynamoRing: React.FC = () => {
     };
   }, [nodes, keys, tokens]);
 
+  // --- Helpers ---
+  const addNode = () => {
+    setNodes(prev => {
+      if (prev.length >= COLORS.length) return prev;
+      
+      let availableIndex = 0;
+      for (let i = 0; i < COLORS.length; i++) {
+        const idToCheck = `Node-${i + 1}`;
+        if (!prev.some(n => n.id === idToCheck)) {
+          availableIndex = i;
+          break;
+        }
+      }
+
+      const id = `Node-${availableIndex + 1}`;
+      const newNode: PhysicalNode = {
+        id,
+        color: COLORS[availableIndex],
+        vnodeCount: vnodeCount,
+        seed: generateId()
+      };
+      return [...prev, newNode];
+    });
+    setLastAction('add-node');
+  };
+
+  const removeNode = (id?: string) => {
+    setNodes(prev => {
+      if (prev.length <= 1) return prev;
+      
+      const targetId = id || prev.reduce((max, node) => {
+        const num = parseInt(node.id.split('-')[1]);
+        const maxNum = parseInt(max.id.split('-')[1]);
+        return num > maxNum ? node : max;
+      }, prev[0]).id;
+
+      return prev.filter(n => n.id !== targetId);
+    });
+    setLastAction('remove-node');
+  };
+
+  const randomizeNodes = () => {
+    setNodes(prev => prev.map(n => ({ ...n, seed: generateId() })));
+    setLastAction('randomize');
+  };
+
+  const addRandomKeys = (count: number = 10) => {
+    const newKeys: Key[] = [];
+    const now = Date.now();
+    for (let i = 0; i < count; i++) {
+      const keyId = `Key-${generateId()}`;
+      const keyHash = Math.random();
+      const successors = findSuccessors(keyHash, tokens, replicationFactor, nodes);
+      newKeys.push({
+        id: keyId,
+        hash: keyHash,
+        assignedNodeIds: successors,
+        expiresAt: now + (Math.random() * 30000 + 20000) // 20-50s TTL
+      });
+    }
+    setKeys(prev => [...prev, ...newKeys].slice(-500)); // Cap at 500
+  };
+
+  const removeRandomKey = () => {
+    if (keys.length === 0) return;
+    const index = Math.floor(Math.random() * keys.length);
+    setKeys(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleSimulation = () => {
+    const nextState = !isSimulating;
+    setIsSimulating(nextState);
+    if (nextState) {
+      setSimulationMessage('Simulation Started');
+      if (!useVNodes) setUseVNodes(true);
+    } else {
+      setSimulationMessage('Simulation Paused');
+    }
+  };
+
+  const reset = () => {
+    setNodes([
+      { id: 'Node-1', color: COLORS[0], vnodeCount: 12, seed: generateId() },
+      { id: 'Node-2', color: COLORS[1], vnodeCount: 12, seed: generateId() },
+      { id: 'Node-3', color: COLORS[2], vnodeCount: 12, seed: generateId() },
+      { id: 'Node-4', color: COLORS[3], vnodeCount: 12, seed: generateId() },
+    ]);
+    setKeys([]);
+    setVnodeCount(12);
+    setUseVNodes(true);
+    setReplicationFactor(3);
+    setLastAction('');
+    setIsSimulating(false);
+    setSimulationMessage('');
+  };
+
+  // --- Effects ---
+  // Simulation Messages
+  useEffect(() => {
+    if (!isSimulating) return;
+    
+    if (lastAction === 'add-node') {
+      const lastNode = nodes[nodes.length - 1];
+      if (lastNode) {
+        setSimulationMessage(`Rebalancing: ${lastNode.id} joined and claimed keyspace slices`);
+      }
+    } else if (lastAction === 'remove-node') {
+      setSimulationMessage('Scaling: Removed physical node');
+    }
+  }, [nodes.length, lastAction, isSimulating]);
+
+  // Replication Factor Guard
+  useEffect(() => {
+    const activeNodes = nodes.length;
+    if (replicationFactor > activeNodes && activeNodes > 0) {
+      setReplicationFactor(activeNodes);
+    } else if (activeNodes === 0 && replicationFactor !== 1) {
+      setReplicationFactor(1);
+    }
+  }, [nodes, replicationFactor]);
+
+  // Re-assign keys when tokens or replication factor change
+  useEffect(() => {
+    if (tokens.length === 0) {
+      if (keys.length > 0) {
+        setKeys(prev => prev.map(k => ({ ...k, assignedNodeIds: [] })));
+      }
+      return;
+    }
+
+    setKeys(prev => {
+      return prev.map(k => {
+        const successors = findSuccessors(k.hash, tokens, replicationFactor, nodes);
+        return {
+          ...k,
+          assignedNodeIds: successors
+        };
+      });
+    });
+  }, [tokens, replicationFactor, lastAction]);
+
+  // Simulation Loop
+  useEffect(() => {
+    if (!isSimulating) return;
+
+    const interval = setInterval(() => {
+      const rand = Math.random();
+      const keyCount = keys.length;
+      const nodeCount = nodes.length;
+
+      // TTL Check: Remove expired keys
+      const now = Date.now();
+      setKeys(prev => prev.filter(k => !k.expiresAt || k.expiresAt > now));
+
+      // Imbalance check for adaptive probabilities (Primary Only)
+      const isImbalanced = metrics.partitionCV > 0.3;
+      
+      // 1. Add Key (60% base, 40% if imbalanced)
+      const addKeyProb = isImbalanced ? 0.40 : 0.60;
+      if (rand < addKeyProb) {
+        if (keyCount < 500) {
+          addRandomKeys(4); // Doubled speed
+        }
+      } 
+      // 2. Remove Key (15%)
+      else if (rand < addKeyProb + 0.15) {
+        removeRandomKey();
+      }
+      // 3. Balancing Actions (Adaptive)
+      else if (isImbalanced) {
+        const balanceRand = Math.random();
+        
+        // Priority 1: Increase VNode density (High impact on balance)
+        if (balanceRand < 0.65) {
+          const increment = vnodeCount < 16 ? 4 : 8;
+          setVnodeCount(prev => Math.min(64, prev + increment));
+          setSimulationMessage('Balancing: Increasing VNode density to equalize ownership');
+          setLastAction('change-vnodes');
+        } 
+        // Priority 2: Scale out (Add physical nodes)
+        else if (balanceRand < 0.90 && nodeCount < 8) {
+          addNode();
+          // Message is handled inside addNode
+        }
+        // Priority 3: Shuffle tokens (Shuffle distribution)
+        else {
+          randomizeNodes();
+          setSimulationMessage('Balancing: Shuffling token distribution to break clusters');
+        }
+      }
+      // 4. Standard Topology changes (Rare when balanced)
+      else if (rand < 0.95) {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        setVnodeCount(prev => Math.min(64, Math.max(1, prev + delta)));
+        setSimulationMessage(`Topology: VNodes set to ${vnodeCount}`);
+        setLastAction('change-vnodes');
+      }
+      else if (rand < 0.99) {
+        if (keyCount > 400 && nodeCount < 8) {
+          addNode();
+          setSimulationMessage('Scaling: Added physical node');
+        } else if (keyCount < 150 && nodeCount > 4) {
+          // Always remove the highest numbered node
+          const highestNode = nodes.reduce((max, node) => {
+            const num = parseInt(node.id.split('-')[1]);
+            const maxNum = parseInt(max.id.split('-')[1]);
+            return num > maxNum ? node : max;
+          }, nodes[0]);
+          removeNode(highestNode.id);
+          setSimulationMessage('Scaling: Removed physical node');
+        }
+      }
+      // 5. Replication change (1%)
+      else {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        const newRF = Math.min(nodeCount, Math.max(1, replicationFactor + delta));
+        if (newRF !== replicationFactor) {
+          setReplicationFactor(newRF);
+          setSimulationMessage(`Config: Replication Factor is ${newRF}`);
+          setLastAction('change-replication');
+        }
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [isSimulating, nodes, keys, vnodeCount, replicationFactor, tokens, lastAction, metrics]);
+
   // --- Render Helpers ---
   const getPos = (h: number, r: number = RING_RADIUS) => {
     const angle = h * 2 * Math.PI - Math.PI / 2;
@@ -407,39 +420,51 @@ export const DynamoRing: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-6 bg-card border border-border shadow-2xl rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors">
-      {/* Left Panel: Controls */}
-      <div className="w-full lg:w-80 flex flex-col gap-6">
-        <div className="bg-muted/40 rounded-sm border border-border p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Settings2 className="w-5 h-5 text-primary" />
-            <h2 className="text-[13px] font-black uppercase tracking-[0.2em] text-foreground">Controls</h2>
+    <div className="w-full max-w-7xl mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors">
+      {/* Header - GFS Style */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <Database className="w-5 h-5 text-primary" />
+            <h1 className="text-[13px] md:text-[15px] font-black uppercase tracking-[0.25em] text-foreground">DYNAMO_RING_SIM_V1.0</h1>
           </div>
+        </div>
 
-          <div className="space-y-6">
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  onClick={toggleSimulation}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm transition-all font-bold text-[11px] uppercase tracking-widest border ${
-                    isSimulating 
-                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20' 
-                      : 'bg-primary border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]'
-                  }`}
-                >
-                  {isSimulating ? <PauseIcon className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                  {isSimulating ? 'Pause' : (keys.length > 0 || nodes.length > 4 ? 'Resume' : 'Init_Sys')}
-                </button>
-                <button 
-                  onClick={reset}
-                  className="flex items-center justify-center gap-2 py-2.5 px-4 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all font-bold text-[11px] uppercase tracking-widest border border-border"
-                >
-                  <RefreshCw className="w-4 h-4" /> Reset
-                </button>
-              </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={toggleSimulation}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-bold text-[11px] uppercase transition-all border ${
+              isSimulating 
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20' 
+                : 'bg-primary border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
+            }`}
+          >
+            {isSimulating ? <PauseIcon className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
+            {isSimulating ? 'Pause' : (keys.length > 0 ? 'Resume' : 'Init_Sys')}
+          </button>
+          <button 
+            onClick={reset}
+            className="flex items-center justify-center p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
+            title="Reset System"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
 
-              <div className="space-y-3 pt-2">
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <div className="flex flex-col lg:flex-row gap-3 p-3 overflow-hidden">
+        {/* Left Panel: Controls */}
+        <div className="w-full lg:w-64 flex flex-col gap-3 shrink-0">
+          <div className="bg-muted/40 rounded-sm border border-border p-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Settings2 className="w-3.5 h-3.5 text-primary" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Controls</h2>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-col gap-2">
+                <div className="space-y-1.5 pt-0.5">
+                <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
                   <span>Physical Nodes</span>
                   <span className="text-primary">{nodes.length}</span>
                 </div>
@@ -451,51 +476,84 @@ export const DynamoRing: React.FC = () => {
                   disabled={isSimulating}
                   onChange={(e) => {
                     const targetCount = parseInt(e.target.value);
-                    const currentCount = nodes.length;
-                    if (targetCount > currentCount) {
-                      for (let i = 0; i < targetCount - currentCount; i++) addNode();
-                    } else if (targetCount < currentCount) {
-                      for (let i = 0; i < currentCount - targetCount; i++) removeNode();
-                    }
+                    setNodes(prev => {
+                      let currentNodes = [...prev];
+                      if (targetCount > currentNodes.length) {
+                        const toAdd = targetCount - currentNodes.length;
+                        for (let i = 0; i < toAdd; i++) {
+                          if (currentNodes.length >= COLORS.length) break;
+                          let availableIndex = 0;
+                          for (let j = 0; j < COLORS.length; j++) {
+                            const idToCheck = `Node-${j + 1}`;
+                            if (!currentNodes.some(n => n.id === idToCheck)) {
+                              availableIndex = j;
+                              break;
+                            }
+                          }
+                          currentNodes.push({
+                            id: `Node-${availableIndex + 1}`,
+                            color: COLORS[availableIndex],
+                            vnodeCount: vnodeCount,
+                            seed: generateId()
+                          });
+                        }
+                      } else if (targetCount < currentNodes.length) {
+                        const toRemove = currentNodes.length - targetCount;
+                        for (let i = 0; i < toRemove; i++) {
+                          if (currentNodes.length <= 1) break;
+                          const targetId = currentNodes.reduce((max, node) => {
+                            const num = parseInt(node.id.split('-')[1]);
+                            const maxNum = parseInt(max.id.split('-')[1]);
+                            return num > maxNum ? node : max;
+                          }, currentNodes[0]).id;
+                          currentNodes = currentNodes.filter(n => n.id !== targetId);
+                        }
+                      }
+                      return currentNodes;
+                    });
+                    setLastAction('change-nodes');
                   }}
                   className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((nodes.length - 1) / (COLORS.length - 1)) * 100}%, var(--muted) ${((nodes.length - 1) / (COLORS.length - 1)) * 100}%, var(--muted) 100%)`
+                  }}
                 />
               </div>
 
               <button 
                 onClick={() => addRandomKeys(20)}
                 disabled={isSimulating}
-                className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-muted hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed text-foreground rounded-sm transition-all font-bold text-[11px] uppercase tracking-widest border border-border"
+                className="flex items-center justify-center gap-1.5 w-full py-1.5 px-2 bg-muted hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed text-foreground rounded-sm transition-all font-bold text-[9px] uppercase tracking-widest border border-border"
               >
-                <Database className="w-4 h-4" /> Add 20 Keys
+                <Database className="w-2.5 h-2.5" /> Add 20 Keys
               </button>
               <button 
                 onClick={randomizeNodes}
                 disabled={isSimulating}
-                className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-muted hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed text-foreground rounded-sm transition-all font-bold text-[11px] uppercase tracking-widest border border-border"
+                className="flex items-center justify-center gap-1.5 w-full py-1.5 px-2 bg-muted hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed text-foreground rounded-sm transition-all font-bold text-[9px] uppercase tracking-widest border border-border"
               >
-                <RefreshCw className="w-4 h-4" /> Randomize Nodes
+                <RefreshCw className="w-2.5 h-2.5" /> Randomize Nodes
               </button>
             </div>
 
-            <div className="pt-6 border-t border-border">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Virtual Nodes</span>
+            <div className="pt-3 border-t border-border">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Layers className="w-2.5 h-2.5 text-muted-foreground" />
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">Virtual Nodes</span>
                 </div>
                 <button 
                   onClick={() => setUseVNodes(!useVNodes)}
                   disabled={isSimulating}
-                  className={`w-10 h-5 rounded-full transition-colors relative ${useVNodes ? 'bg-primary' : 'bg-muted'} ${isSimulating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-7 h-3.5 rounded-full transition-colors relative ${useVNodes ? 'bg-primary' : 'bg-muted'} ${isSimulating ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${useVNodes ? 'left-6' : 'left-1'}`} />
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full transition-all ${useVNodes ? 'left-4' : 'left-0.5'}`} />
                 </button>
               </div>
 
               {useVNodes && (
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
                     <span>Tokens / Node</span>
                     <span className="text-primary">{vnodeCount}</span>
                   </div>
@@ -510,18 +568,21 @@ export const DynamoRing: React.FC = () => {
                       setLastAction('change-vnodes');
                     }}
                     className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((vnodeCount - 1) / (64 - 1)) * 100}%, var(--muted) ${((vnodeCount - 1) / (64 - 1)) * 100}%, var(--muted) 100%)`
+                    }}
                   />
                 </div>
               )}
             </div>
 
-            <div className="pt-6 border-t border-border">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-4 h-4 text-muted-foreground" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Replication Factor (N)</span>
+            <div className="pt-3 border-t border-border">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Shield className="w-2.5 h-2.5 text-muted-foreground" />
+                <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">Replication Factor (N)</span>
               </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
                   <span>Replicas</span>
                   <span className={replicationFactor > nodes.length ? "text-red-500" : "text-primary"}>
                     {replicationFactor}
@@ -538,11 +599,14 @@ export const DynamoRing: React.FC = () => {
                     setLastAction('change-replication');
                   }}
                   className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((replicationFactor - 1) / (Math.max(3, nodes.length) - 1)) * 100}%, var(--muted) ${((replicationFactor - 1) / (Math.max(3, nodes.length) - 1)) * 100}%, var(--muted) 100%)`
+                  }}
                 />
                 {replicationFactor > nodes.length && (
-                  <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded-sm">
-                    <AlertTriangle className="w-3 h-3 text-red-500" />
-                    <span className="text-[8px] text-red-400 font-bold uppercase tracking-tighter">N exceeds distinct nodes</span>
+                  <div className="flex items-center gap-2 p-1.5 bg-red-500/10 border border-red-500/20 rounded-sm">
+                    <AlertTriangle className="w-2.5 h-2.5 text-red-500" />
+                    <span className="text-[7px] text-red-400 font-bold uppercase tracking-tighter">N exceeds distinct nodes</span>
                   </div>
                 )}
               </div>
@@ -551,13 +615,12 @@ export const DynamoRing: React.FC = () => {
         </div>
 
         {/* Node List */}
-        <div className="bg-muted/40 rounded-sm border border-border p-6 h-[400px] flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <LayoutGrid className="w-5 h-5 text-primary" />
-            <h2 className="text-[13px] font-black uppercase tracking-[0.2em] text-foreground">Nodes</h2>
+        <div className="bg-muted/40 rounded-sm border border-border p-3 flex-1 flex flex-col min-h-0">
+          <div className="flex items-center gap-2 mb-3">
+            <LayoutGrid className="w-3.5 h-3.5 text-primary" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Nodes</h2>
           </div>
-          <p className="text-[9px] text-muted-foreground mb-4 uppercase tracking-widest font-bold">Click node to simulate failure</p>
-          <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
             <AnimatePresence initial={false}>
               {nodes.map(node => (
                 <motion.div 
@@ -565,38 +628,36 @@ export const DynamoRing: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
-                  className={`flex items-center justify-between p-3 rounded-sm border transition-all cursor-pointer group ${
-                    node.isDown ? 'bg-red-500/5 border-red-500/20 grayscale opacity-60' : 'bg-background border-border hover:border-primary/50'
-                  } ${isSimulating ? 'pointer-events-none opacity-80' : ''}`}
-                  onClick={() => !isSimulating && toggleNodeStatus(node.id)}
+                  className="flex flex-col gap-1.5"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${node.isDown ? 'bg-muted-foreground' : ''}`} 
-                         style={{ backgroundColor: node.isDown ? undefined : node.color, boxShadow: node.isDown ? 'none' : `0 0 8px ${node.color}` }} />
-                    <div className="flex flex-col">
-                      <span className={`text-[11px] font-bold ${node.isDown ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{node.id}</span>
-                      <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
-                        {metrics.primaryDistribution[node.id] || 0} primary / {metrics.totalLoadDistribution[node.id] || 0} total
+                  <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full" 
+                           style={{ backgroundColor: node.color, boxShadow: `0 0 4px ${node.color}` }} />
+                      <span className="text-foreground">{node.id}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-muted-foreground">
+                        {metrics.primaryDistribution[node.id] || 0}P / {metrics.totalLoadDistribution[node.id] || 0}T
+                      </span>
+                      <span className="text-primary">
+                        {((metrics.partitionSizes[node.id] || 0) * 100).toFixed(1)}% OWN
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {node.isDown && <Zap className="w-3 h-3 text-red-500 animate-pulse" />}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeNode(node.id);
-                      }}
-                      className="p-1.5 text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(metrics.partitionSizes[node.id] || 0) * 100}%` }}
+                      className="h-full"
+                      style={{ backgroundColor: node.color }}
+                    />
                   </div>
                 </motion.div>
               ))}
             </AnimatePresence>
             {nodes.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground text-[10px] uppercase tracking-widest italic">
+              <div className="text-center py-4 text-muted-foreground text-[8px] uppercase tracking-widest italic">
                 No nodes active.
               </div>
             )}
@@ -605,15 +666,14 @@ export const DynamoRing: React.FC = () => {
       </div>
 
       {/* Center Panel: Visualization */}
-      <div className="flex-1 flex flex-col gap-6">
-        <div className="bg-muted/40 rounded-sm border border-border p-6 flex flex-col items-center justify-center relative min-h-[600px] overflow-hidden">
-          {/* Background Grid Effect */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-               style={{ backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+      <div className="flex-1 flex flex-col gap-3 min-w-0">
+        <div className="bg-muted/40 rounded-sm border border-border p-3 flex-1 flex flex-col items-center justify-center relative min-h-[400px] lg:min-h-[500px] overflow-hidden">
+          {/* Background Grid Effect - GFS Style */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-            <div className="absolute top-6 left-6 flex flex-col gap-1 z-10">
-              <h2 className="text-[15px] font-black uppercase tracking-[0.3em] text-foreground">Consistent Hash Ring</h2>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Clockwise Successor Rule (N={replicationFactor})</p>
+            <div className="absolute top-4 left-4 flex flex-col gap-0.5 z-10">
+              <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-foreground">Consistent Hash Ring</h2>
+              <p className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest">Clockwise Successor Rule (N={replicationFactor})</p>
               <AnimatePresence mode="wait">
                 {simulationMessage && (
                   <motion.div
@@ -621,27 +681,30 @@ export const DynamoRing: React.FC = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 10 }}
-                    className="flex items-center gap-2 mt-2 px-2 py-1 bg-primary/10 border border-primary/20 rounded-sm"
+                    className="flex items-center gap-1.5 mt-1.5 px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded-sm"
                   >
-                    <Activity className="w-3 h-3 text-primary animate-pulse" />
-                    <span className="text-[9px] text-primary font-black uppercase tracking-widest">{simulationMessage}</span>
+                    <Activity className="w-2.5 h-2.5 text-primary animate-pulse" />
+                    <span className="text-[8px] text-primary font-black uppercase tracking-widest">{simulationMessage}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-          <div className="absolute top-6 right-6 flex items-center gap-4 text-[9px] font-bold uppercase tracking-widest text-muted-foreground z-10">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_5px_var(--primary)]" />
+          <div className="absolute top-4 right-4 flex items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-muted-foreground z-10">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_var(--primary)]" />
               <span>Token</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+            <div className="flex items-center gap-1">
+              <div className="w-1 h-1 rounded-full bg-muted-foreground" />
               <span>Key</span>
             </div>
           </div>
 
-          <svg width={SVG_SIZE} height={SVG_SIZE} viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} className="max-w-full h-auto relative z-10">
+          <svg 
+            viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} 
+            className="w-full max-w-[420px] lg:max-w-[500px] h-auto relative z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+          >
             {/* Base Ring */}
             <motion.circle 
               cx={CENTER} 
@@ -649,8 +712,8 @@ export const DynamoRing: React.FC = () => {
               r={RING_RADIUS} 
               fill="none" 
               stroke="currentColor" 
-              strokeWidth="12" 
-              className="text-muted opacity-50"
+              strokeWidth="24" 
+              className="text-muted opacity-30"
               animate={isSimulating ? { rotate: 360 } : { rotate: 0 }}
               transition={isSimulating ? { duration: 20, repeat: Infinity, ease: "linear" } : { duration: 0.5 }}
               style={{ transformOrigin: 'center' }}
@@ -670,6 +733,18 @@ export const DynamoRing: React.FC = () => {
             />
 
             {/* Ownership Arcs */}
+            {tokens.length === 1 && (
+              <circle 
+                cx={CENTER} 
+                cy={CENTER} 
+                r={RING_RADIUS} 
+                fill="none" 
+                stroke={tokens[0].color}
+                strokeWidth="24"
+                strokeOpacity="0.5"
+                className=""
+              />
+            )}
             {tokens.length > 1 && tokens.map((token, i) => {
               const nextToken = tokens[(i + 1) % tokens.length];
               const startAngle = token.hash * 2 * Math.PI - Math.PI / 2;
@@ -685,18 +760,15 @@ export const DynamoRing: React.FC = () => {
               const largeArcFlag = adjustedEndAngle - startAngle <= Math.PI ? "0" : "1";
               
               // In Dynamo, the range (token, nextToken] belongs to nextToken
-              const ownerNode = nodes.find(n => n.id === nextToken.nodeId);
-              const isDown = ownerNode?.isDown;
-
               return (
                 <path 
                   key={`arc-${token.id}`}
                   d={`M ${x1} ${y1} A ${RING_RADIUS} ${RING_RADIUS} 0 ${largeArcFlag} 1 ${x2} ${y2}`}
                   fill="none"
-                  stroke={isDown ? 'currentColor' : nextToken.color}
-                  strokeWidth="12"
-                  strokeOpacity={isDown ? "0.1" : "0.3"}
-                  className={isDown ? 'text-muted-foreground' : ''}
+                  stroke={nextToken.color}
+                  strokeWidth="24"
+                  strokeOpacity="0.5"
+                  className=""
                 />
               );
             })}
@@ -705,14 +777,12 @@ export const DynamoRing: React.FC = () => {
             <AnimatePresence>
               {tokens.map(token => {
                 const pos = getPos(token.hash);
-                const node = nodes.find(n => n.id === token.nodeId);
-                const isDown = node?.isDown;
-
+                
                 return (
                   <motion.g
                     key={token.id}
                     initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: isDown ? 0.4 : 1 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
                     onMouseEnter={() => setHoveredToken(token)}
                     onMouseLeave={() => setHoveredToken(null)}
@@ -722,11 +792,11 @@ export const DynamoRing: React.FC = () => {
                       cx={pos.x} 
                       cy={pos.y} 
                       r={useVNodes ? 4 : 8} 
-                      fill={isDown ? 'currentColor' : token.color} 
+                      fill={token.color} 
                       stroke="var(--background)"
                       strokeWidth="2"
-                      className={isDown ? "text-muted-foreground" : "shadow-[0_0_10px_currentColor]"}
-                      style={{ color: isDown ? undefined : token.color }}
+                      className="shadow-[0_0_10px_currentColor]"
+                      style={{ color: token.color }}
                     />
                     {hoveredToken?.id === token.id && (
                       <circle 
@@ -734,10 +804,10 @@ export const DynamoRing: React.FC = () => {
                         cy={pos.y} 
                         r={useVNodes ? 8 : 12} 
                         fill="none" 
-                        stroke={isDown ? 'currentColor' : token.color} 
+                        stroke={token.color} 
                         strokeWidth="1"
                         strokeDasharray="2 2"
-                        className={isDown ? 'text-muted-foreground' : ''}
+                        className=""
                       />
                     )}
                   </motion.g>
@@ -817,16 +887,14 @@ export const DynamoRing: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="absolute top-10 right-10 bg-card border border-border shadow-2xl rounded-sm p-4 z-20 pointer-events-none w-64"
+                className="absolute top-4 right-4 bg-card border border-border shadow-2xl rounded-sm p-3 z-20 pointer-events-none w-56 opacity-100 bg-opacity-100"
+                style={{ backgroundColor: 'var(--card)' }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: hoveredToken.color }} />
-                  <span className="font-black text-[11px] uppercase tracking-widest text-foreground">{hoveredToken.nodeId}</span>
-                  {nodes.find(n => n.id === hoveredToken.nodeId)?.isDown && (
-                    <span className="text-[8px] bg-red-500/20 text-red-400 px-1 rounded-sm border border-red-500/30">OFFLINE</span>
-                  )}
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: hoveredToken.color }} />
+                  <span className="font-black text-[10px] uppercase tracking-widest text-foreground">{hoveredToken.nodeId}</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground space-y-1 font-bold uppercase tracking-widest">
+                <div className="text-[9px] text-muted-foreground space-y-1 font-bold uppercase tracking-widest">
                   <p>Token: {hoveredToken.id}</p>
                   <p>Hash: <span className="text-primary">{hoveredToken.hash.toFixed(6)}</span></p>
                 </div>
@@ -838,29 +906,30 @@ export const DynamoRing: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="absolute top-10 right-10 bg-card border border-border shadow-2xl rounded-sm p-4 z-20 pointer-events-none w-64"
+                className="absolute top-4 right-4 bg-card border border-border shadow-2xl rounded-sm p-3 z-20 pointer-events-none w-56 opacity-100 bg-opacity-100"
+                style={{ backgroundColor: 'var(--card)' }}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <Hash className="w-3 h-3 text-primary" />
-                  <span className="font-black text-[11px] uppercase tracking-widest text-foreground">{hoveredKey.id}</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <Hash className="w-2.5 h-2.5 text-primary" />
+                  <span className="font-black text-[10px] uppercase tracking-widest text-foreground">{hoveredKey.id}</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground space-y-3 font-bold uppercase tracking-widest">
+                <div className="text-[9px] text-muted-foreground space-y-2 font-bold uppercase tracking-widest">
                   <div>
-                    <p className="mb-1 text-muted-foreground">Hash Value</p>
+                    <p className="mb-0.5 text-muted-foreground">Hash Value</p>
                     <p className="text-primary">{hoveredKey.hash.toFixed(6)}</p>
                   </div>
                   <div>
-                    <p className="mb-2 text-muted-foreground">Replica Set (N={replicationFactor})</p>
-                    <div className="space-y-1.5">
+                    <p className="mb-1 text-muted-foreground">Replica Set (N={replicationFactor})</p>
+                    <div className="space-y-1">
                       {hoveredKey.assignedNodeIds.map((nodeId, i) => {
                         const node = nodes.find(n => n.id === nodeId);
                         return (
-                          <div key={nodeId} className="flex items-center justify-between bg-muted p-1.5 rounded-sm">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: node?.color }} />
+                          <div key={nodeId} className="flex items-center justify-between bg-muted p-1 rounded-sm">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: node?.color }} />
                               <span className="text-foreground">{nodeId}</span>
                             </div>
-                            <span className="text-[8px] opacity-50">{i === 0 ? 'PRIMARY' : `REPLICA ${i}`}</span>
+                            <span className="text-[7px] opacity-50">{i === 0 ? 'PRIMARY' : `REPLICA ${i}`}</span>
                           </div>
                         );
                       })}
@@ -873,47 +942,47 @@ export const DynamoRing: React.FC = () => {
         </div>
 
         {/* Bottom Panel: Metrics */}
-        <div className="bg-muted/40 rounded-sm border border-border p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              <h2 className="text-[13px] font-black uppercase tracking-[0.2em] text-foreground">Load Metrics</h2>
+        <div className="bg-muted/40 rounded-sm border border-border p-3">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-3.5 h-3.5 text-primary" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Load Metrics</h2>
             </div>
-            <div className="px-2 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest rounded-sm border border-primary/20">
+            <div className="px-1.5 py-0.5 bg-primary/10 text-primary text-[7px] font-black uppercase tracking-widest rounded-sm border border-primary/20">
               Live_Feed
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-background rounded-sm border border-border relative group">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Partition Balance</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="p-2 bg-background rounded-sm border border-border relative group">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[7px] text-muted-foreground font-black uppercase tracking-widest">Partition Balance</p>
                 <div className="relative">
-                  <Info className="w-3 h-3 text-muted-foreground cursor-help" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-popover text-popover-foreground text-[8px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
-                    Measures how evenly the hash ring is divided among nodes (Keyspace CV).
+                  <Info className="w-2 h-2 text-muted-foreground cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 p-1.5 bg-popover text-popover-foreground text-[6px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
+                    Measures how evenly the ring is divided among nodes (Partition CV).
                   </div>
                 </div>
               </div>
-              <p className={`text-2xl font-black ${
-                metrics.partitionCV < 0.1 ? 'text-emerald-400' : 
-                metrics.partitionCV < 0.3 ? 'text-amber-400' : 'text-red-400'
+              <p className={`text-lg font-black ${
+                metrics.partitionCV < 0.2 ? 'text-emerald-400' : 
+                metrics.partitionCV < 0.5 ? 'text-amber-400' : 'text-red-400'
               }`}>
                 {(metrics.partitionCV * 100).toFixed(1)}%
               </p>
             </div>
 
-            <div className="p-4 bg-background rounded-sm border border-border relative group">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Load Balance</p>
+            <div className="p-2 bg-background rounded-sm border border-border relative group">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[7px] text-muted-foreground font-black uppercase tracking-widest">Load Balance</p>
                 <div className="relative">
-                  <Info className="w-3 h-3 text-muted-foreground cursor-help" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-popover text-popover-foreground text-[8px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
+                  <Info className="w-2 h-2 text-muted-foreground cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 p-1.5 bg-popover text-popover-foreground text-[6px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
                     Measures how evenly the actual keys are distributed across nodes (Load CV).
                   </div>
                 </div>
               </div>
-              <p className={`text-2xl font-black ${
+              <p className={`text-lg font-black ${
                 metrics.isLowData ? 'text-muted-foreground' : 
                 metrics.primaryLoadCV < 0.2 ? 'text-emerald-400' : 
                 metrics.primaryLoadCV < 0.5 ? 'text-amber-400' : 'text-red-400'
@@ -922,74 +991,48 @@ export const DynamoRing: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-4 bg-background rounded-sm border border-border relative group">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">System Load</p>
+            <div className="p-2 bg-background rounded-sm border border-border relative group">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[7px] text-muted-foreground font-black uppercase tracking-widest">System Load</p>
                 <div className="relative">
-                  <Info className="w-3 h-3 text-muted-foreground cursor-help" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-popover text-popover-foreground text-[8px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
+                  <Info className="w-2 h-2 text-muted-foreground cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 p-1.5 bg-popover text-popover-foreground text-[6px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
                     Average number of keys (primary + replicas) stored per node.
                   </div>
                 </div>
               </div>
-              <p className="text-2xl font-black text-foreground">{Math.round(metrics.totalAvg)}</p>
+              <p className="text-lg font-black text-foreground">{Math.round(metrics.totalAvg)}</p>
             </div>
 
-            <div className="p-4 bg-background rounded-sm border border-border relative group">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Token Scatter</p>
+            <div className="p-2 bg-background rounded-sm border border-border relative group">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[7px] text-muted-foreground font-black uppercase tracking-widest">Token Scatter</p>
                 <div className="relative">
-                  <Info className="w-3 h-3 text-muted-foreground cursor-help" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-popover text-popover-foreground text-[8px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
+                  <Info className="w-2 h-2 text-muted-foreground cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 p-1.5 bg-popover text-popover-foreground text-[6px] rounded-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl font-bold uppercase tracking-widest">
                     Measures the uniformity of VNode placement around the ring.
                   </div>
                 </div>
               </div>
-              <p className="text-2xl font-black text-foreground">{(metrics.gapCV * 100).toFixed(1)}%</p>
+              <p className="text-lg font-black text-foreground">{(metrics.gapCV * 100).toFixed(1)}%</p>
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-4 bg-primary/5 rounded-sm border border-primary/20 flex gap-4">
-              <Info className="w-5 h-5 text-primary shrink-0" />
-              <div className="space-y-2">
-                <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+          <div className="mt-3">
+            <div className="p-2 bg-primary/5 rounded-sm border border-primary/20 flex gap-2">
+              <Info className="w-3 h-3 text-primary shrink-0" />
+              <div className="space-y-1">
+                <p className="text-[8px] text-muted-foreground leading-relaxed font-medium">
                   <strong className="text-primary uppercase tracking-widest mr-1">Analysis:</strong> {useVNodes 
-                    ? "VNodes distribute tokens more evenly, improving Partition Balance. Note that Replication (N) increases Total Load but does NOT affect hashing quality."
+                    ? "VNodes distribute tokens more evenly, improving Partition Balance. Replication (N) increases Total Load but does NOT affect hashing quality."
                     : "Standard hashing leads to uneven Partition Balance. Increasing N adds redundancy but doesn't fix the underlying ownership hotspots."}
                 </p>
-                <p className="text-[9px] text-muted-foreground italic">
-                  * Load includes primary and replica assignments.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Keyspace Ownership %</h3>
-              <div className="space-y-2">
-                {nodes.map(node => (
-                  <div key={node.id} className="space-y-1">
-                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest">
-                      <span className="text-foreground">{node.id}</span>
-                      <span className="text-muted-foreground">{(metrics.partitionSizes[node.id] * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full transition-all duration-500" 
-                        style={{ 
-                          width: `${metrics.partitionSizes[node.id] * 100}%`,
-                          backgroundColor: node.color
-                        }} 
-                      />
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      </div>
+    </div>
+  </div>
   );
 };
