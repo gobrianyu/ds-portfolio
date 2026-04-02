@@ -28,7 +28,7 @@ export interface Key {
   id: string;
   hash: number;
   assignedNodeIds: string[]; // Primary + Replicas
-  previousNodeIds?: string[];
+  expiresAt?: number; // Timestamp for TTL simulation
 }
 
 export const findSuccessors = (hashVal: number, tokens: Token[], replicationFactor: number, nodes: PhysicalNode[]): string[] => {
