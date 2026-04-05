@@ -171,7 +171,7 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                     mass: 1
                   }}
                   whileHover={{ scale: 1.1 }}
-                  className={`absolute top-0 left-0 cursor-pointer rounded-sm border p-1.5 flex flex-col justify-between group ${
+                  className={`absolute top-0 left-0 cursor-pointer rounded-sm border p-1.5 flex flex-col justify-between group bg-card ${
                     isMine
                       ? 'border-primary ring-2 ring-primary/40 bg-primary/20'
                       : isMain 
@@ -184,8 +184,7 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                   } ${hoveredBlock?.id === b.id ? 'z-50 border-foreground ring-2 ring-primary/20' : 'z-10'}`}
                   style={{ 
                     width: BLOCK_W, 
-                    height: BLOCK_H, 
-                    backgroundColor: isMine ? 'white' : isMain ? 'white' : 'white'
+                    height: BLOCK_H
                   }}
                   onMouseEnter={() => setHoveredBlock(b)}
                   onMouseLeave={() => setHoveredBlock(null)}
