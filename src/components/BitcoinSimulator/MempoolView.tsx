@@ -63,7 +63,7 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-          <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-8 gap-1 auto-rows-fr">
+          <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-8 gap-1 auto-rows-fr p-1">
             <AnimatePresence initial={false}>
               {sortedTxs.map((tx) => {
                 const satVb = tx.fee / (tx.size / 1024);
@@ -91,16 +91,13 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
                     }}
                     onMouseEnter={() => {
                       setHoveredTx(tx);
-                      if (pinnedTxId && pinnedTxId !== tx.id) {
-                        setPinnedTxId(null);
-                      }
                     }}
                     onMouseLeave={() => setHoveredTx(null)}
                     onClick={(e) => {
                       e.stopPropagation();
                       setPinnedTxId(prev => prev === tx.id ? null : tx.id);
                     }}
-                    className={`aspect-square rounded-[1px] cursor-pointer border border-transparent hover:border-white/60 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.4)] hover:z-10 transition-colors duration-200 ${getFeeColor(satVb)} ${pinnedTxId === tx.id ? 'ring-2 ring-white z-20 border-white shadow-lg' : ''}`}
+                    className={`aspect-square rounded-[1px] cursor-pointer border border-transparent hover:border-primary/60 hover:shadow-[inset_0_0_0_1px_rgba(var(--primary-rgb),0.4)] hover:z-10 transition-colors duration-200 ${getFeeColor(satVb)} ${pinnedTxId === tx.id ? 'ring-2 ring-primary z-20 border-primary shadow-lg' : ''}`}
                   />
                 );
               })}

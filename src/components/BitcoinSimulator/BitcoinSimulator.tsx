@@ -400,7 +400,7 @@ export const BitcoinSimulator: React.FC = () => {
                 <input 
                   type="range" min="2" max="10" value={minerCount}
                   onChange={(e) => setMinerCount(parseInt(e.target.value))}
-                  className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary touch-none my-2"
                   style={{
                     background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${(minerCount - 2) / (10 - 2) * 100}%, var(--muted) ${(minerCount - 2) / (10 - 2) * 100}%, var(--muted) 100%)`
                   }}
@@ -418,7 +418,7 @@ export const BitcoinSimulator: React.FC = () => {
                 <input 
                   type="range" min="0" max="10000" step="500" value={latency}
                   onChange={(e) => setLatency(parseInt(e.target.value))}
-                  className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary touch-none my-2"
                   style={{
                     background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${latency / 10000 * 100}%, var(--muted) ${latency / 10000 * 100}%, var(--muted) 100%)`
                   }}
@@ -471,7 +471,7 @@ export const BitcoinSimulator: React.FC = () => {
                       const newVal = parseInt(e.target.value);
                       setMiners(prev => prev.map(m => m.id === selectedNode.id ? { ...m, hashPower: newVal } : m));
                     }}
-                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary touch-none"
                     style={{
                       background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${(selectedNode.hashPower - 1) / (100 - 1) * 100}%, var(--muted) ${(selectedNode.hashPower - 1) / (100 - 1) * 100}%, var(--muted) 100%)`
                     }}
@@ -485,34 +485,39 @@ export const BitcoinSimulator: React.FC = () => {
         {/* Main Content: Visualization */}
         <main className="flex-1 flex flex-col overflow-hidden relative">
           {/* Tabs */}
-          <div className="flex border-b border-border bg-muted/20">
-            <button 
-              onClick={() => setActiveTab('viz')}
-              className={`px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
-                activeTab === 'viz' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Layers className="w-3 h-3" />
-              Block_Tree
-            </button>
-            <button 
-              onClick={() => setActiveTab('network')}
-              className={`px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
-                activeTab === 'network' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Share2 className="w-3 h-3" />
-              Propagation
-            </button>
-            <button 
-              onClick={() => setActiveTab('mempool')}
-              className={`lg:hidden px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
-                activeTab === 'mempool' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Zap className="w-3 h-3" />
-              Mempool
-            </button>
+          <div className="flex border-b border-border bg-muted/20 overflow-x-auto no-scrollbar scroll-smooth">
+            <div className="flex min-w-max">
+              <button 
+                onClick={() => setActiveTab('viz')}
+                className={`px-4 sm:px-6 py-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
+                  activeTab === 'viz' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Layers className="w-3 h-3" />
+                <span className="hidden xs:inline">Block_Tree</span>
+                <span className="xs:hidden">Tree</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab('network')}
+                className={`px-4 sm:px-6 py-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
+                  activeTab === 'network' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Share2 className="w-3 h-3" />
+                <span className="hidden xs:inline">Propagation</span>
+                <span className="xs:hidden">Net</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab('mempool')}
+                className={`lg:hidden px-4 sm:px-6 py-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
+                  activeTab === 'mempool' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Zap className="w-3 h-3" />
+                <span className="hidden xs:inline">Mempool</span>
+                <span className="xs:hidden">Pool</span>
+              </button>
+            </div>
           </div>
 
           {/* Viz Area */}
@@ -572,15 +577,16 @@ export const BitcoinSimulator: React.FC = () => {
               </div>
 
               {/* Simulation Log Overlay */}
-              <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-                <AnimatePresence mode="popLayout">
+              <div className="absolute bottom-4 left-4 right-4 pointer-events-none overflow-hidden h-12 flex items-end">
+                <AnimatePresence>
                   {lastAction && (
                     <motion.div 
                       key={lastAction}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="bg-background/80 backdrop-blur-sm border border-border px-3 py-1.5 rounded-sm inline-flex items-center gap-2"
+                      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.4 } }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="bg-background/95 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm inline-flex items-center gap-2 shadow-xl"
                     >
                       <Activity className="w-3 h-3 text-primary animate-pulse" />
                       <span className="text-[9px] font-bold uppercase tracking-widest text-foreground">{lastAction}</span>
@@ -602,8 +608,8 @@ export const BitcoinSimulator: React.FC = () => {
       </div>
 
       {/* Footer: Metrics */}
-      <footer className="h-auto md:h-20 border-t border-border bg-muted/50 p-3 md:p-4 flex items-center justify-between shrink-0">
-        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-8 flex-1 w-full">
+      <footer className="h-auto border-t border-border bg-muted/50 p-3 md:p-4 flex items-center justify-between shrink-0">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-8 flex-1 w-full">
           <MetricItem label="Height" value={selectedNode?.localChainHeight || 0} icon={<Database className="w-3 h-3" />} />
           <MetricItem label="Forks" value={miners.find(m => m.id === selectedNodeId)?.orphanedBlocksSeen || 0} icon={<AlertTriangle className="w-3 h-3" />} color="text-amber-500" />
           <MetricItem label="Reorgs" value={selectedNode?.reorgCount || 0} icon={<RefreshCw className="w-3 h-3" />} color="text-amber-400" />
@@ -622,12 +628,12 @@ export const BitcoinSimulator: React.FC = () => {
 };
 
 const MetricItem: React.FC<{ label: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ label, value, icon, color = "text-foreground" }) => (
-  <div className="flex flex-col gap-0.5">
+  <div className="flex flex-col gap-0.5 min-w-0">
     <div className="flex items-center gap-1 opacity-60">
       {icon}
-      <span className="text-[7px] font-bold uppercase tracking-widest">{label}</span>
+      <span className="text-[8px] font-bold uppercase tracking-widest truncate">{label}</span>
     </div>
-    <span className={`text-sm md:text-lg font-black tabular-nums ${color}`}>{value}</span>
+    <span className={`text-xs sm:text-sm md:text-lg font-black tabular-nums truncate ${color}`}>{value}</span>
   </div>
 );
 
