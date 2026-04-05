@@ -30,93 +30,8 @@ import BlogTerminal from '../components/BlogTerminal';
 import BigtableReadPath from '../components/interactive/BigtableReadPath';
 import GFSSimulator from '../components/GFSSimulator/GFSSimulator';
 import { DynamoRing } from '../components/DynamoRing/DynamoRing';
+import BitcoinSimulator from '../components/BitcoinSimulator/BitcoinSimulator';
 import { useState, useMemo, useEffect } from 'react';
-
-// --- Interactive Element: Proof of Work (Bitcoin) ---
-const BitcoinVisualization = () => {
-  const [nonce, setNonce] = useState(0);
-  const [isMining, setIsMining] = useState(false);
-  const [hash, setHash] = useState("0000000000000000000000000000000000000000000000000000000000000000");
-  const difficulty = 2;
-
-  const simulateHash = () => {
-    const chars = '0123456789abcdef';
-    let res = '0'.repeat(difficulty);
-    for (let i = 0; i < 64 - difficulty; i++) {
-      res += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return res;
-  };
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isMining) {
-      interval = setInterval(() => {
-        setNonce(prev => prev + 1);
-        setHash(simulateHash());
-        if (Math.random() > 0.98) {
-          setIsMining(false);
-        }
-      }, 50);
-    }
-    return () => clearInterval(interval);
-  }, [isMining]);
-
-  return (
-    <div className="terminal-window p-6 bg-muted/40 border-orange-500/20 shadow-2xl relative overflow-hidden">
-      <div className="flex items-center space-x-3 mb-8">
-        <div className="p-2 bg-orange-500/10 rounded-lg">
-          <Lock className="w-5 h-5 text-orange-400" />
-        </div>
-        <h3 className="text-xl font-black text-foreground uppercase tracking-widest">Interactive: Proof of Work</h3>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <div className="p-4 bg-background/50 rounded-xl border border-border font-mono">
-            <div className="flex justify-between mb-2">
-              <span className="text-[10px] text-muted-foreground uppercase font-black">Block #835,421</span>
-              <span className="text-[10px] text-orange-400 uppercase font-black">{isMining ? 'Mining...' : 'Ready'}</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Nonce:</span>
-                <span className="text-sm text-foreground">{nonce}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground mb-1">Hash:</span>
-                <span className="text-[10px] text-orange-400 break-all leading-tight">{hash}</span>
-              </div>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => setIsMining(!isMining)}
-            className={`w-full py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all ${
-              isMining ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-orange-500 text-black'
-            }`}
-          >
-            {isMining ? 'Stop Mining' : 'Start Mining'}
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="text-xs font-black text-foreground uppercase tracking-widest">How it works</h4>
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
-            Miners must find a <span className="text-orange-400">nonce</span> that, when hashed with the block data, produces a result starting with a specific number of zeros. 
-            This is the <span className="text-orange-400">difficulty</span>.
-          </p>
-          <div className="flex items-center space-x-4 p-3 bg-orange-500/5 border border-orange-500/20 rounded-lg">
-            <Zap className="w-4 h-4 text-orange-400" />
-            <p className="text-[10px] text-muted-foreground italic">
-              Safety is guaranteed by the sheer energy required to rewrite history. To alter a block, you must re-mine all subsequent blocks faster than the rest of the network.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // --- Interactive Element: MapReduce Pipeline (MapReduce) ---
 const MapReduceVisualization = () => {
@@ -262,7 +177,7 @@ export default function BlogPage() {
       case 'bigtable': return "Interactive Read Path Explorer";
       case 'gfs': return "GFS Failure Simulator";
       case 'dynamo': return "Interactive Dynamo Ring";
-      case 'bitcoin': return "Interactive Proof of Work";
+      case 'bitcoin': return "Bitcoin Block Mining & Fork Resolution Simulator";
       case 'mapreduce': return "Interactive MapReduce Pipeline";
       case 'tensorflow': return "Interactive Dataflow Graph";
       default: return "Interactive Simulation Environment";
@@ -274,7 +189,7 @@ export default function BlogPage() {
       case 'bigtable': return <BigtableReadPath />;
       case 'gfs': return <GFSSimulator />;
       case 'dynamo': return <DynamoRing />;
-      case 'bitcoin': return <BitcoinVisualization />;
+      case 'bitcoin': return <BitcoinSimulator />;
       case 'mapreduce': return <MapReduceVisualization />;
       case 'tensorflow': return <TensorFlowVisualization />;
       default: return null;
