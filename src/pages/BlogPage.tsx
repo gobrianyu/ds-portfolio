@@ -31,72 +31,8 @@ import BigtableReadPath from '../components/interactive/BigtableReadPath';
 import GFSSimulator from '../components/GFSSimulator/GFSSimulator';
 import { DynamoRing } from '../components/DynamoRing/DynamoRing';
 import BitcoinSimulator from '../components/BitcoinSimulator/BitcoinSimulator';
+import { MapReduceScheduler } from '../components/MapReduceScheduler/MapReduceScheduler';
 import { useState, useMemo, useEffect } from 'react';
-
-// --- Interactive Element: MapReduce Pipeline (MapReduce) ---
-const MapReduceVisualization = () => {
-  const [stage, setStage] = useState(0); 
-
-  const data = ["apple", "banana", "apple", "cherry", "banana", "apple"];
-
-  return (
-    <div className="terminal-window p-6 bg-muted/40 border-yellow-500/20 shadow-2xl relative overflow-hidden">
-      <div className="flex items-center space-x-3 mb-8">
-        <div className="p-2 bg-yellow-500/10 rounded-lg">
-          <Share2 className="w-5 h-5 text-yellow-400" />
-        </div>
-        <h3 className="text-xl font-black text-foreground uppercase tracking-widest">Interactive: MapReduce Pipeline</h3>
-      </div>
-
-      <div className="flex justify-between mb-8">
-        {['Input', 'Map', 'Shuffle', 'Reduce'].map((s, i) => (
-          <button 
-            key={s} 
-            onClick={() => setStage(i)}
-            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-              stage === i ? 'bg-yellow-500 text-black' : 'bg-muted text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      <div className="h-48 flex items-center justify-center">
-        <AnimatePresence mode="wait">
-          {stage === 0 && (
-            <motion.div key="input" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex gap-2">
-              {data.map((d, i) => (
-                <div key={i} className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">{d}</div>
-              ))}
-            </motion.div>
-          )}
-          {stage === 1 && (
-            <motion.div key="map" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="grid grid-cols-3 gap-4">
-              {data.map((d, i) => (
-                <div key={i} className="px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400 font-mono">({d}, 1)</div>
-              ))}
-            </motion.div>
-          )}
-          {stage === 2 && (
-            <motion.div key="shuffle" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-2">
-              <div className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">apple: [1, 1, 1]</div>
-              <div className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">banana: [1, 1]</div>
-              <div className="px-3 py-2 bg-background border border-border rounded text-xs text-muted-foreground font-mono">cherry: [1]</div>
-            </motion.div>
-          )}
-          {stage === 3 && (
-            <motion.div key="reduce" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex gap-4">
-              <div className="px-4 py-3 bg-yellow-500 text-black rounded font-black text-sm">apple: 3</div>
-              <div className="px-4 py-3 bg-yellow-500 text-black rounded font-black text-sm">banana: 2</div>
-              <div className="px-4 py-3 bg-yellow-500 text-black rounded font-black text-sm">cherry: 1</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-};
 
 // --- Interactive Element: Dataflow Graph (TensorFlow) ---
 const TensorFlowVisualization = () => {
@@ -178,7 +114,7 @@ export default function BlogPage() {
       case 'gfs': return "GFS Failure Simulator";
       case 'dynamo': return "Interactive Dynamo Ring";
       case 'bitcoin': return "Bitcoin Block Mining & Fork Resolution Simulator";
-      case 'mapreduce': return "Interactive MapReduce Pipeline";
+      case 'mapreduce': return "Be the Scheduler: MapReduce Task Assignment Game";
       case 'tensorflow': return "Interactive Dataflow Graph";
       default: return "Interactive Simulation Environment";
     }
@@ -190,7 +126,7 @@ export default function BlogPage() {
       case 'gfs': return <GFSSimulator />;
       case 'dynamo': return <DynamoRing />;
       case 'bitcoin': return <BitcoinSimulator />;
-      case 'mapreduce': return <MapReduceVisualization />;
+      case 'mapreduce': return <MapReduceScheduler />;
       case 'tensorflow': return <TensorFlowVisualization />;
       default: return null;
     }
@@ -250,7 +186,7 @@ export default function BlogPage() {
           <BlogTerminal text={post.aiSummary} />
         </div>
 
-        {/* Interactive Widget Section - Full Width Breakout */}
+        {/* Interactive Widget Section */}
         <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24 py-20 bg-muted/30 border-y border-border transition-colors">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-4 mb-8">

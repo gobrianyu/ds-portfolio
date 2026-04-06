@@ -1,0 +1,11 @@
+export const WORKER_COUNT = 4;
+export const MAP_TASK_COUNT = 12;
+export const REDUCE_TASK_COUNT = 4;
+export const BASE_TASK_DURATION = 6667; // 1.5x faster (10000 / 1.5)
+export const REMOTE_DATA_PENALTY = 5.0; // 5x slower for remote data
+export const STRAGGLER_PROBABILITY = 0.1;
+export const STRAGGLER_PENALTY = 3.0; // 3x slower for stragglers
+export const TICK_RATE = 100; // 100ms per tick
+export const NETWORK_COST_REMOTE = 10;
+export const NETWORK_COST_LOCAL = 0;
+export const SHUFFLE_COST_PER_REDUCER = 5;

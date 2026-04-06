@@ -577,14 +577,14 @@ export const BitcoinSimulator: React.FC = () => {
               </div>
 
               {/* Simulation Log Overlay */}
-              <div className="absolute bottom-4 left-4 right-4 pointer-events-none overflow-hidden h-12 flex items-end">
-                <AnimatePresence>
+              <div className="absolute bottom-4 left-4 pointer-events-none overflow-hidden h-12 flex items-end z-50">
+                <AnimatePresence mode="wait">
                   {lastAction && (
                     <motion.div 
                       key={lastAction}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.4 } }}
+                      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
                       className="bg-background/95 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm inline-flex items-center gap-2 shadow-xl"
                     >

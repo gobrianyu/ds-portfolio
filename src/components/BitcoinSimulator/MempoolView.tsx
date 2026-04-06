@@ -105,7 +105,7 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
           </div>
 
           {transactions.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center opacity-20 gap-2 py-12">
+            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-20 gap-2 pointer-events-none">
               <Zap className="w-8 h-8" />
               <span className="text-[9px] font-bold uppercase tracking-widest text-center px-4">
                 Listening for transactions...

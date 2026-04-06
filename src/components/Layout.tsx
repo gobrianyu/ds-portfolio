@@ -17,7 +17,7 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-background text-foreground transition-colors duration-300">
+    <div className="min-h-screen flex flex-col relative bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
       <Navbar />
       <main className="flex-grow pt-16">
         <Outlet />
