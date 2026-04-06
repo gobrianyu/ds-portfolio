@@ -614,7 +614,7 @@ export const MapReduceScheduler: React.FC = () => {
           </div>
 
           {/* Left Panel: Controls & Info (Moves to bottom on mobile) */}
-          <aside className="w-full lg:w-72 border-t lg:border-t-0 lg:border-r border-border bg-muted/30 pt-4 px-4 pb-2 lg:pt-6 lg:px-6 lg:pb-2 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col lg:self-stretch gap-4 lg:gap-6 overflow-y-auto custom-scrollbar shrink-0 order-last lg:order-first">
+          <aside className="w-full lg:w-72 border-t lg:border-t-0 lg:border-r border-border bg-muted/30 py-4 px-4 lg:py-6 lg:px-6 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col lg:self-stretch gap-4 lg:gap-6 overflow-y-auto custom-scrollbar shrink-0 order-last lg:order-first">
             {/* Desktop Job Status */}
             <section className="hidden lg:block space-y-3">
               <div className="flex items-center gap-2 opacity-60">
@@ -776,7 +776,7 @@ export const MapReduceScheduler: React.FC = () => {
             {/* Background Grid */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px] z-0" />
             
-            <div ref={containerRef} className="flex-auto pt-4 px-4 pb-2 lg:pt-6 lg:px-6 lg:pb-2 overflow-y-auto custom-scrollbar relative z-10">
+            <div ref={containerRef} className="flex-auto py-4 px-4 lg:py-6 lg:px-6 overflow-y-auto custom-scrollbar relative z-10">
               {/* Network Lines */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible hidden lg:block">
                 <AnimatePresence>
