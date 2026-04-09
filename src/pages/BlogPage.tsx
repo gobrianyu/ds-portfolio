@@ -136,18 +136,6 @@ export default function BlogPage() {
               </span>
             ))}
           </h1>
-
-          <p className="text-2xl text-muted-foreground font-medium leading-relaxed mb-12 border-l-4 border-primary/30 pl-8 italic">
-            {post.overview}
-          </p>
-
-          <div className="flex flex-wrap gap-3 mb-12">
-            {post.tags.map(tag => (
-              <span key={tag} className="px-4 py-2 bg-muted text-muted-foreground rounded-md text-[10px] font-black uppercase tracking-widest border border-border cursor-default">
-                {tag}
-              </span>
-            ))}
-          </div>
         </header>
 
         <div className="mb-20">
@@ -155,14 +143,11 @@ export default function BlogPage() {
         </div>
 
         {/* Interactive Widget Section */}
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-[2vw] mb-24 py-12 bg-muted/30 border-y border-border transition-colors overflow-visible">
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-[2vw] mb-24 py-16 bg-muted/30 border-y border-border transition-colors overflow-visible">
           <div className="max-w-7xl mx-auto overflow-visible">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="h-px flex-grow bg-border" />
-              <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full">
-                <span className="text-[10px] font-black text-foreground uppercase tracking-widest text-center">{getInteractiveTitle()}</span>
-              </div>
-              <div className="h-px flex-grow bg-border" />
+            <div className="flex flex-col items-center mb-6">
+              <h2 className="text-2xl font-black text-foreground uppercase tracking-[0.2em] text-center">{getInteractiveTitle()}</h2>
+              <div className="h-1 w-32 bg-gradient-to-r from-transparent via-primary to-transparent mt-2" />
             </div>
             {renderInteractive()}
           </div>
@@ -171,8 +156,15 @@ export default function BlogPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           <div className="lg:col-span-8">
             <div className="prose prose-invert max-w-none">
-              <div className="flex items-center space-x-4 mb-12">
+              <div className="flex flex-col space-y-6 mb-12">
                 <h2 className="text-4xl font-black m-0 text-foreground tracking-tight uppercase tracking-widest leading-none">Analysis & Discussion</h2>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {post.tags.map(tag => (
+                    <span key={tag} className="px-3 py-1 bg-primary/5 text-primary/70 rounded-full text-[9px] font-black uppercase tracking-widest border border-primary/10">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
               
               <div className="text-muted-foreground leading-relaxed text-xl space-y-12 font-medium">
@@ -205,10 +197,6 @@ export default function BlogPage() {
           <div className="lg:col-span-4 space-y-10">
             <div className="terminal-window p-6 bg-muted/40 border-border relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 to-transparent" />
-              <h3 className="text-[11px] font-black text-foreground uppercase tracking-[0.2em] mb-6 flex items-center">
-                <Activity className="w-4 h-4 mr-3 text-primary" />
-                System Metrics
-              </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-[9px] text-muted-foreground uppercase font-black">Data Volume</span>
@@ -360,7 +348,7 @@ export default function BlogPage() {
                       <div className="h-4 w-[1px] bg-border mx-2" />
                       <div className="flex items-center space-x-3">
                         <FileText className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-black text-foreground uppercase tracking-widest">Research Document: {post.id}.pdf</span>
+                        <span className="text-xs font-black text-foreground uppercase tracking-widest">Document: {post.id}.pdf</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
