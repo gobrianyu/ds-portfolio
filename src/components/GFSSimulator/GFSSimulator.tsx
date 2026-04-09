@@ -554,14 +554,14 @@ export const GFSSimulator: React.FC = () => {
   // --- Render ---
   return (
     <>
-      <div className="w-full max-w-6xl mx-auto h-[100vh] md:h-[700px] bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-none md:rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors" ref={containerRef}>
+      <div className="w-[1200px] mx-auto h-[700px] bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors" ref={containerRef}>
       
       {/* Header - Technical Dashboard Style */}
         <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-primary" />
-              <h1 className="text-[13px] md:text-[15px] font-black uppercase tracking-[0.25em] text-foreground">GFS_SIM_V2.1</h1>
+              <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">GFS_SIM_V2.1</h1>
             </div>
             
             {systemStatus !== 'IDLE' && (
@@ -622,17 +622,10 @@ export const GFSSimulator: React.FC = () => {
           </div>
         </header>
 
-        {/* Mobile Tabs */}
-        <div className="md:hidden flex border-b border-border bg-muted/50 shrink-0">
-          <button onClick={() => setActiveTab('config')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'config' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Config</button>
-          <button onClick={() => setActiveTab('viz')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'viz' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Visualizer</button>
-          <button onClick={() => setActiveTab('logs')} className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'logs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Status</button>
-        </div>
-
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        <div className="flex-1 flex flex-row overflow-hidden relative">
           
           {/* Left Panel: Controls */}
-          <aside className={`w-full md:w-64 border-r border-border bg-muted/20 p-5 flex flex-col gap-8 overflow-y-auto custom-scrollbar ${activeTab === 'config' ? 'flex' : 'hidden md:flex'}`}>
+          <aside className="w-64 border-r border-border bg-muted/20 p-5 flex flex-col gap-8 overflow-y-auto custom-scrollbar shrink-0">
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1 opacity-60">
                 <Settings2 className="w-5 h-5 text-primary" />
@@ -717,7 +710,7 @@ export const GFSSimulator: React.FC = () => {
           </aside>
 
           {/* Center: Visualizer */}
-          <main className={`flex-1 p-6 flex flex-col relative overflow-hidden bg-background/50 ${activeTab === 'viz' ? 'flex' : 'hidden md:flex'}`} ref={visualizerRef}>
+          <main className="flex-1 p-6 flex flex-col relative overflow-hidden bg-background/50 flex" ref={visualizerRef}>
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px]" />
             
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -750,7 +743,7 @@ export const GFSSimulator: React.FC = () => {
               </motion.div>
 
               {/* Chunkservers Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 w-full max-w-3xl">
+              <div className="grid grid-cols-5 gap-4 w-full max-w-3xl">
                 {nodes.map((node) => (
                   <motion.div
                     key={node.id} layout ref={el => { if (el) nodeRefs.current.set(node.id, el); }}
@@ -802,7 +795,7 @@ export const GFSSimulator: React.FC = () => {
           </main>
 
           {/* Right Panel: Metrics & Logs */}
-          <aside className={`w-full md:w-72 border-l border-border bg-muted/30 p-5 flex flex-col gap-8 overflow-hidden ${activeTab === 'logs' ? 'flex' : 'hidden md:flex'}`}>
+          <aside className="w-72 border-l border-border bg-muted/30 p-5 flex flex-col gap-8 overflow-hidden flex">
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1 opacity-60">
                 <Activity className="w-5 h-5 text-primary" />

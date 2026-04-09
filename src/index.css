@@ -99,6 +99,11 @@
     100% { bottom: 0%; }
   }
 
+  @keyframes flow {
+    from { stroke-dashoffset: 100; }
+    to { stroke-dashoffset: 0; }
+  }
+
   .typing-cursor::after {
     content: "_";
     @apply animate-pulse text-primary;

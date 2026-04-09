@@ -282,6 +282,15 @@ export const DynamoRing: React.FC = () => {
   // --- Effects ---
   // Simulation Messages
   useEffect(() => {
+    if (simulationMessage) {
+      const timer = setTimeout(() => {
+        setSimulationMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [simulationMessage]);
+
+  useEffect(() => {
     if (!isSimulating) return;
     
     if (lastAction === 'add-node') {
@@ -420,51 +429,51 @@ export const DynamoRing: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors">
+    <div className="w-[1200px] mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors">
       {/* Header - GFS Style */}
-      <header className="flex items-center justify-between px-3 lg:px-6 py-2 lg:py-4 border-b border-border bg-muted/50 shrink-0">
-        <div className="flex items-center gap-3 lg:gap-6">
-          <div className="flex items-center gap-2 lg:gap-3">
-            <Database className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
-            <h1 className="text-[11px] lg:text-[15px] font-black uppercase tracking-[0.2em] lg:tracking-[0.25em] text-foreground">DYNAMO_RING_SIM_V1.0</h1>
+      <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <Database className="w-5 h-5 text-primary" />
+            <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">DYNAMO_RING_SIM_V1.0</h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 lg:gap-3">
+        <div className="flex items-center gap-3">
           <button 
             onClick={toggleSimulation}
-            className={`flex items-center justify-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-sm font-bold text-[9px] lg:text-[11px] uppercase transition-all border ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-bold text-[11px] uppercase transition-all border ${
               isSimulating 
                 ? 'bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20' 
                 : 'bg-primary border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
             }`}
           >
-            {isSimulating ? <PauseIcon className="w-2.5 h-2.5 lg:w-3 lg:h-3 fill-current" /> : <Play className="w-2.5 h-2.5 lg:w-3 lg:h-3 fill-current" />}
+            {isSimulating ? <PauseIcon className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
             {isSimulating ? 'Pause' : (keys.length > 0 ? 'Resume' : 'Init_Sys')}
           </button>
           <button 
             onClick={reset}
-            className="flex items-center justify-center p-1.5 lg:p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
+            className="flex items-center justify-center p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
             title="Reset System"
           >
-            <RefreshCw className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+            <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-2 lg:gap-3 p-2 lg:p-3 overflow-hidden flex-1">
+      <div className="flex flex-row gap-3 p-3 overflow-hidden flex-1">
         {/* Left Panel: Controls & Nodes */}
-        <div className="w-full lg:w-64 flex flex-col gap-2 lg:gap-3 shrink-0 min-h-0">
-          <div className="bg-muted/40 rounded-sm border border-border p-2 lg:p-3">
-            <div className="flex items-center gap-2 mb-2 lg:mb-4">
-              <Settings2 className="w-3 h-3 lg:w-4 lg:h-4 text-primary" />
-              <h2 className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Controls</h2>
+        <div className="w-64 flex flex-col gap-3 shrink-0 min-h-0">
+          <div className="bg-muted/40 rounded-sm border border-border p-3">
+            <div className="flex items-center gap-2 mb-4">
+              <Settings2 className="w-4 h-4 text-primary" />
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Controls</h2>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-5">
-              <div className="space-y-3 lg:space-y-4">
+            <div className="grid grid-cols-1 gap-5">
+              <div className="space-y-4">
                 <div className="space-y-1 pt-0.5">
-                  <div className="flex justify-between text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     <span>Nodes</span>
                     <span className="text-primary">{nodes.length}</span>
                   </div>
@@ -521,13 +530,13 @@ export const DynamoRing: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">VNodes</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">VNodes</span>
                   <button 
                     onClick={() => setUseVNodes(!useVNodes)}
                     disabled={isSimulating}
-                    className={`w-6 h-3 lg:w-8 lg:h-4 rounded-full transition-colors relative ${useVNodes ? 'bg-primary' : 'bg-muted'} ${isSimulating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-8 h-4 rounded-full transition-colors relative ${useVNodes ? 'bg-primary' : 'bg-muted'} ${isSimulating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <div className={`absolute top-0.5 w-2 h-2 lg:w-3 lg:h-3 bg-white rounded-full transition-all ${useVNodes ? 'left-3.5 lg:left-[18px]' : 'left-0.5'}`} />
+                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${useVNodes ? 'left-[18px]' : 'left-0.5'}`} />
                   </button>
                 </div>
               </div>
@@ -667,7 +676,7 @@ export const DynamoRing: React.FC = () => {
                     key={simulationMessage}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
+                    exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: 0.2 } }}
                     className="flex items-center gap-1 lg:gap-1.5 mt-1 lg:mt-1.5 px-1 lg:px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded-sm"
                   >
                     <Activity className="w-2 lg:w-2.5 h-2 lg:h-2.5 text-primary animate-pulse" />
@@ -677,20 +686,20 @@ export const DynamoRing: React.FC = () => {
               </AnimatePresence>
             </div>
 
-          <div className="absolute top-2 lg:top-4 right-2 lg:right-4 flex items-center gap-2 lg:gap-3 text-[7px] lg:text-[8px] font-bold uppercase tracking-widest text-muted-foreground z-10">
-            <div className="flex items-center gap-1">
-              <div className="w-1 lg:w-1.5 h-1 lg:h-1.5 rounded-full bg-primary shadow-[0_0_4px_var(--primary)]" />
-              <span>Token</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-0.5 lg:w-1 h-0.5 lg:h-1 rounded-full bg-muted-foreground" />
-              <span>Key</span>
-            </div>
-          </div>
+              <div className="flex items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-muted-foreground z-10">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_var(--primary)]" />
+                  <span>Token</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1 h-1 rounded-full bg-muted-foreground" />
+                  <span>Key</span>
+                </div>
+              </div>
 
           <svg 
             viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} 
-            className="w-full max-w-[320px] sm:max-w-[420px] lg:max-w-[500px] h-auto relative z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+            className="w-full max-w-[500px] h-auto relative z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.3)]"
           >
             {/* Base Ring */}
             <motion.circle 

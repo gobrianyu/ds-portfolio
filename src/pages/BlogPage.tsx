@@ -32,56 +32,12 @@ import GFSSimulator from '../components/GFSSimulator/GFSSimulator';
 import { DynamoRing } from '../components/DynamoRing/DynamoRing';
 import BitcoinSimulator from '../components/BitcoinSimulator/BitcoinSimulator';
 import { MapReduceScheduler } from '../components/MapReduceScheduler/MapReduceScheduler';
+import TensorFlowGraph from '../components/TensorFlowGraph/TensorFlowGraph';
+import TensorFlowPlayground from '../components/TensorFlowPlayground/TensorFlowPlayground';
+import { RigidWrapper } from '../components/interactive/RigidWrapper';
 import { useState, useMemo, useEffect } from 'react';
 
-// --- Interactive Element: Dataflow Graph (TensorFlow) ---
-const TensorFlowVisualization = () => {
-  const [isActive, setIsActive] = useState(false);
-
-  return (
-    <div className="terminal-window p-6 bg-muted/40 border-orange-500/20 shadow-2xl relative overflow-hidden">
-      <div className="flex items-center space-x-3 mb-8">
-        <div className="p-2 bg-orange-500/10 rounded-lg">
-          <Activity className="w-5 h-5 text-orange-400" />
-        </div>
-        <h3 className="text-xl font-black text-foreground uppercase tracking-widest">Interactive: Dataflow Graph</h3>
-      </div>
-
-      <div className="relative h-64 flex items-center justify-center">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <svg width="100%" height="100%" className="max-w-md">
-            <line x1="20%" y1="30%" x2="45%" y2="50%" stroke="#f97316" strokeWidth="2" strokeDasharray={isActive ? "5,5" : "0"} className={isActive ? "animate-pulse" : ""} />
-            <line x1="20%" y1="70%" x2="45%" y2="50%" stroke="#f97316" strokeWidth="2" strokeDasharray={isActive ? "5,5" : "0"} className={isActive ? "animate-pulse" : ""} />
-            <line x1="55%" y1="50%" x2="80%" y2="50%" stroke="#f97316" strokeWidth="2" strokeDasharray={isActive ? "5,5" : "0"} className={isActive ? "animate-pulse" : ""} />
-          </svg>
-        </div>
-
-        <div className="relative z-10 flex w-full justify-around items-center">
-          <div className="space-y-12">
-            <div className="w-16 h-16 bg-background border border-border rounded-full flex items-center justify-center text-[10px] font-black text-muted-foreground">Input A</div>
-            <div className="w-16 h-16 bg-background border border-border rounded-full flex items-center justify-center text-[10px] font-black text-muted-foreground">Input B</div>
-          </div>
-          <motion.div 
-            animate={isActive ? { scale: [1, 1.1, 1] } : {}}
-            transition={{ repeat: Infinity, duration: 1 }}
-            className="w-20 h-20 bg-orange-500/20 border-2 border-orange-500 rounded-2xl flex items-center justify-center text-xs font-black text-orange-400"
-          >
-            MatMul
-          </motion.div>
-          <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/40 rounded-full flex items-center justify-center text-[10px] font-black text-emerald-400">Output</div>
-        </div>
-      </div>
-
-      <button 
-        onClick={() => setIsActive(!isActive)}
-        className="w-full py-3 bg-orange-500 text-black font-black uppercase tracking-widest text-xs rounded-xl"
-      >
-        {isActive ? 'Stop Execution' : 'Run Computation'}
-      </button>
-    </div>
-  );
-};
-
+// --- Blog Page Component ---
 export default function BlogPage() {
   const { id } = useParams();
   const post = blogPosts.find(p => p.id === id);
@@ -115,19 +71,19 @@ export default function BlogPage() {
       case 'dynamo': return "Interactive Dynamo Ring";
       case 'bitcoin': return "Bitcoin Block Mining & Fork Resolution Simulator";
       case 'mapreduce': return "Be the Scheduler: MapReduce Task Assignment Game";
-      case 'tensorflow': return "Interactive Dataflow Graph";
+      case 'tensorflow': return "TensorFlow Playground: Interactive Neural Network Visualizer";
       default: return "Interactive Simulation Environment";
     }
   };
 
   const renderInteractive = () => {
     switch (post.id) {
-      case 'bigtable': return <BigtableReadPath />;
-      case 'gfs': return <GFSSimulator />;
-      case 'dynamo': return <DynamoRing />;
-      case 'bitcoin': return <BitcoinSimulator />;
-      case 'mapreduce': return <MapReduceScheduler />;
-      case 'tensorflow': return <TensorFlowVisualization />;
+      case 'bigtable': return <RigidWrapper><BigtableReadPath /></RigidWrapper>;
+      case 'gfs': return <RigidWrapper><GFSSimulator /></RigidWrapper>;
+      case 'dynamo': return <RigidWrapper><DynamoRing /></RigidWrapper>;
+      case 'bitcoin': return <RigidWrapper><BitcoinSimulator /></RigidWrapper>;
+      case 'mapreduce': return <RigidWrapper><MapReduceScheduler /></RigidWrapper>;
+      case 'tensorflow': return <RigidWrapper><TensorFlowPlayground /></RigidWrapper>;
       default: return null;
     }
   };
@@ -187,9 +143,9 @@ export default function BlogPage() {
         </div>
 
         {/* Interactive Widget Section */}
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24 py-20 bg-muted/30 border-y border-border transition-colors">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-4 mb-8">
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24 py-12 bg-muted/30 border-y border-border transition-colors overflow-visible">
+          <div className="max-w-7xl mx-auto overflow-visible">
+            <div className="flex items-center gap-4 mb-4">
               <div className="h-px flex-grow bg-border" />
               <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full">
                 <Zap className="w-4 h-4 text-primary" />

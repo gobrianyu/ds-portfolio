@@ -490,10 +490,10 @@ export const MapReduceScheduler: React.FC = () => {
   }, [workers]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors h-auto lg:max-h-[900px]">
+    <div className="w-[1200px] mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors h-[800px]">
       {/* Header */}
-      <header className="flex flex-col md:flex-row items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0 gap-4">
-        <div className="flex items-center gap-6 w-full md:w-auto">
+      <header className="flex flex-row items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0 gap-4">
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-sm shrink-0">
               <Network className="w-5 h-5 text-primary" />
@@ -511,7 +511,7 @@ export const MapReduceScheduler: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+        <div className="flex items-center gap-3 justify-end">
           <div className="flex items-center bg-background border border-border rounded-sm p-1">
             <button 
               disabled={isRunning}
@@ -537,7 +537,7 @@ export const MapReduceScheduler: React.FC = () => {
             </button>
           </div>
 
-          <div className="h-8 w-[1px] bg-border mx-1 hidden md:block" />
+          <div className="h-8 w-[1px] bg-border mx-1 block" />
 
           {!hasStarted ? (
             <button 
@@ -546,7 +546,7 @@ export const MapReduceScheduler: React.FC = () => {
                 setHasStarted(true);
                 triggerAction('Simulation Started');
               }}
-              className="flex items-center justify-center gap-2 px-4 md:px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-primary border border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)] flex-1 md:flex-none"
+              className="flex items-center justify-center gap-2 px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-primary border border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)] flex-none"
             >
               <Play className="w-3 h-3 fill-current" />
               Start
@@ -554,7 +554,7 @@ export const MapReduceScheduler: React.FC = () => {
           ) : (
             <button 
               onClick={initSimulation}
-              className="flex items-center justify-center gap-2 px-4 md:px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 flex-1 md:flex-none"
+              className="flex items-center justify-center gap-2 px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 flex-none"
             >
               <RotateCcw className="w-3 h-3" />
               Reset
@@ -568,55 +568,11 @@ export const MapReduceScheduler: React.FC = () => {
         onDragStart={handleDragStart} 
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-auto flex flex-col lg:flex-row overflow-hidden">
-          {/* Mobile-only Job Status Bar */}
-          <div className="lg:hidden px-4 py-3 border-b border-border bg-muted/30 shrink-0">
-            <div className="flex items-center justify-between px-2">
-              {[
-                { id: 'map', label: 'Map', icon: Database },
-                { id: 'shuffle', label: 'Shuffle', icon: Share2 },
-                { id: 'reduce', label: 'Reduce', icon: Filter },
-                { id: 'complete', label: 'Done', icon: CheckCircle2 }
-              ].map((p, idx) => {
-                const isCurrent = phase === p.id;
-                const isDone = idx < ['map', 'shuffle', 'reduce', 'complete'].indexOf(phase);
-                const isJobComplete = phase === 'complete' && p.id === 'complete';
-                const Icon = p.icon;
-                
-                return (
-                  <React.Fragment key={p.id}>
-                    <div className="flex flex-col items-center gap-1 relative">
-                      <div className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center border transition-all",
-                        isCurrent 
-                          ? isJobComplete ? "bg-emerald-500/10 border-emerald-500 text-emerald-500" : "bg-primary/10 border-primary text-primary"
-                          : isDone ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-500" : "bg-background border-border text-muted-foreground opacity-40"
-                      )}>
-                        {isDone || isJobComplete ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
-                      </div>
-                      {isCurrent && (
-                        <span className="text-[8px] font-black uppercase tracking-widest text-primary animate-pulse absolute -bottom-4 whitespace-nowrap">
-                          {p.label}
-                        </span>
-                      )}
-                    </div>
-                    {idx < 3 && (
-                      <div className={cn(
-                        "h-[1px] flex-1 mx-2",
-                        isDone ? "bg-emerald-500/30" : "bg-border"
-                      )} />
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </div>
-            <div className="h-4" /> {/* Spacer for the absolute label */}
-          </div>
-
-          {/* Left Panel: Controls & Info (Moves to bottom on mobile) */}
-          <aside className="w-full lg:w-72 border-t lg:border-t-0 lg:border-r border-border bg-muted/30 py-4 px-4 lg:py-6 lg:px-6 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col lg:self-stretch gap-4 lg:gap-6 overflow-y-auto custom-scrollbar shrink-0 order-last lg:order-first">
+        <div className="flex-auto flex flex-row overflow-hidden">
+          {/* Left Panel: Controls & Info */}
+          <aside className="w-72 border-r border-border bg-muted/30 py-4 px-6 flex flex-col self-stretch gap-6 overflow-y-auto custom-scrollbar shrink-0">
             {/* Desktop Job Status */}
-            <section className="hidden lg:block space-y-3">
+            <section className="block space-y-3">
               <div className="flex items-center gap-2 opacity-60">
                 <Activity className="w-4 h-4 text-primary" />
                 <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Job_Status</h3>
@@ -755,7 +711,7 @@ export const MapReduceScheduler: React.FC = () => {
             </section>
 
             {/* Metrics */}
-            <section className="pt-3 border-t border-border/50 space-y-2">
+            <section className="pt-2 border-t border-border/50 space-y-2">
               <div className="flex justify-between items-center bg-background/50 border border-border p-2 rounded-sm">
                 <span className="text-[8px] font-bold uppercase text-muted-foreground">Completion</span>
                 <span className="text-[10px] font-black text-foreground">{Math.round((tasks.filter(t => t.status === 'complete' && !t.isSpeculative).length / (tasks.filter(t => !t.isSpeculative).length || 1)) * 100)}%</span>
@@ -776,7 +732,7 @@ export const MapReduceScheduler: React.FC = () => {
             {/* Background Grid */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px] z-0" />
             
-            <div ref={containerRef} className="flex-auto py-4 px-4 lg:py-6 lg:px-6 overflow-y-auto custom-scrollbar relative z-10">
+            <div ref={containerRef} className="flex-auto py-3 px-4 lg:py-4 lg:px-6 overflow-y-auto custom-scrollbar relative z-10">
               {/* Network Lines */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible hidden lg:block">
                 <AnimatePresence>
@@ -823,7 +779,7 @@ export const MapReduceScheduler: React.FC = () => {
                 </AnimatePresence>
               </svg>
 
-              <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-6 relative z-10">
+              <div className="grid grid-cols-2 gap-6 relative z-10">
                 {workers.map(worker => (
                   <WorkerNode 
                     key={worker.id} 
@@ -931,7 +887,7 @@ export const MapReduceScheduler: React.FC = () => {
               </AnimatePresence>
 
               {/* Task Queue Panel */}
-              <div className="mt-4 space-y-3">
+              <div className="mt-2 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 opacity-60">
                     <Layers className="w-4 h-4 text-primary" />
@@ -939,7 +895,7 @@ export const MapReduceScheduler: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="min-h-[100px] p-4 bg-muted/20 border border-border border-dashed rounded-lg grid grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">
+                <div className="min-h-[60px] p-4 bg-muted/20 border border-border border-dashed rounded-lg grid grid-cols-6 gap-3">
                   <AnimatePresence>
                     {tasks
                       .filter(t => t.status !== 'complete' && !t.isSpeculative)
@@ -971,9 +927,9 @@ export const MapReduceScheduler: React.FC = () => {
                 {lastAction && (
                   <motion.div 
                     key={lastAction}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                    initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)', transition: { duration: 0.2 } }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="bg-background/95 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm inline-flex items-center gap-2 shadow-xl"
                   >
