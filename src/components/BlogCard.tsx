@@ -24,7 +24,7 @@ export default function BlogCard({ post, index }: BlogCardProps) {
       <div className="terminal-header bg-muted/50">
         <div className="flex items-center space-x-2">
           <FileText className="w-3 h-3 text-violet-500" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">log_{post.id}.txt</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">b-log_{post.id}.txt</span>
         </div>
         <div className="flex space-x-1">
           <div className="w-2 h-2 rounded-full bg-muted" />
@@ -32,15 +32,12 @@ export default function BlogCard({ post, index }: BlogCardProps) {
       </div>
 
       <div className="p-8 flex-grow">
-        <div className="flex items-start justify-between mb-6">
-          <div className="p-3 bg-violet-500/10 rounded-xl text-violet-500 group-hover:scale-110 transition-transform">
-            <BookOpen className="w-6 h-6" />
-          </div>
-          <span className="text-[10px] font-black text-violet-500/50 uppercase tracking-widest">Analysis Log</span>
+        <div className="flex items-start justify-end mb-6">
+          <span className="text-[10px] font-black text-violet-500/50 uppercase tracking-widest">Analysis B-Log</span>
         </div>
 
         <h3 className="text-xl font-black mb-4 text-foreground tracking-tight group-hover:text-violet-500 transition-colors line-clamp-2">
-          {post.title}
+          {post.title.split(':')[0]}
         </h3>
         
         <div className="flex items-start space-x-3 mb-6 p-4 bg-muted/50 rounded-xl border border-border">
@@ -58,7 +55,7 @@ export default function BlogCard({ post, index }: BlogCardProps) {
       <div className="p-8 pt-0">
         <div className="flex items-center justify-between pt-6 border-t border-border">
           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-            {post.date || '2024.03.25'}
+            {post.date || '--'}
           </span>
           <div className="flex items-center space-x-2 text-violet-500 font-bold uppercase tracking-widest text-[10px] group/link">
             <span>./read_log</span>

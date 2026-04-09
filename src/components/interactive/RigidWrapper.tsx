@@ -18,7 +18,8 @@ export const RigidWrapper: React.FC<RigidWrapperProps> = ({
     const updateScale = () => {
       if (containerRef.current && contentRef.current) {
         const containerWidth = containerRef.current.clientWidth;
-        const paddingX = 96; // px-12 = 48px * 2
+        // Use 4vw on each side for proportional padding
+        const paddingX = window.innerWidth * 0.08; 
         const availableWidth = Math.max(0, containerWidth - paddingX);
         const newScale = Math.min(1, availableWidth / width);
         setScale(newScale);
@@ -46,7 +47,7 @@ export const RigidWrapper: React.FC<RigidWrapperProps> = ({
   return (
     <div 
       ref={containerRef} 
-      className="w-full relative py-8 px-12 overflow-visible"
+      className="w-full relative py-8 px-[4vw] overflow-visible"
       style={{ height: typeof height === 'number' ? height + 64 : height }}
     >
       <div 

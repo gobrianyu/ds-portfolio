@@ -44,6 +44,18 @@ export default function BlogPage() {
   const [showPdf, setShowPdf] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setShowPdf(false);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (isPdfModalOpen) {
@@ -66,12 +78,12 @@ export default function BlogPage() {
 
   const getInteractiveTitle = () => {
     switch (post.id) {
-      case 'bigtable': return "Interactive Read Path Explorer";
+      case 'bigtable': return "BigTable Read Path Explorer";
       case 'gfs': return "GFS Failure Simulator";
-      case 'dynamo': return "Interactive Dynamo Ring";
-      case 'bitcoin': return "Bitcoin Block Mining & Fork Resolution Simulator";
-      case 'mapreduce': return "Be the Scheduler: MapReduce Task Assignment Game";
-      case 'tensorflow': return "TensorFlow Playground: Interactive Neural Network Visualizer";
+      case 'dynamo': return "Dynamo Ring Visualiser";
+      case 'bitcoin': return "Bitcoin Block Mining Simulator";
+      case 'mapreduce': return "MapReduce Task Scheduler";
+      case 'tensorflow': return "TensorFlow Neural Network Visualiser";
       default: return "Interactive Simulation Environment";
     }
   };
@@ -89,7 +101,7 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-10">
       <Link
         to="/blog"
         className="inline-flex items-center text-muted-foreground hover:text-primary mb-12 transition-colors font-bold uppercase tracking-widest text-[10px] group"
@@ -109,11 +121,11 @@ export default function BlogPage() {
               <Terminal className="w-3 h-3" />
               <span>Log: {post.id}</span>
             </div>
-            <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
-              Status: Analyzed
-            </div>
             <div className="px-3 py-1 bg-primary/10 rounded-md border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
               {post.date}
+            </div>
+            <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+              Status: Reviewed
             </div>
           </div>
 
@@ -143,12 +155,11 @@ export default function BlogPage() {
         </div>
 
         {/* Interactive Widget Section */}
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 sm:px-6 lg:px-8 mb-24 py-12 bg-muted/30 border-y border-border transition-colors overflow-visible">
+        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-[2vw] mb-24 py-12 bg-muted/30 border-y border-border transition-colors overflow-visible">
           <div className="max-w-7xl mx-auto overflow-visible">
             <div className="flex items-center gap-4 mb-4">
               <div className="h-px flex-grow bg-border" />
               <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full">
-                <Zap className="w-4 h-4 text-primary" />
                 <span className="text-[10px] font-black text-foreground uppercase tracking-widest text-center">{getInteractiveTitle()}</span>
               </div>
               <div className="h-px flex-grow bg-border" />
@@ -161,9 +172,6 @@ export default function BlogPage() {
           <div className="lg:col-span-8">
             <div className="prose prose-invert max-w-none">
               <div className="flex items-center space-x-4 mb-12">
-                <div className="p-3 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <FileText className="w-8 h-8 text-primary" />
-                </div>
                 <h2 className="text-4xl font-black m-0 text-foreground tracking-tight uppercase tracking-widest leading-none">Analysis & Discussion</h2>
               </div>
               
@@ -182,15 +190,10 @@ export default function BlogPage() {
             </div>
 
               <div className="mt-24 pt-12 border-t border-border flex items-center justify-between">
-                <div className="flex items-center space-x-6">
-                  <div className="w-20 h-20 bg-muted rounded-2xl border border-border flex items-center justify-center shadow-lg group hover:border-primary/30 transition-colors">
-                    <BookOpen className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase font-black tracking-widest mb-1">Written by</p>
-                    <p className="font-black text-2xl text-foreground tracking-tight">Brian S. Yu</p>
-                    <p className="text-sm text-muted-foreground font-medium italic">Distributed Systems Researcher</p>
-                  </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-black tracking-widest mb-1">Written by</p>
+                  <p className="font-black text-2xl text-foreground tracking-tight">Brian S. Yu</p>
+                  <p className="text-sm text-muted-foreground font-medium italic">Distributed Systems Blog</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground uppercase font-black tracking-widest mb-1">Published</p>
@@ -216,8 +219,8 @@ export default function BlogPage() {
                   <span className="text-xs font-mono text-muted-foreground">{Math.ceil(post.content.split(/\s+/).length / 225)}m</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-[9px] text-muted-foreground uppercase font-black">Temporal Coordinate</span>
-                  <span className="text-xs font-mono text-primary">MAR 2026</span>
+                  <span className="text-[9px] text-muted-foreground uppercase font-black">Last Updated</span>
+                  <span className="text-xs font-mono text-primary">APR 2026</span>
                 </div>
               </div>
             </div>
@@ -225,7 +228,7 @@ export default function BlogPage() {
             <div className="terminal-window p-8 bg-violet-500/5 border-violet-500/20 shadow-xl relative overflow-hidden">
               <div className="flex items-center space-x-3 mb-8">
                 <Quote className="w-6 h-6 text-violet-400" />
-                <h3 className="text-[11px] font-black text-foreground uppercase tracking-widest">Original Citation</h3>
+                <h3 className="text-[11px] font-black text-foreground uppercase tracking-widest">Paper Citation</h3>
               </div>
               <p className="text-muted-foreground italic text-base font-medium leading-relaxed mb-8">
                 "{post.citation}"
@@ -261,16 +264,18 @@ export default function BlogPage() {
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </a>
 
-                    <button 
-                      onClick={() => setShowPdf(!showPdf)}
-                      className="flex items-center justify-between w-full p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-400 text-[13px] font-bold hover:bg-violet-500/20 transition-all group whitespace-nowrap"
-                    >
-                      <span className="flex items-center">
-                        <Layers className="w-4 h-4 mr-3" />
-                        Interactive Reader
-                      </span>
-                      <ChevronRight className={`w-4 h-4 transition-all duration-300 group-hover:translate-x-1 ${showPdf ? 'rotate-90' : ''}`} />
-                    </button>
+                    {!isMobile && (
+                      <button 
+                        onClick={() => setShowPdf(!showPdf)}
+                        className="flex items-center justify-between w-full p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-400 text-[13px] font-bold hover:bg-violet-500/20 transition-all group whitespace-nowrap"
+                      >
+                        <span className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-3" />
+                          Interactive Reader
+                        </span>
+                        <ChevronRight className={`w-4 h-4 transition-all duration-300 group-hover:translate-x-1 ${showPdf ? 'rotate-90' : ''}`} />
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -284,8 +289,11 @@ export default function BlogPage() {
                   exit={{ opacity: 0, height: 0, y: -20 }}
                   className="overflow-hidden"
                 >
-                  <div className="terminal-window border-primary/30 bg-card shadow-2xl flex flex-col h-[800px]">
-                    <div className="terminal-header bg-muted px-4 py-2 border-b border-border flex items-center justify-between">
+                  <div 
+                    className="terminal-window border-primary/30 bg-card shadow-2xl flex flex-col h-[800px] rounded-xl overflow-hidden relative z-0"
+                    style={{ transform: 'translateZ(0)', isolation: 'isolate' }}
+                  >
+                    <div className="terminal-header bg-muted px-4 py-2 border-b border-border flex items-center justify-between rounded-t-xl">
                       <div className="flex items-center gap-2">
                         <FileText className="w-3 h-3 text-primary" />
                         <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Preview: {post.id}.pdf</span>
@@ -305,7 +313,7 @@ export default function BlogPage() {
                       />
                     </div>
 
-                    <div className="p-4 bg-muted border-t border-border">
+                    <div className="p-4 bg-muted border-t border-border rounded-b-xl">
                       <button 
                         onClick={() => setIsPdfModalOpen(true)}
                         className="w-full py-3 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 group"

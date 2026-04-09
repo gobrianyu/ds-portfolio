@@ -35,9 +35,8 @@ export default function Footer() {
             <h4 className="font-black text-xs uppercase tracking-[0.3em] mb-8 text-foreground">Connect</h4>
             <div className="flex space-x-6">
               <a href="https://github.com/gobrianyu" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><Github className="w-6 h-6" /></a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Linkedin className="w-6 h-6" /></a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Twitter className="w-6 h-6" /></a>
-              <a href="mailto:GoBrianYu@gmail.com" className="text-muted-foreground hover:text-primary transition-colors"><Mail className="w-6 h-6" /></a>
+              <a href="https://www.linkedin.com/in/gobrianyu/" className="text-muted-foreground hover:text-primary transition-colors"><Linkedin className="w-6 h-6" /></a>
+              <a href="mailto:gobrianyu@gmail.com" className="text-muted-foreground hover:text-primary transition-colors"><Mail className="w-6 h-6" /></a>
             </div>
           </div>
         </div>
