@@ -130,7 +130,7 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                 <motion.path 
                   key={`edge-${b.id}`}
                   d={`M ${px + BLOCK_W} ${py + BLOCK_H/2} L ${cx} ${cy + BLOCK_H/2}`}
-                  stroke={isMine ? "var(--primary)" : isMain ? "var(--primary)" : isGlobal ? "#f59e0b" : "#334155"}
+                  stroke={isMine ? "var(--violet-500)" : isMain ? "var(--violet-500)" : isGlobal ? "#8b5cf6" : "#334155"}
                   strokeWidth={isMine || isMain || isGlobal ? 2 : 1}
                   strokeOpacity={isMine || isMain || isGlobal ? 0.8 : 0.3}
                   strokeDasharray={isGlobal && !isMain ? "4 2" : "none"}
@@ -173,15 +173,15 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                   whileHover={{ scale: 1.1 }}
                   className={`absolute top-0 left-0 cursor-pointer rounded-sm border p-1.5 flex flex-col justify-between group bg-card ${
                     isMine
-                      ? 'border-primary ring-2 ring-primary/40 bg-primary/20'
+                      ? 'border-violet-500 ring-2 ring-violet-500/40 bg-violet-500/20'
                       : isMain 
                         ? confirmations >= confirmationThreshold
-                          ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] ring-1 ring-primary'
-                          : 'border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]'
+                          ? 'border-violet-500 bg-violet-500/10 shadow-[0_0_20px_rgba(var(--violet-500-rgb),0.3)] ring-1 ring-violet-500'
+                          : 'border-violet-500 bg-violet-500/10 shadow-[0_0_15px_rgba(var(--violet-500-rgb),0.15)]'
                         : isGlobal
-                          ? 'border-amber-500 bg-amber-500/5'
+                          ? 'border-violet-500 bg-violet-500/5'
                           : 'border-border'
-                  } ${hoveredBlock?.id === b.id ? 'z-50 border-foreground ring-2 ring-primary/20' : 'z-10'}`}
+                  } ${hoveredBlock?.id === b.id ? 'z-50 border-foreground ring-2 ring-violet-500/20' : 'z-10'}`}
                   style={{ 
                     width: BLOCK_W, 
                     height: BLOCK_H
@@ -191,7 +191,7 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                 >
                   <div className="w-full h-full flex flex-col justify-between" style={{ opacity: isOrphan ? 0.3 : 1 }}>
                     {isMine && (
-                      <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[5px] font-black px-1 rounded-full border border-background z-20">
+                      <div className="absolute -top-2 -right-2 bg-violet-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-background z-20 shadow-sm">
                         YOU
                       </div>
                     )}
@@ -207,8 +207,8 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                       <span className="text-[11px] font-bold truncate max-w-[60px] text-foreground">{b.id}</span>
                       {confirmations > 0 && (
                         <div className="flex items-center gap-0.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                          <span className="text-[9px] font-black text-primary">{confirmations}c</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                          <span className="text-[9px] font-black text-violet-500">{confirmations}c</span>
                         </div>
                       )}
                     </div>
@@ -232,14 +232,14 @@ export const BlockTree: React.FC<BlockTreeProps> = ({
                         </div>
                         <div className="flex justify-between">
                           <span>Status</span>
-                          <span className={isMain ? 'text-primary' : 'text-amber-500'}>
+                          <span className={isMain ? 'text-violet-500' : 'text-violet-500'}>
                             {isMain ? 'MAIN_CHAIN' : 'ORPHANED'}
                           </span>
                         </div>
                         {confirmations > 0 && (
                           <div className="flex justify-between">
                             <span>Confirmations</span>
-                            <span className="text-primary">{confirmations}</span>
+                            <span className="text-violet-500">{confirmations}</span>
                           </div>
                         )}
                       </div>

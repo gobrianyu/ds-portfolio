@@ -13,6 +13,7 @@ interface CodeBlockProps {
   index?: number;
   hideHeader?: boolean;
   hideDescription?: boolean;
+  showComments?: boolean;
 }
 
 export default function CodeBlock({ 
@@ -22,12 +23,26 @@ export default function CodeBlock({
   codeUrl, 
   index = 0,
   hideHeader = false,
-  hideDescription = false
+  hideDescription = false,
+  showComments = true
 }: CodeBlockProps) {
   const { theme } = useTheme();
-  const [code, setCode] = useState<string>(initialCode || '');
+  const [rawCode, setRawCode] = useState<string>(initialCode || '');
   const [loading, setLoading] = useState<boolean>(!!codeUrl && !initialCode);
   const [error, setError] = useState<string | null>(null);
+
+  const stripComments = (code: string) => {
+    if (showComments) return code;
+    
+    // Remove multi-line comments
+    let stripped = code.replace(/\/\*[\s\S]*?\*\//g, '');
+    // Remove single-line comments
+    stripped = stripped.replace(/\/\/.*$/gm, '');
+    // Clean up extra empty lines that might be left behind
+    return stripped.split('\n').filter(line => line.trim() !== '' || line === '').join('\n').replace(/\n{3,}/g, '\n\n');
+  };
+
+  const code = stripComments(rawCode);
 
   const getLanguage = (filename: string) => {
     const ext = filename.split('.').pop()?.toLowerCase();
@@ -58,7 +73,7 @@ export default function CodeBlock({
           return res.text();
         })
         .then(text => {
-          setCode(text);
+          setRawCode(text);
           setLoading(false);
         })
         .catch(err => {
@@ -78,10 +93,10 @@ export default function CodeBlock({
       className={hideHeader ? "" : "mb-8"}
     >
       {!hideHeader && (
-        <div className="flex items-center justify-between bg-muted px-4 py-2 rounded-t-xl border-x border-t border-border">
-          <div className="flex items-center space-x-2">
-            <FileCode className="w-4 h-4 text-primary" />
-            <span className="text-xs font-mono text-foreground font-bold">{filename}</span>
+        <div className="flex items-center justify-between bg-muted px-4 py-2 border-x border-t border-border">
+          <div className="flex items-center space-x-2 min-w-0">
+            <FileCode className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-xs font-mono text-foreground font-bold truncate">{filename}</span>
           </div>
           <div className="flex space-x-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50" />
@@ -91,7 +106,7 @@ export default function CodeBlock({
         </div>
       )}
       
-      <div className={`code-block ${hideHeader ? "rounded-xl" : "rounded-t-none rounded-b-xl"} border border-border min-h-[100px] flex flex-col overflow-hidden bg-card`}>
+      <div className={`code-block ${hideHeader ? "rounded-none border-none" : "rounded-none border border-border"} min-h-[100px] flex flex-col overflow-hidden bg-card`}>
         {loading ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -110,6 +125,7 @@ export default function CodeBlock({
               background: 'transparent',
               fontSize: '0.875rem',
               lineHeight: '1.5',
+              borderRadius: '0px',
             }}
             codeTagProps={{
               style: {

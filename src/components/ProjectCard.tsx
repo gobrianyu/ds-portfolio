@@ -19,46 +19,51 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
       transition={{ delay: index * 0.1 }}
       viewport={{ once: true }}
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="terminal-window group hover:border-primary/50 transition-all duration-500 cursor-pointer shadow-lg hover:shadow-primary/10"
+      className="terminal-window group hover:border-orange-500/50 transition-all duration-500 flex flex-col cursor-pointer shadow-lg hover:shadow-orange-500/20 relative overflow-hidden bg-card/40 backdrop-blur-sm h-full"
     >
-      <div className="terminal-header">
+      <div className="terminal-header bg-muted/50">
         <div className="flex items-center space-x-2">
-          <FileCode className="w-3 h-3 text-primary" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{project.id}.java</span>
+          <FileCode className="w-3 h-3 text-orange-500" />
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">MODULE: {project.id.toUpperCase()}</span>
         </div>
-        <div className="flex space-x-1">
-          <div className="w-2 h-2 rounded-full bg-muted" />
-          <div className="w-2 h-2 rounded-full bg-muted" />
+        <div className="flex items-center gap-4">
+          <div className="flex space-x-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500/20" />
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500/40" />
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500/60" />
+          </div>
         </div>
       </div>
 
-      <div className="p-8">
-        <div className="flex items-start justify-between mb-6">
-          <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
-            <Code className="w-6 h-6" />
-          </div>
-          <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest">Process Running</span>
-        </div>
-
-        <h3 className="text-2xl font-black mb-4 text-foreground tracking-tight group-hover:text-primary transition-colors">
-          {project.title}
-        </h3>
-        
-        <p className="text-muted-foreground mb-8 line-clamp-2 text-sm font-medium leading-relaxed">
-          {project.shortDescription}
-        </p>
-
-        <div className="flex items-center justify-between pt-6 border-t border-border">
-          <div className="flex space-x-2">
-            {['Distributed', 'Java', 'Systems'].map((tag) => (
-              <span key={tag} className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest px-2 py-1 bg-muted rounded-md">
+      <div className="p-8 flex-grow relative z-10 flex flex-col">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex gap-1 overflow-hidden [mask-image:linear-gradient(to_right,black_70%,transparent)] min-w-0">
+            {project.technologies.slice(0, 3).map(tag => (
+              <span key={tag} className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded text-[8px] font-black text-orange-400 uppercase tracking-widest whitespace-nowrap">
                 {tag}
               </span>
             ))}
           </div>
-          <div className="flex items-center space-x-2 text-primary font-bold uppercase tracking-widest text-[10px] group/link">
-            <span>./inspect</span>
-            <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
+        </div>
+
+        <h3 className="text-2xl font-black mb-4 text-foreground tracking-tighter group-hover:text-orange-500 transition-colors line-clamp-2 leading-[1.1]">
+          {project.title}
+        </h3>
+        
+        <p className="text-muted-foreground mb-8 line-clamp-3 text-sm font-medium leading-relaxed flex-grow">
+          {project.shortDescription}
+        </p>
+
+        <div className="flex items-center justify-between pt-6 border-t border-border/50">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-black text-orange-500/40 uppercase tracking-[0.2em] shrink-0">System_Nominal</span>
+          </div>
+          <div className="flex items-center space-x-2 text-orange-500 font-black uppercase tracking-widest text-[10px] group/link">
+            <span className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">CAT ./MODULE</span>
+            <div className="w-6 h-6 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all">
+              <ArrowRight className="w-3 h-3" />
+            </div>
           </div>
         </div>
       </div>

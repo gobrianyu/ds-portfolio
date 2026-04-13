@@ -1,7 +1,6 @@
-# Design Document – Lab 1: Simple RPC
-**Brian S. Yu**  
-**1/14/2026**  
-**CSE 452**
+# System 01: Exactly-Once RPC
+**Brian S. Yu**
+**2026.01.14**
 
 ## Preface
 ### Goals

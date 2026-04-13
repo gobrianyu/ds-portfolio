@@ -105,10 +105,6 @@ const DesignDoc: React.FC<DesignDocProps> = ({ url }) => {
             <span className="text-primary/40">DATE</span>
             <span>{doc.date}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-primary/40">REF</span>
-            <span>{doc.course}</span>
-          </div>
         </div>
       </div>
 

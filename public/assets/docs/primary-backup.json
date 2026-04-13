@@ -2,7 +2,6 @@
   "title": "Design Document – Lab 2: Primary-Backup Replication",
   "author": "Brian S. Yu",
   "date": "2/10/2026",
-  "course": "CSE 452",
   "sections": [
     {
       "title": "Overview",

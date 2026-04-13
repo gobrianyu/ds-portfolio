@@ -8,10 +8,10 @@ interface MempoolViewProps {
 }
 
 const getFeeColor = (satVb: number) => {
-  if (satVb >= 50) return 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]';
-  if (satVb >= 25) return 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.3)]';
-  if (satVb >= 10) return 'bg-yellow-300 shadow-[0_0_4px_rgba(253,224,71,0.2)]';
-  if (satVb >= 5) return 'bg-lime-400';
+  if (satVb >= 50) return 'bg-orange-600 shadow-[0_0_8px_rgba(249,115,22,0.4)]';
+  if (satVb >= 25) return 'bg-orange-400 shadow-[0_0_6px_rgba(251,146,60,0.3)]';
+  if (satVb >= 10) return 'bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.2)]';
+  if (satVb >= 5) return 'bg-amber-300';
   return 'bg-emerald-500';
 };
 
@@ -44,12 +44,12 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
     <div className="w-full h-full border-l border-border bg-muted/30 p-4 flex flex-col gap-4 overflow-hidden shrink-0 relative">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 opacity-60">
-          <Layers className="w-4 h-4 text-primary" />
+          <Layers className="w-4 h-4 text-violet-500" />
           <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Mempool_Grid</h3>
         </div>
-        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/10 rounded-full">
-          <Activity className="w-2.5 h-2.5 text-primary animate-pulse" />
-          <span className="text-[8px] font-bold text-primary tabular-nums">{transactions.length}</span>
+        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-violet-500/10 rounded-full">
+          <Activity className="w-2.5 h-2.5 text-violet-500 animate-pulse" />
+          <span className="text-[8px] font-bold text-violet-500 tabular-nums">{transactions.length}</span>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
                       e.stopPropagation();
                       setPinnedTxId(prev => prev === tx.id ? null : tx.id);
                     }}
-                    className={`aspect-square rounded-[1px] cursor-pointer border border-transparent hover:border-primary/60 hover:shadow-[inset_0_0_0_1px_rgba(var(--primary-rgb),0.4)] hover:z-10 transition-colors duration-200 ${getFeeColor(satVb)} ${pinnedTxId === tx.id ? 'ring-2 ring-primary z-20 border-primary shadow-lg' : ''}`}
+                    className={`aspect-square rounded-[1px] cursor-pointer border border-transparent hover:border-violet-500/60 hover:shadow-[inset_0_0_0_1px_rgba(var(--violet-500-rgb),0.4)] hover:z-10 transition-colors duration-200 ${getFeeColor(satVb)} ${pinnedTxId === tx.id ? 'ring-2 ring-violet-500 z-20 border-violet-500 shadow-lg' : ''}`}
                   />
                 );
               })}
@@ -124,7 +124,7 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
               className="absolute bottom-2 left-2 right-2 bg-card border border-border p-2 rounded shadow-2xl z-20 pointer-events-none ring-1 ring-black/5 opacity-100"
             >
               <div className="flex justify-between items-center mb-1">
-                <span className="text-[8px] font-black text-primary uppercase tracking-widest">{displayTx.id}</span>
+                <span className="text-[8px] font-black text-violet-500 uppercase tracking-widest">{displayTx.id}</span>
                 <Info className="w-2.5 h-2.5 text-muted-foreground" />
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -167,10 +167,10 @@ export const MempoolView: React.FC<MempoolViewProps> = ({ transactions }) => {
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <div className="flex gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <div className="w-1.5 h-1.5 rounded-full bg-lime-400" />
-            <div className="w-1.5 h-1.5 rounded-full bg-yellow-300" />
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-300" />
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-600" />
           </div>
           <span className="text-[6px] font-bold uppercase tracking-widest text-muted-foreground">Fee_Gradient</span>
         </div>

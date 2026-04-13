@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Database, Layers, Zap, Clock, HardDrive, 
-  CheckCircle2, XCircle, Info, Settings2, Play, 
-  RotateCcw, FileText
+  Route, Layers, Gauge, HardDrive, 
+  CheckCircle2, XCircle, Info, Play, 
+  RotateCcw, Box, Terminal, Cpu
 } from 'lucide-react';
 
 interface Step {
@@ -44,15 +44,18 @@ const BigtableReadPath: React.FC = () => {
     completedQueries: 0
   });
 
+  const simulationIdRef = useRef(0);
+
   const queries = ['user_123', 'user_456', 'user_789', 'user_999'];
   const ANIMATION_SPEED = 250; // Snappy animations
 
   const initSimulation = useCallback(() => {
+    simulationIdRef.current++;
     const newSteps: Step[] = [
-      { id: 'routing', title: 'Request Routing', description: 'Locating tablet server via metadata service...', status: 'pending', latency: 0.2 },
-      { id: 'row_cache', title: 'Row Cache', description: 'Checking in-memory row cache...', status: 'pending', latency: 0.1 },
-      { id: 'block_cache', title: 'Block Cache', description: 'Checking cached SSTable blocks...', status: 'pending', latency: 0.1 },
-      { id: 'memtable', title: 'Memtable', description: 'Searching active memtable...', status: 'pending', latency: 0.5 },
+      { id: 'routing', title: 'Request Routing', description: 'Locate tablet server via metadata service', status: 'pending', latency: 0.2 },
+      { id: 'row_cache', title: 'Row Cache', description: 'Check in-memory row cache', status: 'pending', latency: 0.1 },
+      { id: 'block_cache', title: 'Block Cache', description: 'Check cached SSTable blocks', status: 'pending', latency: 0.1 },
+      { id: 'memtable', title: 'Memtable', description: 'Search active memtable', status: 'pending', latency: 0.5 },
     ];
 
     for (let i = 1; i <= sstableCount; i++) {
@@ -65,7 +68,7 @@ const BigtableReadPath: React.FC = () => {
       });
     }
 
-    newSteps.push({ id: 'merge', title: 'Merge & Return', description: 'Merging results from all layers...', status: 'pending', latency: 0.1 });
+    newSteps.push({ id: 'merge', title: 'Merge & Return', description: 'Merge results from all layers', status: 'pending', latency: 0.1 });
     
     setSteps(newSteps);
     setCurrentStepIndex(-1);
@@ -85,6 +88,7 @@ const BigtableReadPath: React.FC = () => {
   const runBatchSimulation = async () => {
     if (isSimulating) return;
     setIsSimulating(true);
+    const currentId = ++simulationIdRef.current;
     setResults([]);
     setMetrics({ totalBatchLatency: 0, currentQueryLatency: 0, diskSeeks: 0, completedQueries: 0 });
 
@@ -92,6 +96,7 @@ const BigtableReadPath: React.FC = () => {
     let totalSeeks = 0;
 
     for (let qIdx = 0; qIdx < queries.length; qIdx++) {
+      if (simulationIdRef.current !== currentId) return;
       const rowKey = queries[qIdx];
       let currentQueryTime = 0;
       let found = false;
@@ -102,16 +107,19 @@ const BigtableReadPath: React.FC = () => {
       setSteps(prev => prev.map(s => ({ ...s, status: 'pending' })));
       setCurrentStepIndex(-1);
       await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+      if (simulationIdRef.current !== currentId) return;
 
       // 1. Routing
       setCurrentStepIndex(0);
       await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+      if (simulationIdRef.current !== currentId) return;
       updateStep(0, 'completed', 0.2);
       currentQueryTime += 0.2;
 
       // 2. Row Cache
       setCurrentStepIndex(1);
       await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+      if (simulationIdRef.current !== currentId) return;
       if (cacheWarm && rowKey === 'user_123') {
         updateStep(1, 'hit', 0.1);
         currentQueryTime += 0.1;
@@ -126,6 +134,7 @@ const BigtableReadPath: React.FC = () => {
       if (!found) {
         setCurrentStepIndex(2);
         await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+        if (simulationIdRef.current !== currentId) return;
         // Simulate block cache hit for user_123 if row cache missed but cache is warm
         if (cacheWarm && rowKey === 'user_123') {
            updateStep(2, 'hit', 0.1);
@@ -142,6 +151,7 @@ const BigtableReadPath: React.FC = () => {
       if (!found) {
         setCurrentStepIndex(3);
         await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+        if (simulationIdRef.current !== currentId) return;
         if (rowKey === 'user_456') {
           updateStep(3, 'hit', 0.5);
           currentQueryTime += 0.5;
@@ -159,6 +169,7 @@ const BigtableReadPath: React.FC = () => {
           const stepIdx = i + 4;
           setCurrentStepIndex(stepIdx);
           await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+          if (simulationIdRef.current !== currentId) return;
 
           const isTargetInThisSSTable = (rowKey === 'user_123' && i === 0) || (rowKey === 'user_789' && i === 1);
           
@@ -205,6 +216,7 @@ const BigtableReadPath: React.FC = () => {
       const mergeStepIdx = steps.length - 1;
       setCurrentStepIndex(mergeStepIdx);
       await new Promise(r => setTimeout(r, ANIMATION_SPEED));
+      if (simulationIdRef.current !== currentId) return;
       
       if (!found) {
         updateStep(mergeStepIdx, 'miss', 0.1);
@@ -234,36 +246,27 @@ const BigtableReadPath: React.FC = () => {
       }));
     }
 
-    setIsSimulating(false);
-    setCurrentStepIndex(-1);
+    if (simulationIdRef.current === currentId) {
+      setIsSimulating(false);
+      setCurrentStepIndex(-1);
+    }
   };
 
   const [activeTab, setActiveTab] = useState<'config' | 'viz' | 'results'>('viz');
 
   return (
-    <div className="w-[1200px] mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors h-[850px]">
+    <div className="w-[1200px] mx-auto h-[800px] bg-background border border-border shadow-[0_0_50px_rgba(0,0,0,0.1)] flex flex-col relative overflow-hidden rounded-xl font-mono selection:bg-violet-500/30 text-foreground transition-all">
+      
+      {/* Background Grid & Atmosphere */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-20 pointer-events-none bg-[linear-gradient(rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.1)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:30px_30px]" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_-20%,rgba(139,92,246,0.15),transparent_70%)]" />
+      
       {/* Header */}
-      <header className="flex flex-row items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0 gap-4">
-        <div className="flex items-center gap-6">
+      <header className="h-16 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0 z-30 relative">
+        <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <Database className="w-5 h-5 text-primary" />
-            <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">BIGTABLE_READ_PATH_V1</h1>
-          </div>
-          
-          <div className="hidden lg:flex items-center gap-4 px-3 py-1.5 bg-background border border-border rounded-sm">
-            <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">System_Status</span>
-              <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-                {isSimulating ? 'SIMULATING' : 'IDLE'}
-              </span>
-            </div>
-            <div className="h-4 w-[1px] bg-border" />
-            <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">Queries</span>
-              <span className="text-[10px] font-black text-foreground tabular-nums">
-                {metrics.completedQueries} / {queries.length}
-              </span>
-            </div>
+            <Box className="w-5 h-5 text-violet-500" />
+            <h1 className="text-[14px] font-black uppercase tracking-[0.25em] text-foreground">BIGTABLE_READ_PATH_v1.0</h1>
           </div>
         </div>
 
@@ -271,177 +274,235 @@ const BigtableReadPath: React.FC = () => {
           <button 
             onClick={runBatchSimulation}
             disabled={isSimulating}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-bold text-[11px] uppercase transition-all border ${
+            className={`group flex items-center justify-center gap-2 px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
               isSimulating 
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20' 
-                : 'bg-primary border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
+                ? 'bg-muted border-border text-muted-foreground' 
+                : 'bg-violet-500/10 border-violet-500/40 text-violet-400 hover:bg-violet-500/20 shadow-[0_0_20px_rgba(139,92,246,0.1)]'
             }`}
           >
             {isSimulating ? <RotateCcw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
-            {isSimulating ? 'simulating...' : 'run_batch'}
+            {isSimulating ? 'Processing...' : 'Execute_Batch'}
           </button>
           <button 
             onClick={initSimulation}
-            disabled={isSimulating}
-            className="flex items-center justify-center p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
-            title="Reset"
+            className="flex items-center justify-center w-10 h-10 bg-card hover:bg-muted text-foreground rounded-xl transition-all border border-border group"
+            title="Reset System"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4 group-hover:-rotate-180 transition-transform duration-500" />
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 flex-row overflow-hidden">
-        {/* Left Panel: Config */}
-        <aside className="w-80 border-r border-border bg-muted/30 p-6 flex flex-col gap-8 shrink-0 relative z-20">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 opacity-60">
-              <Settings2 className="w-4 h-4 text-primary" />
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Parameters</h3>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="space-y-3">
+      <div className="flex flex-1 flex-row overflow-hidden relative z-10">
+        {/* Left Panel: Control Panel */}
+        <aside className="w-80 border-r border-border bg-card/30 backdrop-blur-sm p-8 flex flex-col gap-10 shrink-0">
+          <section className="space-y-6">
+            <h3 className="text-[11px] font-black opacity-80 mb-3 uppercase tracking-[0.2em] text-foreground/80">Parameters</h3>            
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/30 rounded-2xl border border-border space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                    Bloom Filters 
-                    <div className="group relative inline-block">
-                      <Info size={12} className="text-primary/50 cursor-help" />
-                      <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-64 p-3 bg-card border border-border rounded text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-[100] shadow-2xl">
-                        Probabilistic data structure that tells if a key is definitely NOT in an SSTable, avoiding disk seeks.
-                      </div>
-                    </div>
-                  </span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-foreground/80">Bloom Filters</span>
                   <button 
                     onClick={() => setBloomEnabled(!bloomEnabled)}
                     disabled={isSimulating}
-                    className={`w-10 h-5 rounded-full relative transition-colors ${bloomEnabled ? 'bg-primary' : 'bg-muted'}`}
+                    className={`w-10 h-5 rounded-full relative transition-all duration-300 ${bloomEnabled ? 'bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.4)]' : 'bg-muted-foreground/20'}`}
                   >
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${bloomEnabled ? 'left-6' : 'left-1'}`} />
+                    <motion.div 
+                      animate={{ x: bloomEnabled ? 22 : 4 }}
+                      className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
+                    />
                   </button>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                    Warm Cache 
-                    <div className="group relative inline-block">
-                      <Info size={12} className="text-primary/50 cursor-help" />
-                      <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-64 p-3 bg-card border border-border rounded text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-[100] shadow-2xl">
-                        Simulates data already residing in memory (Row & Block caches).
-                      </div>
-                    </div>
-                  </span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-foreground/80">Warm Cache</span>
                   <button 
                     onClick={() => setCacheWarm(!cacheWarm)}
                     disabled={isSimulating}
-                    className={`w-10 h-5 rounded-full relative transition-colors ${cacheWarm ? 'bg-primary' : 'bg-muted'}`}
+                    className={`w-10 h-5 rounded-full relative transition-all duration-300 ${cacheWarm ? 'bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.4)]' : 'bg-muted-foreground/20'}`}
                   >
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${cacheWarm ? 'left-6' : 'left-1'}`} />
+                    <motion.div 
+                      animate={{ x: cacheWarm ? 22 : 4 }}
+                      className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
+                    />
                   </button>
                 </div>
+              </div>
 
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      SSTables 
-                      <div className="group relative inline-block">
-                        <Info size={12} className="text-primary/50 cursor-help" />
-                        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-64 p-3 bg-card border border-border rounded text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-[100] shadow-2xl">
-                          Number of immutable on-disk files. More files increase lookup complexity without Bloom filters.
-                        </div>
-                      </div>
-                    </span>
-                    <span className="text-[10px] font-mono text-primary font-bold">{sstableCount}</span>
+              <div className="p-4 bg-muted/30 rounded-2xl border border-border space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] font-black text-foreground/80 uppercase tracking-widest">SSTables</span>
+                  <span className="px-2 py-0.5 bg-violet-500/20 text-violet-400 rounded text-[10px] font-black">{sstableCount}</span>
+                </div>
+                <div className="relative flex items-center h-6">
+                  <div className="absolute left-0 right-0 h-1 bg-border rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" 
+                      style={{ width: `${((sstableCount - 1) / 4) * 100}%` }}
+                    />
                   </div>
                   <input 
                     type="range" min="1" max="5" value={sstableCount} 
                     onChange={(e) => setSstableCount(parseInt(e.target.value))}
                     disabled={isSimulating}
-                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50"
-                    style={{
-                      background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${(sstableCount - 1) / 4 * 100}%, var(--muted) ${(sstableCount - 1) / 4 * 100}%, var(--muted) 100%)`
-                    }}
+                    className="absolute inset-0 w-full h-full bg-transparent appearance-none cursor-pointer accent-violet-500 disabled:opacity-50 z-10"
                   />
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="mt-auto space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-primary" />
-                  <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">Progress</span>
-                </div>
-                <span className="text-[10px] font-mono text-muted-foreground font-bold tabular-nums">
-                  {metrics.completedQueries} / {queries.length}
-                </span>
+          <section className="mt-auto space-y-6">
+            <div className="p-5 bg-violet-500/5 rounded-2xl border border-violet-500/20 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="w-3 h-3 text-violet-400" />
+                <h4 className="text-[10px] font-black text-violet-400 uppercase tracking-widest">INSIGHT</h4>
               </div>
-              <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden border border-border">
-                <motion.div 
-                  className="bg-primary h-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(metrics.completedQueries / queries.length) * 100}%` }}
-                />
-              </div>
+              <p className="text-[10px] leading-relaxed text-muted-foreground">
+                Bloom filters significantly reduce P99 latency by avoiding unnecessary disk I/O for non-existent keys.
+              </p>
             </div>
           </section>
         </aside>
 
         {/* Main Area: Visualizer */}
-        <main className="flex-1 p-8 flex flex-col items-center justify-center relative overflow-hidden bg-background/50">
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px] z-0" />
+        <main className="flex-1 p-12 flex flex-col items-center justify-center relative overflow-hidden bg-muted/10">
+          {/* Grid Background for Center Area */}
+          <div className="absolute inset-0 opacity-[0.2] dark:opacity-50 pointer-events-none bg-[linear-gradient(rgba(139,92,246,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.3)_1px,transparent_1px)] bg-[size:50px_50px]" />
           
-          <div className="w-full max-w-md space-y-3 relative z-10">
+          <div className="w-full max-w-lg relative z-10 space-y-3">
             <AnimatePresence mode="popLayout">
-              {steps.map((step, idx) => {
-                const isActive = currentStepIndex === idx;
+              {steps.filter(s => !s.id.startsWith('sstable_')).map((step, idx) => {
+                const stepIndexInFull = steps.findIndex(s => s.id === step.id);
+                const isActive = currentStepIndex === stepIndexInFull;
                 const isHit = step.status === 'hit';
                 const isMiss = step.status === 'miss';
-                const isSkipped = step.status === 'skipped';
+                const isCompleted = step.status === 'completed';
 
                 return (
                   <motion.div
                     key={step.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ 
-                      opacity: 1, 
-                      scale: isActive ? 1.02 : 1,
-                      borderColor: isActive ? 'var(--primary)' : isHit ? '#10b981' : isMiss ? '#ef4444' : 'var(--border)'
-                    }}
-                    className={`p-3 rounded-sm border transition-all duration-300 relative overflow-hidden ${
-                      isActive ? 'bg-primary/10 shadow-[0_0_20px_rgba(242,125,38,0.1)]' : 
-                      isHit ? 'bg-emerald-500/10 border-emerald-500/30' :
-                      isMiss ? 'bg-red-500/10 border-red-500/30' :
-                      isSkipped ? 'bg-red-500/5 border-red-500/10 opacity-40' :
-                      'bg-card'
-                    }`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-sm ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                          {step.id === 'routing' ? <Search size={14} /> :
-                           step.id === 'row_cache' ? <Zap size={14} /> : 
-                           step.id === 'block_cache' ? <Zap size={14} /> : 
-                           step.id === 'memtable' ? <Layers size={14} /> :
-                           step.id === 'merge' ? <CheckCircle2 size={14} /> :
-                           <Database size={14} />}
+                    <motion.div
+                      layout
+                      animate={{ 
+                        scale: isActive ? 1.02 : 1,
+                      }}
+                      className={`group p-4 rounded-2xl border-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm ${
+                        isActive ? 'border-violet-500 bg-violet-500/10 shadow-[0_0_30px_rgba(139,92,246,0.2)] z-20' : 
+                        isHit ? 'border-emerald-500/40 bg-emerald-500/5' :
+                        isMiss ? 'border-red-500/40 bg-red-500/5' :
+                        isCompleted ? 'border-violet-500/20 bg-violet-500/5' :
+                        'border-border bg-card/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 ${
+                            isActive ? 'bg-violet-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)]' : 
+                            isHit ? 'bg-emerald-500/20 text-emerald-500' :
+                            isMiss ? 'bg-red-500/20 text-red-500' :
+                            isCompleted ? 'bg-violet-500/20 text-violet-400' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            {step.id === 'routing' ? <Route size={18} /> :
+                             step.id === 'row_cache' ? <Gauge size={18} /> : 
+                             step.id === 'block_cache' ? <Cpu size={18} /> : 
+                             step.id === 'memtable' ? <Layers size={18} /> :
+                             step.id === 'merge' ? <CheckCircle2 size={18} /> :
+                             <HardDrive size={18} />}
+                          </div>
+                          <div>
+                            <h4 className={`text-[11px] font-black uppercase tracking-widest transition-colors ${isActive ? 'text-violet-400' : 'text-foreground'}`}>
+                              {step.title}
+                            </h4>
+                            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tighter opacity-60 mt-0.5">
+                              {step.description}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-primary' : 'text-foreground'}`}>
-                            {step.title}
-                          </h4>
+                        <div className="flex items-center gap-3">
+                          {isHit && (
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/20 rounded-lg">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                              <span className="text-[8px] font-black text-emerald-500 uppercase">HIT</span>
+                            </div>
+                          )}
+                          {isMiss && (
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-red-500/20 rounded-lg">
+                              <XCircle className="w-3 h-3 text-red-500" />
+                              <span className="text-[8px] font-black text-red-500 uppercase">MISS</span>
+                            </div>
+                          )}
+                          {isActive && (
+                            <motion.div 
+                              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                              transition={{ repeat: Infinity, duration: 1.5 }}
+                              className="w-2 h-2 bg-violet-500 rounded-full shadow-[0_0_10px_rgba(139,92,246,1)]" 
+                            />
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {isHit && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                        {isMiss && <XCircle className="w-4 h-4 text-red-500" />}
-                        {isSkipped && <XCircle className="w-4 h-4 text-red-500/50" />}
-                        {isActive && <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />}
-                      </div>
-                    </div>
+                    </motion.div>
+
+                    {/* Inject Storage Layer after Memtable */}
+                    {step.id === 'memtable' && (
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 rounded-2xl border-2 border-border bg-card/30 backdrop-blur-sm space-y-4"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                            <HardDrive size={16} />
+                          </div>
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/80">Storage Layer (SSTables)</h4>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          {steps.filter(s => s.id.startsWith('sstable_')).map((ssStep) => {
+                            const ssIdx = steps.findIndex(s => s.id === ssStep.id);
+                            const isSSActive = currentStepIndex === ssIdx;
+                            const isSSHit = ssStep.status === 'hit';
+                            const isSSMiss = ssStep.status === 'miss';
+                            const isSSSkipped = ssStep.status === 'skipped';
+
+                            return (
+                              <div 
+                                key={ssStep.id}
+                                className={`flex-1 p-2 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-1.5 ${
+                                  isSSActive ? 'border-violet-500 bg-violet-500/10 shadow-[0_0_15px_rgba(139,92,246,0.2)]' :
+                                  isSSHit ? 'border-emerald-500/40 bg-emerald-500/10' :
+                                  isSSMiss ? 'border-red-500/40 bg-red-500/10' :
+                                  isSSSkipped ? 'border-border/20 bg-muted/10 opacity-40' :
+                                  'border-border bg-muted/20'
+                                }`}
+                              >
+                                <span className="text-[8px] font-black uppercase tracking-tighter opacity-60">SS_{ssStep.id.split('_')[1]}</span>
+                                <div className="h-4 flex items-center justify-center">
+                                  {isSSActive ? (
+                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity }} className="w-1.5 h-1.5 bg-violet-500 rounded-full" />
+                                  ) : isSSHit ? (
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                  ) : isSSMiss ? (
+                                    <XCircle className="w-3 h-3 text-red-500" />
+                                  ) : isSSSkipped ? (
+                                    <XCircle className="w-3 h-3 text-muted-foreground/40" />
+                                  ) : (
+                                    <div className="w-1.5 h-1.5 bg-border rounded-full" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
                   </motion.div>
                 );
               })}
@@ -449,78 +510,86 @@ const BigtableReadPath: React.FC = () => {
           </div>
         </main>
 
-        {/* Right Panel: Results & Metrics */}
-        <aside className="w-80 border-l border-border bg-muted/30 p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar shrink-0">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 opacity-60">
-              <Clock className="w-4 h-4 text-primary" />
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Metrics</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-card border border-border rounded-sm">
-                <p className="text-[8px] font-bold text-muted-foreground uppercase mb-1">Total Time</p>
-                <p className="text-lg font-black text-foreground tabular-nums">{metrics.totalBatchLatency.toFixed(1)}<span className="text-[9px] text-primary ml-1">ms</span></p>
+        {/* Right Panel: Analytics */}
+        <aside className="w-80 border-l border-border bg-card/30 backdrop-blur-sm p-8 flex flex-col gap-8 overflow-hidden">
+          <section className="space-y-6">
+            <h3 className="text-[11px] font-black mb-3 opacity-80 uppercase tracking-[0.2em] text-foreground/80">Performance</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="px-5 pb-5 pt-3 bg-card border border-border rounded-2xl shadow-sm">
+                <div className="mb-2 opacity-60">
+                  <span className="text-[8px] font-black uppercase tracking-widest">Total Latency</span>
+                </div>
+                <p className="text-xl font-black text-foreground tabular-nums leading-none">
+                  {metrics.totalBatchLatency.toFixed(1)}
+                  <span className="text-[10px] text-violet-500 ml-1 font-black">MS</span>
+                </p>
               </div>
-              <div className="p-3 bg-card border border-border rounded-sm">
-                <p className="text-[8px] font-bold text-muted-foreground uppercase mb-1">Disk Seeks</p>
-                <p className="text-lg font-black text-foreground tabular-nums">{metrics.diskSeeks}</p>
+              <div className="px-5 pb-5 pt-3 bg-card border border-border rounded-2xl shadow-sm">
+                <div className="mb-2 opacity-60">
+                  <span className="text-[8px] font-black uppercase tracking-widest">Disk Seeks</span>
+                </div>
+                <p className="text-xl font-black text-foreground tabular-nums leading-none">
+                  {metrics.diskSeeks}
+                  <span className="text-[10px] text-violet-500 ml-1 font-black">I/O</span>
+                </p>
               </div>
             </div>
           </section>
 
-          <section className="flex-grow flex flex-col min-h-0 space-y-4">
-            <div className="flex items-center gap-2 opacity-60">
-              <FileText className="w-4 h-4 text-primary" />
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Query Results</h3>
-            </div>
-            <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar space-y-2">
-              {results.length > 0 ? (
-                results.map((res, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="p-3 bg-card border border-border rounded-sm flex flex-col gap-1"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono text-foreground font-bold">{res.key}</span>
-                      <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded-sm ${
-                        res.status === 'hit' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                      }`}>
-                        {res.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-[9px]">
-                      <span className="text-muted-foreground italic">{res.foundAt}</span>
-                      <span className="text-primary font-mono font-bold tabular-nums">{res.latency.toFixed(1)}ms</span>
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <p className="text-[10px] text-muted-foreground italic uppercase tracking-widest text-center py-8 opacity-40">Awaiting results...</p>
-              )}
+          <section className="flex-1 flex flex-col min-h-0 space-y-6">
+              <h3 className="text-[11px] mb-3 opacity-80 font-black uppercase tracking-[0.2em] text-foreground/80">Query Log</h3>
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 overflow-x-hidden">
+              <AnimatePresence initial={false}>
+                {results.length > 0 ? (
+                  results.map((res, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-4 bg-card border border-border rounded-xl flex flex-col gap-3"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Terminal className="w-3 h-3 text-violet-500 opacity-60" />
+                          <span className="text-[10px] font-black text-foreground">{res.key}</span>
+                        </div>
+                        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${
+                          res.status === 'hit' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                        }`}>
+                          {res.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-[9px] font-bold text-muted-foreground italic">{res.foundAt}</span>
+                        <div className="text-right">
+                          <span className="text-[11px] text-violet-500 font-black tabular-nums">{res.latency.toFixed(1)}ms</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 opacity-20">
+                    <Terminal className="w-8 h-8 mb-3" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Awaiting Execution</p>
+                  </div>
+                )}
+              </AnimatePresence>
             </div>
           </section>
 
-          {!isSimulating && results.length === queries.length && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-4 bg-primary/10 border border-primary/30 rounded-sm text-center"
-            >
-              <h4 className="text-[10px] font-black text-primary uppercase mb-1">Batch Complete</h4>
-              <p className="text-[11px] text-muted-foreground">
-                Processed {queries.length} queries in <span className="font-bold text-foreground">{metrics.totalBatchLatency.toFixed(1)}ms</span>
-              </p>
-            </motion.div>
-          )}
-
-          <section className="space-y-4">
-            <div className="p-4 bg-primary/5 border border-border rounded-sm">
-              <h4 className="text-[10px] font-black text-foreground uppercase tracking-widest mb-2">Insight</h4>
-              <p className="text-[9px] text-muted-foreground leading-relaxed italic">
-                A "Miss" is expensive when Bloom filters are off because the system must scan every SSTable index. <span className="text-primary">Bloom filters</span> allow skipping disk entirely for non-existent keys.
-              </p>
+          <section className="mt-auto space-y-3 pt-4 border-t border-border/50">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Batch Progress</span>
+              <span className="text-[10px] font-bold text-violet-500 tabular-nums">
+                {Math.round((metrics.completedQueries / queries.length) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden border border-border">
+              <motion.div 
+                className="bg-violet-500 h-full shadow-[0_0_10px_rgba(139,92,246,0.5)]"
+                initial={{ width: 0 }}
+                animate={{ width: `${(metrics.completedQueries / queries.length) * 100}%` }}
+              />
             </div>
           </section>
         </aside>

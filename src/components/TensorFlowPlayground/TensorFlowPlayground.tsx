@@ -8,7 +8,7 @@ import {
   Settings2, 
   Activity, 
   Database,
-  Zap,
+  Box,
   Layers,
   Info
 } from 'lucide-react';
@@ -268,12 +268,24 @@ export const TensorFlowPlayground: React.FC = () => {
   };
 
   return (
-    <div className="w-[1200px] bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors min-h-[800px]">
+    <div className="w-[1200px] bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors min-h-[800px] tf-playground">
+      <style>
+        {`
+          .tf-playground input[type="range"]::-webkit-slider-thumb {
+            background: #8b5cf6 !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5) !important;
+          }
+          .tf-playground input[type="range"]::-moz-range-thumb {
+            background: #8b5cf6 !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5) !important;
+          }
+        `}
+      </style>
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <Zap className="w-5 h-5 text-primary" />
+            <Box className="w-5 h-5 text-violet-500" />
             <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">TF_PLAYGROUND_V2.0</h1>
           </div>
         </div>
@@ -281,12 +293,12 @@ export const TensorFlowPlayground: React.FC = () => {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-sm">
             {isPlaying && (
-              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse mr-1" />
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse mr-1" />
             )}
             <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
               Epoch
             </span>
-            <span className="text-[12px] font-black text-primary ml-1">{epoch}</span>
+            <span className="text-[12px] font-black text-violet-500 ml-1">{epoch}</span>
           </div>
           <div className="flex gap-2">
             <button
@@ -294,19 +306,19 @@ export const TensorFlowPlayground: React.FC = () => {
               className={cn(
                 "flex items-center gap-2 px-4 py-1.5 rounded-sm font-bold text-[11px] uppercase tracking-widest transition-all border",
                 isPlaying 
-                  ? "bg-amber-500 border-amber-600/30 text-white hover:bg-amber-600" 
-                  : "bg-primary border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]"
+                  ? "bg-violet-600 border-violet-700/30 text-white hover:bg-violet-700" 
+                  : "bg-violet-500 border-violet-500/30 text-white hover:bg-violet-500/90 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
               )}
             >
               {isPlaying ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
               {isPlaying ? 'Pause' : (epoch > 0 ? 'Resume' : 'Train')}
             </button>
-            <button
+            <button 
               onClick={reset}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-sm font-bold text-[11px] uppercase tracking-widest transition-all border bg-card border-border text-foreground hover:bg-muted"
+              className="flex items-center justify-center p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
+              title="Reset"
             >
-              <RotateCcw className="w-3 h-3" />
-              Reset
+              <RotateCcw className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -318,7 +330,7 @@ export const TensorFlowPlayground: React.FC = () => {
           {/* Dataset Selection */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 opacity-60">
-              <Database className="w-4 h-4 text-primary" />
+              <Database className="w-4 h-4 text-violet-500" />
               <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Dataset</h3>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -329,7 +341,7 @@ export const TensorFlowPlayground: React.FC = () => {
                     className={cn(
                       "flex flex-col items-center justify-center py-2 px-2 rounded-sm border transition-all gap-1",
                       config.dataset === ds.type
-                        ? "bg-primary/10 border-primary text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.1)]"
+                        ? "bg-violet-500/10 border-violet-500 text-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.1)]"
                         : "bg-background border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
                     )}
                   >
@@ -342,15 +354,15 @@ export const TensorFlowPlayground: React.FC = () => {
           {/* Hyperparameters */}
           <section className="space-y-4 pt-4 border-t border-border/50">
             <div className="flex items-center gap-2 opacity-60">
-              <Settings2 className="w-4 h-4 text-primary" />
+              <Settings2 className="w-4 h-4 text-violet-500" />
               <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Hyperparameters</h3>
             </div>
-
+ 
               <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Noise</label>
-                  <span className="text-[10px] font-bold text-primary">{(config.noise ?? 0).toFixed(2)}</span>
+                  <span className="text-[10px] font-bold text-violet-500">{(config.noise ?? 0).toFixed(2)}</span>
                 </div>
                 <input
                   type="range"
@@ -359,17 +371,17 @@ export const TensorFlowPlayground: React.FC = () => {
                   step="0.01"
                   value={config.noise}
                   onChange={(e) => updateConfig({ noise: parseFloat(e.target.value) })}
-                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500"
                   style={{
-                    background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${(config.noise ?? 0) / 0.5 * 100}%, var(--muted) ${(config.noise ?? 0) / 0.5 * 100}%, var(--muted) 100%)`
+                    background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${(config.noise ?? 0) / 0.5 * 100}%, var(--muted) ${(config.noise ?? 0) / 0.5 * 100}%, var(--muted) 100%)`
                   }}
                 />
               </div>
-
+ 
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Train/Test Split</label>
-                  <span className="text-[10px] font-bold text-primary">{Math.round(config.trainTestSplit * 100)}%</span>
+                  <span className="text-[10px] font-bold text-violet-500">{Math.round(config.trainTestSplit * 100)}%</span>
                 </div>
                 <input
                   type="range"
@@ -378,9 +390,9 @@ export const TensorFlowPlayground: React.FC = () => {
                   step="0.1"
                   value={config.trainTestSplit}
                   onChange={(e) => updateConfig({ trainTestSplit: parseFloat(e.target.value) })}
-                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500"
                   style={{
-                    background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${(config.trainTestSplit - 0.1) / 0.8 * 100}%, var(--muted) ${(config.trainTestSplit - 0.1) / 0.8 * 100}%, var(--muted) 100%)`
+                    background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${(config.trainTestSplit - 0.1) / 0.8 * 100}%, var(--muted) ${(config.trainTestSplit - 0.1) / 0.8 * 100}%, var(--muted) 100%)`
                   }}
                 />
               </div>
@@ -390,7 +402,7 @@ export const TensorFlowPlayground: React.FC = () => {
                 <select
                   value={config.batchSize}
                   onChange={(e) => updateConfig({ batchSize: parseInt(e.target.value) })}
-                  className="w-full bg-background border border-border rounded-sm px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-primary"
+                  className="w-full bg-background border border-border rounded-sm px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-violet-500"
                 >
                   {[1, 5, 10, 20, 50].map(bs => (
                     <option key={bs} value={bs}>{bs}</option>
@@ -403,7 +415,7 @@ export const TensorFlowPlayground: React.FC = () => {
                 <select
                   value={config.learningRate}
                   onChange={(e) => updateConfig({ learningRate: parseFloat(e.target.value) })}
-                  className="w-full bg-background border border-border rounded-sm px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-primary"
+                  className="w-full bg-background border border-border rounded-sm px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-violet-500"
                 >
                   {[0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3].map(lr => (
                     <option key={lr} value={lr}>{lr}</option>
@@ -421,7 +433,7 @@ export const TensorFlowPlayground: React.FC = () => {
                       className={cn(
                         "py-1 px-1 rounded-sm border text-[9px] font-black uppercase tracking-widest transition-all",
                         config.activation === act
-                          ? "bg-primary/10 border-primary text-primary"
+                          ? "bg-violet-500/10 border-violet-500 text-violet-500"
                           : "bg-background border-border text-muted-foreground hover:text-foreground"
                       )}
                     >
@@ -441,7 +453,7 @@ export const TensorFlowPlayground: React.FC = () => {
                       className={cn(
                         "py-1 px-1 rounded-sm border text-[9px] font-black uppercase tracking-widest transition-all",
                         config.regularization === reg
-                          ? "bg-primary/10 border-primary text-primary"
+                          ? "bg-violet-500/10 border-violet-500 text-violet-500"
                           : "bg-background border-border text-muted-foreground hover:text-foreground"
                       )}
                     >
@@ -457,7 +469,7 @@ export const TensorFlowPlayground: React.FC = () => {
                   <select
                     value={config.regularizationRate}
                     onChange={(e) => updateConfig({ regularizationRate: parseFloat(e.target.value) })}
-                    className="w-full bg-background border border-border rounded-sm px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-primary"
+                    className="w-full bg-background border border-border rounded-sm px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-violet-500"
                   >
                     {[0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10].map(rate => (
                       <option key={rate} value={rate}>{rate}</option>
@@ -471,7 +483,7 @@ export const TensorFlowPlayground: React.FC = () => {
           {/* Metrics */}
           <section className="space-y-4 pt-4 border-t border-border/50">
             <div className="flex items-center gap-2 opacity-60">
-              <Activity className="w-4 h-4 text-primary" />
+              <Activity className="w-4 h-4 text-violet-500" />
               <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Metrics</h3>
             </div>
             
@@ -482,13 +494,14 @@ export const TensorFlowPlayground: React.FC = () => {
                     <path
                       d={`M ${lossHistory.map((h, i) => `${(i / (lossHistory.length - 1)) * 100},${100 - Math.min(100, h.train * 100)}`).join(' L ')}`}
                       fill="none"
-                      stroke="var(--primary)"
+                      stroke="#8b5cf6"
+                      strokeOpacity="0.4"
                       strokeWidth="2"
                     />
                     <path
                       d={`M ${lossHistory.map((h, i) => `${(i / (lossHistory.length - 1)) * 100},${100 - Math.min(100, h.test * 100)}`).join(' L ')}`}
                       fill="none"
-                      stroke="#f59e0b"
+                      stroke="#8b5cf6"
                       strokeWidth="2"
                       strokeDasharray="2,2"
                     />
@@ -497,24 +510,24 @@ export const TensorFlowPlayground: React.FC = () => {
               </svg>
               <div className="absolute top-1 left-1 flex gap-2">
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-0.5 bg-primary" />
+                  <div className="w-2 h-0.5 bg-violet-500/40" />
                   <span className="text-[6px] font-bold uppercase text-muted-foreground">Train</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-0.5 bg-amber-500" />
+                  <div className="w-2 h-0.5 bg-violet-500" />
                   <span className="text-[6px] font-bold uppercase text-muted-foreground">Test</span>
                 </div>
               </div>
             </div>
-
+ 
             <div className="space-y-2">
               <div className="flex justify-between items-center bg-background/50 border border-border p-2 rounded-sm">
                 <span className="text-[8px] font-bold uppercase text-muted-foreground">Train Loss</span>
-                <span className="text-[10px] font-black text-primary">{epoch > 0 ? trainLoss.toFixed(4) : '--'}</span>
+                <span className="text-[10px] font-black text-violet-500/60">{epoch > 0 ? trainLoss.toFixed(4) : '--'}</span>
               </div>
               <div className="flex justify-between items-center bg-background/50 border border-border p-2 rounded-sm">
                 <span className="text-[8px] font-bold uppercase text-muted-foreground">Test Loss</span>
-                <span className="text-[10px] font-black text-amber-500">{epoch > 0 ? testLoss.toFixed(4) : '--'}</span>
+                <span className="text-[10px] font-black text-violet-500">{epoch > 0 ? testLoss.toFixed(4) : '--'}</span>
               </div>
             </div>
           </section>
@@ -536,15 +549,15 @@ export const TensorFlowPlayground: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={removeLayer}
-                        className="p-1 bg-primary/10 border border-primary/30 rounded-full text-primary hover:bg-primary/20 transition-colors"
+                        className="p-1 bg-violet-500/10 border border-violet-500/30 rounded-full text-violet-500 hover:bg-violet-500/20 transition-colors"
                         title="Remove Hidden Layer"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="text-[12px] font-black text-primary min-w-[1rem] text-center">{config.hiddenLayers.length}</span>
+                      <span className="text-[12px] font-black text-violet-500 min-w-[1rem] text-center">{config.hiddenLayers.length}</span>
                       <button
                         onClick={addLayer}
-                        className="p-1 bg-primary/10 border border-primary/30 rounded-full text-primary hover:bg-primary/20 transition-colors"
+                        className="p-1 bg-violet-500/10 border border-violet-500/30 rounded-full text-violet-500 hover:bg-violet-500/20 transition-colors"
                         title="Add Hidden Layer"
                       >
                         <Plus className="w-3 h-3" />
@@ -562,10 +575,10 @@ export const TensorFlowPlayground: React.FC = () => {
                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
                     <linearGradient id="guideGradient" x1="0" y1="0" x2="0" y2="600" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0" />
-                      <stop offset="15%" stopColor="#3b82f6" stopOpacity="0.6" />
-                      <stop offset="85%" stopColor="#3b82f6" stopOpacity="0.6" />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0" />
+                      <stop offset="15%" stopColor="#8b5cf6" stopOpacity="0.6" />
+                      <stop offset="85%" stopColor="#8b5cf6" stopOpacity="0.6" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
                     </linearGradient>
                   </defs>
 
@@ -667,13 +680,13 @@ export const TensorFlowPlayground: React.FC = () => {
                             <div className="flex justify-center gap-2">
                               <button
                                 onClick={() => updateLayerSize(lIdx - 1, -1)}
-                                className="p-1.5 bg-primary/10 border border-primary/30 rounded-full text-primary hover:bg-primary/20 transition-colors"
+                                className="p-1.5 bg-violet-500/10 border border-violet-500/30 rounded-full text-violet-500 hover:bg-violet-500/20 transition-colors"
                               >
                                 <Minus className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => updateLayerSize(lIdx - 1, 1)}
-                                className="p-1.5 bg-primary/10 border border-primary/30 rounded-full text-primary hover:bg-primary/20 transition-colors"
+                                className="p-1.5 bg-violet-500/10 border border-violet-500/30 rounded-full text-violet-500 hover:bg-violet-500/20 transition-colors"
                               >
                                 <Plus className="w-3.5 h-3.5" />
                               </button>
@@ -815,7 +828,7 @@ export const TensorFlowPlayground: React.FC = () => {
                         type="checkbox" 
                         checked={showTestData} 
                         onChange={(e) => setShowTestData(e.target.checked)}
-                        className="w-2 h-2 sm:w-3 sm:h-3 rounded border-border bg-muted text-primary focus:ring-primary"
+                        className="w-2 h-2 sm:w-3 sm:h-3 rounded border-border bg-muted text-violet-500 focus:ring-violet-500"
                       />
                       <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Show Test Data</span>
                     </label>

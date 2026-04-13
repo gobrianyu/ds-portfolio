@@ -6,7 +6,6 @@ export interface Project {
   architecture: string;
   features: string[];
   technologies: string[];
-  imageUrl: string;
   designDocUrl?: string;
   codeFiles: {
     filename: string;
@@ -24,9 +23,8 @@ export const projects: Project[] = [
     id: "rpc-system",
     title: "Exactly-Once RPC Client-Server",
     shortDescription: "A robust Remote Procedure Call system ensuring exactly-once execution semantics.",
-    longDescription: "This project implements a custom RPC framework that handles network failures, timeouts, and duplicate requests. It ensures that even in the face of retransmissions, the server executes each unique request exactly once.",
-    architecture: "The system uses a client-side stub to manage sequence numbers and a server-side cache to store results of previous requests. If a duplicate sequence number is received, the cached result is returned without re-executing the logic.",
-    imageUrl: "https://picsum.photos/seed/rpc-code/800/600",
+    longDescription: "This project implements a client-server key-value store that supports operations over an unreliable network. It uses exactly-once RPC semantics, ensuring commands are executed correctly despite message loss, duplication, or delay.",
+    architecture: "The system uses a client-server architecture where clients send commands with unique identifiers and retry requests using timers to handle message loss. The server wraps the application in an at-most-once layer that tracks previously executed commands and returns cached results for duplicates.",
     designDocUrl: "/assets/docs/rpc-system.json",
     features: [
       "Sequence number tracking",
@@ -35,7 +33,7 @@ export const projects: Project[] = [
       "Timeout handling",
       "Custom binary serialization"
     ],
-    technologies: ["Java", "Distributed Systems", "Network Programming"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Network"],
     codeFiles: [
       {
         filename: "RPCClient.java",
@@ -59,7 +57,6 @@ export const projects: Project[] = [
     shortDescription: "A fault-tolerant system using primary-backup replication for high availability.",
     longDescription: "Implementation of a replicated state machine using a primary-backup approach. The system handles primary failures by promoting a backup and ensuring consistency through a view service.",
     architecture: "A centralized View Service monitors the health of servers. When the primary fails, the View Service promotes the backup and informs all clients of the new configuration.",
-    imageUrl: "https://picsum.photos/seed/replication-diag/800/600",
     designDocUrl: "/assets/docs/primary-backup.json",
     features: [
       "View Service for membership management",
@@ -68,7 +65,7 @@ export const projects: Project[] = [
       "Client-side view caching",
       "Consistency under network partitions"
     ],
-    technologies: ["Java", "Replication", "Fault Tolerance"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Replication", "Fault Tolerance"],
     codeFiles: [
       {
         filename: "ViewService.java",
@@ -87,7 +84,6 @@ export const projects: Project[] = [
     shortDescription: "A consensus-based replicated log using the Multi-Paxos protocol.",
     longDescription: "A complete implementation of the Multi-Paxos consensus algorithm to maintain a consistent log across multiple distributed nodes, even in the presence of failures.",
     architecture: "Nodes act as Proposers, Acceptors, and Learners. Multi-Paxos optimizes the basic Paxos algorithm by electing a leader to handle multiple log entries with a single prepare phase.",
-    imageUrl: "https://picsum.photos/seed/consensus-paxos/800/600",
     designDocUrl: "/assets/docs/multi-paxos.json",
     features: [
       "Leader election optimization",
@@ -96,7 +92,7 @@ export const projects: Project[] = [
       "Dynamic membership changes",
       "Efficient message passing"
     ],
-    technologies: ["Java", "Consensus Algorithms", "Paxos"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Consensus Algorithms", "Paxos"],
     codeFiles: [
       {
         filename: "PaxosNode.java",
@@ -115,7 +111,6 @@ export const projects: Project[] = [
     shortDescription: "A scalable, sharded key-value store with automatic data migration.",
     longDescription: "A distributed key-value store that partitions data across multiple replica groups. It supports dynamic re-sharding and ensures linearizability for all operations.",
     architecture: "A Shard Master manages the assignment of shards to replica groups. Each replica group uses Paxos to maintain consistency internally.",
-    imageUrl: "https://picsum.photos/seed/sharding-db/800/600",
     designDocUrl: "/assets/docs/sharded-kv.json",
     features: [
       "Consistent hashing for sharding",
@@ -124,7 +119,7 @@ export const projects: Project[] = [
       "Linearizable read/write operations",
       "Fault-tolerant replica groups"
     ],
-    technologies: ["Java", "Sharding", "Scalability"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Sharding", "Scalability"],
     codeFiles: [
       {
         filename: "ShardMaster.java",

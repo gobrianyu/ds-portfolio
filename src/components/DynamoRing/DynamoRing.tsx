@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Settings2, 
-  Plus, 
+  Box, 
   RefreshCw, 
   Layers, 
   Database, 
@@ -434,7 +434,7 @@ export const DynamoRing: React.FC = () => {
       <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <Database className="w-5 h-5 text-primary" />
+            <Box className="w-5 h-5 text-violet-500" />
             <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">DYNAMO_RING_SIM_V1.0</h1>
           </div>
         </div>
@@ -444,29 +444,31 @@ export const DynamoRing: React.FC = () => {
             onClick={toggleSimulation}
             className={`flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-bold text-[11px] uppercase transition-all border ${
               isSimulating 
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20' 
-                : 'bg-primary border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
+                ? 'bg-violet-500/10 border-violet-500/30 text-violet-500 hover:bg-violet-500/20' 
+                : 'bg-violet-500 border-violet-500/30 text-white hover:bg-violet-500/90 shadow-[0_0_10px_rgba(var(--violet-500-rgb),0.2)]'
             }`}
           >
             {isSimulating ? <PauseIcon className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
             {isSimulating ? 'Pause' : (keys.length > 0 ? 'Resume' : 'Init_Sys')}
           </button>
-          <button 
-            onClick={reset}
-            className="flex items-center justify-center p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
-            title="Reset System"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+          {(!isSimulating && keys.length === 0) ? null : (
+            <button 
+              onClick={reset}
+              className="flex items-center justify-center p-2 bg-muted hover:bg-muted/80 text-foreground rounded-sm transition-all border border-border"
+              title="Reset System"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </header>
 
       <div className="flex flex-row gap-3 p-3 overflow-hidden flex-1">
         {/* Left Panel: Controls & Nodes */}
         <div className="w-64 flex flex-col gap-3 shrink-0 min-h-0">
-          <div className="bg-muted/40 rounded-sm border border-border p-3">
+          <div className="bg-muted/40 rounded-sm border border-border p-3 select-none">
             <div className="flex items-center gap-2 mb-4">
-              <Settings2 className="w-4 h-4 text-primary" />
+              <Settings2 className="w-4 h-4 text-violet-500" />
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Controls</h2>
             </div>
 
@@ -475,7 +477,7 @@ export const DynamoRing: React.FC = () => {
                 <div className="space-y-1 pt-0.5">
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     <span>Nodes</span>
-                    <span className="text-primary">{nodes.length}</span>
+                    <span className="text-violet-500">{nodes.length}</span>
                   </div>
                   <input 
                     type="range" 
@@ -483,6 +485,7 @@ export const DynamoRing: React.FC = () => {
                     max={COLORS.length} 
                     value={nodes.length} 
                     disabled={isSimulating}
+                    onDragStart={(e) => e.preventDefault()}
                     onChange={(e) => {
                       const targetCount = parseInt(e.target.value);
                       setNodes(prev => {
@@ -522,9 +525,9 @@ export const DynamoRing: React.FC = () => {
                       });
                       setLastAction('change-nodes');
                     }}
-                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((nodes.length - 1) / (COLORS.length - 1)) * 100}%, var(--muted) ${((nodes.length - 1) / (COLORS.length - 1)) * 100}%, var(--muted) 100%)`
+                      background: `linear-gradient(to right, var(--violet-500) 0%, var(--violet-500) ${((nodes.length - 1) / (COLORS.length - 1)) * 100}%, var(--muted) ${((nodes.length - 1) / (COLORS.length - 1)) * 100}%, var(--muted) 100%)`
                     }}
                   />
                 </div>
@@ -534,7 +537,7 @@ export const DynamoRing: React.FC = () => {
                   <button 
                     onClick={() => setUseVNodes(!useVNodes)}
                     disabled={isSimulating}
-                    className={`w-8 h-4 rounded-full transition-colors relative ${useVNodes ? 'bg-primary' : 'bg-muted'} ${isSimulating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-8 h-4 rounded-full transition-colors relative ${useVNodes ? 'bg-violet-500' : 'bg-muted'} ${isSimulating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${useVNodes ? 'left-[18px]' : 'left-0.5'}`} />
                   </button>
@@ -546,7 +549,7 @@ export const DynamoRing: React.FC = () => {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                       <span>Tokens</span>
-                      <span className="text-primary">{vnodeCount}</span>
+                      <span className="text-violet-500">{vnodeCount}</span>
                     </div>
                     <input 
                       type="range" 
@@ -554,13 +557,14 @@ export const DynamoRing: React.FC = () => {
                       max="64" 
                       value={vnodeCount} 
                       disabled={isSimulating}
+                      onDragStart={(e) => e.preventDefault()}
                       onChange={(e) => {
                         setVnodeCount(parseInt(e.target.value));
                         setLastAction('change-vnodes');
                       }}
-                      className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
-                        background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((vnodeCount - 1) / (64 - 1)) * 100}%, var(--muted) ${((vnodeCount - 1) / (64 - 1)) * 100}%, var(--muted) 100%)`
+                        background: `linear-gradient(to right, var(--violet-500) 0%, var(--violet-500) ${((vnodeCount - 1) / (64 - 1)) * 100}%, var(--muted) ${((vnodeCount - 1) / (64 - 1)) * 100}%, var(--muted) 100%)`
                       }}
                     />
                   </div>
@@ -569,7 +573,7 @@ export const DynamoRing: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     <span>Replicas</span>
-                    <span className={replicationFactor > nodes.length ? "text-red-500" : "text-primary"}>
+                    <span className={replicationFactor > nodes.length ? "text-red-500" : "text-violet-500"}>
                       {replicationFactor}
                     </span>
                   </div>
@@ -579,13 +583,14 @@ export const DynamoRing: React.FC = () => {
                     max={Math.max(3, nodes.length)} 
                     value={replicationFactor} 
                     disabled={isSimulating}
+                    onDragStart={(e) => e.preventDefault()}
                     onChange={(e) => {
                       setReplicationFactor(parseInt(e.target.value));
                       setLastAction('change-replication');
                     }}
-                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((replicationFactor - 1) / (Math.max(3, nodes.length) - 1)) * 100}%, var(--muted) ${((replicationFactor - 1) / (Math.max(3, nodes.length) - 1)) * 100}%, var(--muted) 100%)`
+                      background: `linear-gradient(to right, var(--violet-500) 0%, var(--violet-500) ${((replicationFactor - 1) / (Math.max(3, nodes.length) - 1)) * 100}%, var(--muted) ${((replicationFactor - 1) / (Math.max(3, nodes.length) - 1)) * 100}%, var(--muted) 100%)`
                     }}
                   />
                 </div>
@@ -613,10 +618,10 @@ export const DynamoRing: React.FC = () => {
           {/* Node List */}
           <div className="bg-muted/40 rounded-sm border border-border p-2 lg:p-3 flex-1 flex flex-col min-h-[120px] lg:min-h-0">
             <div className="flex items-center gap-2 mb-2 lg:mb-4">
-              <LayoutGrid className="w-3 h-3 lg:w-4 lg:h-4 text-primary" />
+              <LayoutGrid className="w-3 h-3 lg:w-4 lg:h-4 text-violet-500" />
               <h2 className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Nodes</h2>
             </div>
-            <div className="flex-1 overflow-y-auto pr-1 space-y-3 lg:space-y-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 space-y-3 lg:space-y-4 custom-scrollbar">
             <AnimatePresence initial={false}>
               {nodes.map(node => (
                 <motion.div 
@@ -636,7 +641,7 @@ export const DynamoRing: React.FC = () => {
                       <span className="text-muted-foreground">
                         {metrics.primaryDistribution[node.id] || 0}P / {metrics.totalLoadDistribution[node.id] || 0}T
                       </span>
-                      <span className="text-primary">
+                      <span className="text-violet-500">
                         {((metrics.partitionSizes[node.id] || 0) * 100).toFixed(1)}% OWN
                       </span>
                     </div>
@@ -677,10 +682,10 @@ export const DynamoRing: React.FC = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: 0.2 } }}
-                    className="flex items-center gap-1 lg:gap-1.5 mt-1 lg:mt-1.5 px-1 lg:px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded-sm"
+                    className="flex items-center gap-1 lg:gap-1.5 mt-1 lg:mt-1.5 px-1 lg:px-1.5 py-0.5 bg-violet-500/10 border border-violet-500/20 rounded-sm"
                   >
-                    <Activity className="w-2 lg:w-2.5 h-2 lg:h-2.5 text-primary animate-pulse" />
-                    <span className="text-[7px] lg:text-[8px] text-primary font-black uppercase tracking-widest">{simulationMessage}</span>
+                    <Activity className="w-2 lg:w-2.5 h-2 lg:h-2.5 text-violet-500 animate-pulse" />
+                    <span className="text-[7px] lg:text-[8px] text-violet-500 font-black uppercase tracking-widest">{simulationMessage}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -688,7 +693,7 @@ export const DynamoRing: React.FC = () => {
 
               <div className="flex items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-muted-foreground z-10">
                 <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_var(--primary)]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_4px_var(--violet-500)]" />
                   <span>Token</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -892,7 +897,7 @@ export const DynamoRing: React.FC = () => {
                 </div>
                 <div className="text-[9px] text-muted-foreground space-y-1 font-bold uppercase tracking-widest">
                   <p>Token: {hoveredToken.id}</p>
-                  <p>Hash: <span className="text-primary">{hoveredToken.hash.toFixed(6)}</span></p>
+                  <p>Hash: <span className="text-violet-500">{hoveredToken.hash.toFixed(6)}</span></p>
                 </div>
               </motion.div>
             )}
@@ -906,13 +911,13 @@ export const DynamoRing: React.FC = () => {
                 style={{ backgroundColor: 'var(--card)' }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Hash className="w-2.5 h-2.5 text-primary" />
+                  <Hash className="w-2.5 h-2.5 text-violet-500" />
                   <span className="font-black text-[10px] uppercase tracking-widest text-foreground">{hoveredKey.id}</span>
                 </div>
                 <div className="text-[9px] text-muted-foreground space-y-2 font-bold uppercase tracking-widest">
                   <div>
                     <p className="mb-0.5 text-muted-foreground">Hash Value</p>
-                    <p className="text-primary">{hoveredKey.hash.toFixed(6)}</p>
+                    <p className="text-violet-500">{hoveredKey.hash.toFixed(6)}</p>
                   </div>
                   <div>
                     <p className="mb-1 text-muted-foreground">Replica Set (N={replicationFactor})</p>
@@ -941,10 +946,10 @@ export const DynamoRing: React.FC = () => {
         <div className="bg-muted/40 rounded-sm border border-border p-2 lg:p-4">
           <div className="flex items-center justify-between mb-3 lg:mb-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-primary" />
+              <TrendingUp className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-violet-500" />
               <h2 className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Load Metrics</h2>
             </div>
-            <div className="px-1.5 py-0.5 bg-primary/10 text-primary text-[7px] lg:text-[9px] font-black uppercase tracking-widest rounded-sm border border-primary/20">
+            <div className="px-1.5 py-0.5 bg-violet-500/10 text-violet-500 text-[7px] lg:text-[9px] font-black uppercase tracking-widest rounded-sm border border-primary/20">
               Live_Feed
             </div>
           </div>
@@ -1015,11 +1020,11 @@ export const DynamoRing: React.FC = () => {
           </div>
 
           <div className="mt-3">
-            <div className="p-2 bg-primary/5 rounded-sm border border-primary/20 flex gap-2">
-              <Info className="w-3 h-3 text-primary shrink-0" />
+            <div className="p-2 bg-violet-500/5 rounded-sm border border-violet-500/20 flex gap-2">
+              <Info className="w-3 h-3 text-violet-500 shrink-0" />
               <div className="space-y-1">
                 <p className="text-[8px] lg:text-[10px] text-muted-foreground leading-relaxed font-medium">
-                  <strong className="text-primary uppercase tracking-widest mr-1">Analysis:</strong> {useVNodes 
+                  <strong className="text-violet-500 uppercase tracking-widest mr-1">Analysis:</strong> {useVNodes 
                     ? "VNodes distribute tokens more evenly, improving Partition Balance. Replication (N) increases Total Load but does NOT affect hashing quality."
                     : "Standard hashing leads to uneven Partition Balance. Increasing N adds redundancy but doesn't fix the underlying ownership hotspots."}
                 </p>

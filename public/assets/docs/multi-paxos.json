@@ -2,7 +2,6 @@
   "title": "Design Document – Lab 3: Multi-Paxos Consensus",
   "author": "Brian S. Yu",
   "date": "3/05/2026",
-  "course": "CSE 452",
   "sections": [
     {
       "title": "Overview",

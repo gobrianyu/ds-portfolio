@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   DndContext, 
@@ -20,7 +21,7 @@ import {
   Info, 
   Clock,
   CheckCircle2,
-  Network,
+  Box,
   Database,
   TrendingUp,
   Filter,
@@ -66,6 +67,7 @@ export const MapReduceScheduler: React.FC = () => {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const actionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- Action Feedback ---
   const triggerAction = useCallback((message: string) => {
@@ -120,6 +122,7 @@ export const MapReduceScheduler: React.FC = () => {
     setHasStarted(false);
     setIsShuffleComplete(false);
     setHistory([{ time: 0, completion: 0 }]);
+    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
     triggerAction('System Initialized');
   }, [triggerAction]);
 
@@ -218,7 +221,8 @@ export const MapReduceScheduler: React.FC = () => {
           triggerAction('Map Phase Complete');
           setWorkers(prev => prev.map(w => ({ ...w, currentTaskId: null, status: 'idle' })));
           if (isAutoMode) {
-            setTimeout(() => {
+            if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+            shuffleTimeoutRef.current = setTimeout(() => {
               setIsShuffleComplete(true);
               setPhase('reduce');
               triggerAction('Entering Reduce Phase');
@@ -485,29 +489,27 @@ export const MapReduceScheduler: React.FC = () => {
     };
 
     updatePositions();
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', updatePositions);
+    }
     window.addEventListener('resize', updatePositions);
-    return () => window.removeEventListener('resize', updatePositions);
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', updatePositions);
+      }
+      window.removeEventListener('resize', updatePositions);
+    };
   }, [workers]);
 
   return (
-    <div className="w-[1200px] mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-primary/30 text-foreground transition-colors h-[800px]">
+    <div className="w-[1200px] mx-auto bg-card border border-border shadow-2xl flex flex-col relative overflow-hidden rounded-lg font-mono selection:bg-violet-500/30 text-foreground transition-colors h-[850px]">
       {/* Header */}
       <header className="flex flex-row items-center justify-between px-6 py-4 border-b border-border bg-muted/50 shrink-0 gap-4">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-sm shrink-0">
-              <Network className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-sm font-black tracking-tighter uppercase truncate">Be_The_Scheduler</h1>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">MapReduce_Sim</span>
-                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 rounded-full shrink-0">
-                  <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Live</span>
-                </div>
-              </div>
-            </div>
+            <Box className="w-5 h-5 text-violet-500" />
+            <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">MapReduce_Task_Scheduler</h1>
           </div>
         </div>
 
@@ -518,7 +520,7 @@ export const MapReduceScheduler: React.FC = () => {
               onClick={() => setIsAutoMode(false)}
               className={cn(
                 "px-3 py-1 text-[10px] font-bold uppercase transition-all rounded-sm",
-                !isAutoMode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                !isAutoMode ? "bg-violet-500 text-white" : "text-muted-foreground hover:text-foreground",
                 isRunning && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -529,7 +531,7 @@ export const MapReduceScheduler: React.FC = () => {
               onClick={() => setIsAutoMode(true)}
               className={cn(
                 "px-3 py-1 text-[10px] font-bold uppercase transition-all rounded-sm",
-                isAutoMode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                isAutoMode ? "bg-violet-500 text-white" : "text-muted-foreground hover:text-foreground",
                 isRunning && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -546,7 +548,7 @@ export const MapReduceScheduler: React.FC = () => {
                 setHasStarted(true);
                 triggerAction('Simulation Started');
               }}
-              className="flex items-center justify-center gap-2 px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-primary border border-primary/30 text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)] flex-none"
+              className="flex items-center justify-center gap-2 px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-violet-500 border border-violet-500/30 text-white hover:bg-violet-500/90 shadow-[0_0_10px_rgba(var(--violet-500-rgb),0.2)] flex-none"
             >
               <Play className="w-3 h-3 fill-current" />
               Start
@@ -554,7 +556,7 @@ export const MapReduceScheduler: React.FC = () => {
           ) : (
             <button 
               onClick={initSimulation}
-              className="flex items-center justify-center gap-2 px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 flex-none"
+              className="flex items-center justify-center gap-2 px-6 py-2 rounded-sm font-bold text-[11px] uppercase transition-all bg-violet-500/10 border border-violet-500/30 text-violet-500 hover:bg-violet-500/20 flex-none"
             >
               <RotateCcw className="w-3 h-3" />
               Reset
@@ -573,9 +575,8 @@ export const MapReduceScheduler: React.FC = () => {
           <aside className="w-72 border-r border-border bg-muted/30 py-4 px-6 flex flex-col self-stretch gap-6 overflow-y-auto custom-scrollbar shrink-0">
             {/* Desktop Job Status */}
             <section className="block space-y-3">
-              <div className="flex items-center gap-2 opacity-60">
-                <Activity className="w-4 h-4 text-primary" />
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Job_Status</h3>
+              <div className="flex items-center opacity-60">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Job Status</h3>
               </div>
               
               <div className="flex flex-col gap-2">
@@ -598,7 +599,7 @@ export const MapReduceScheduler: React.FC = () => {
                         isCurrent 
                           ? isJobComplete
                             ? "bg-emerald-500/10 border-emerald-500 text-emerald-500"
-                            : "bg-primary/10 border-primary text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.1)]" 
+                            : "bg-violet-500/10 border-violet-500 text-violet-500 shadow-[0_0_10px_rgba(var(--violet-500-rgb),0.1)]" 
                           : isDone
                             ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
                             : "bg-background border-border text-muted-foreground opacity-40"
@@ -607,13 +608,13 @@ export const MapReduceScheduler: React.FC = () => {
                       <div className={cn(
                         "w-5 h-5 rounded-full flex items-center justify-center border",
                         isCurrent 
-                          ? isJobComplete ? "border-emerald-500" : "border-primary" 
+                          ? isJobComplete ? "border-emerald-500" : "border-violet-500" 
                           : isDone ? "border-emerald-500" : "border-border"
                       )}>
                         {isDone || isJobComplete ? <CheckCircle2 className="w-3 h-3" /> : <Icon className="w-3 h-3" />}
                       </div>
                       <span className="text-[9px] font-black uppercase tracking-widest">{p.label}</span>
-                      {isCurrent && !isJobComplete && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                      {isCurrent && !isJobComplete && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />}
                     </div>
                   );
                 })}
@@ -623,8 +624,7 @@ export const MapReduceScheduler: React.FC = () => {
             {/* Comparison */}
             {(autoTime || userTime) && (
               <section className="space-y-3">
-                <div className="flex items-center gap-2 opacity-60">
-                  <TrendingUp className="w-4 h-4 text-primary" />
+                <div className="flex items-center opacity-60">
                   <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Comparison</h3>
                 </div>
                 <div className="space-y-2">
@@ -632,19 +632,19 @@ export const MapReduceScheduler: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-[8px] font-bold uppercase text-muted-foreground">Auto Scheduler</span>
                       {autoTime && (!userTime || autoTime <= userTime) && (
-                        <Crown className="w-3 h-3 text-primary fill-primary/20" />
+                        <Crown className="w-3 h-3 text-violet-500 fill-violet-500/20" />
                       )}
                     </div>
-                    <span className="text-[10px] font-black text-primary">{autoTime ? `${autoTime.toFixed(1)}s` : '--'}</span>
+                    <span className="text-[10px] font-black text-violet-500">{autoTime ? `${autoTime.toFixed(1)}s` : '--'}</span>
                   </div>
                   <div className="flex justify-between items-center bg-background/50 border border-border p-2 rounded-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-[8px] font-bold uppercase text-muted-foreground">Your Time</span>
                       {userTime && autoTime && userTime < autoTime && (
-                        <Crown className="w-3 h-3 text-amber-500 fill-amber-500/20" />
+                        <Crown className="w-3 h-3 text-violet-500 fill-violet-500/20" />
                       )}
                     </div>
-                    <span className="text-[10px] font-black text-amber-500">{userTime ? `${userTime.toFixed(1)}s` : '--'}</span>
+                    <span className="text-[10px] font-black text-violet-500">{userTime ? `${userTime.toFixed(1)}s` : '--'}</span>
                   </div>
                 </div>
               </section>
@@ -653,12 +653,11 @@ export const MapReduceScheduler: React.FC = () => {
             {/* Progress Chart */}
             <section className="space-y-3">
               <div className="flex items-center justify-between opacity-60">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Job_Progress</h3>
+                <div className="flex items-center">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Job Progress</h3>
                 </div>
                 <div className="flex items-center gap-1.5 bg-background border border-border px-2 py-0.5 rounded-sm">
-                  <Clock className="w-3 h-3 text-primary" />
+                  <Clock className="w-3 h-3 text-violet-500" />
                   <span className="text-[10px] font-black tabular-nums">{(currentTime / 1000).toFixed(1)}s</span>
                 </div>
               </div>
@@ -691,15 +690,15 @@ export const MapReduceScheduler: React.FC = () => {
                         />
                         <ReferenceLine 
                           y={100} 
-                          stroke="var(--primary)" 
+                          stroke="#8b5cf6" 
                           strokeDasharray="3 3" 
-                          label={{ value: '100%', position: 'insideTopLeft', fill: 'var(--primary)', fontSize: 7, fontWeight: 'bold' }} 
+                          label={{ value: '100%', position: 'insideTopLeft', fill: '#8b5cf6', fontSize: 7, fontWeight: 'bold' }} 
                         />
                         <Area 
                           type="monotone" 
                           dataKey="completion" 
-                          stroke="var(--primary)" 
-                          fill="var(--primary)" 
+                          stroke="#8b5cf6" 
+                          fill="#8b5cf6" 
                           fillOpacity={0.1} 
                           isAnimationActive={false}
                         />
@@ -718,11 +717,11 @@ export const MapReduceScheduler: React.FC = () => {
               </div>
               <div className="flex justify-between items-center bg-background/50 border border-border p-2 rounded-sm">
                 <span className="text-[8px] font-bold uppercase text-muted-foreground">Locality</span>
-                <span className="text-[10px] font-black text-primary">{metrics.dataLocalityPercent.toFixed(0)}%</span>
+                <span className="text-[10px] font-black text-violet-500">{metrics.dataLocalityPercent.toFixed(0)}%</span>
               </div>
               <div className="flex justify-between items-center bg-background/50 border border-border p-2 rounded-sm">
                 <span className="text-[8px] font-bold uppercase text-muted-foreground">Network</span>
-                <span className="text-[10px] font-black text-amber-500">{metrics.networkCost}</span>
+                <span className="text-[10px] font-black text-violet-500">{metrics.networkCost}</span>
               </div>
             </section>
           </aside>
@@ -732,53 +731,53 @@ export const MapReduceScheduler: React.FC = () => {
             {/* Background Grid */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-[size:40px_40px] z-0" />
             
-            <div ref={containerRef} className="flex-auto py-3 px-4 lg:py-4 lg:px-6 overflow-y-auto custom-scrollbar relative z-10">
-              {/* Network Lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible hidden lg:block">
-                <AnimatePresence>
-                  {tasks.filter(t => t.status === 'running' && t.type === 'map' && t.dataBlockId).map(task => {
-                    const sourceWorker = workers.find(w => w.localDataBlocks.has(task.dataBlockId!));
-                    const targetWorker = workers.find(w => w.id === task.assignedWorkerId);
-                    
-                    if (!sourceWorker || !targetWorker || sourceWorker.id === targetWorker.id) return null;
-                    
-                    const start = workerPositions[sourceWorker.id];
-                    const end = workerPositions[targetWorker.id];
-                    
-                    if (!start || !end) return null;
+            {/* Network Lines Overlay */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible hidden lg:block">
+              <AnimatePresence>
+                {tasks.filter(t => t.status === 'running' && t.type === 'map' && t.dataBlockId).map(task => {
+                  const sourceWorker = workers.find(w => w.localDataBlocks.has(task.dataBlockId!));
+                  const targetWorker = workers.find(w => w.id === task.assignedWorkerId);
+                  
+                  if (!sourceWorker || !targetWorker || sourceWorker.id === targetWorker.id) return null;
+                  
+                  const start = workerPositions[sourceWorker.id];
+                  const end = workerPositions[targetWorker.id];
+                  
+                  if (!start || !end) return null;
 
-                    return (
-                      <motion.g
-                        key={`${task.id}-network`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <line 
-                          x1={start.x} y1={start.y} 
-                          x2={end.x} y2={end.y} 
-                          stroke="var(--primary)" 
-                          strokeWidth="1" 
-                          strokeDasharray="4 4"
-                          className="opacity-20"
-                        />
-                        <motion.circle
-                          r="3"
-                          fill="var(--primary)"
-                          initial={{ offsetDistance: "0%" }}
-                          animate={{ offsetDistance: "100%" }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          style={{
-                            offsetPath: `path('M ${start.x} ${start.y} L ${end.x} ${end.y}')`,
-                            position: 'absolute'
-                          }}
-                        />
-                      </motion.g>
-                    );
-                  })}
-                </AnimatePresence>
-              </svg>
+                  return (
+                    <motion.g
+                      key={`${task.id}-network`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <line 
+                        x1={start.x} y1={start.y} 
+                        x2={end.x} y2={end.y} 
+                        stroke="var(--violet-500)" 
+                        strokeWidth="1" 
+                        strokeDasharray="4 4"
+                        className="opacity-20"
+                      />
+                      <motion.circle
+                        r="3"
+                        fill="var(--violet-500)"
+                        initial={{ offsetDistance: "0%" }}
+                        animate={{ offsetDistance: "100%" }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        style={{
+                          offsetPath: `path('M ${start.x} ${start.y} L ${end.x} ${end.y}')`,
+                          position: 'absolute'
+                        }}
+                      />
+                    </motion.g>
+                  );
+                })}
+              </AnimatePresence>
+            </svg>
 
+            <div ref={containerRef} className="flex-auto py-3 px-4 lg:py-4 lg:px-6 overflow-y-auto custom-scrollbar relative z-20">
               <div className="grid grid-cols-2 gap-6 relative z-10">
                 {workers.map(worker => (
                   <WorkerNode 
@@ -828,7 +827,7 @@ export const MapReduceScheduler: React.FC = () => {
                         setPhase('shuffle');
                         triggerAction('Entering Shuffle Phase');
                       }}
-                      className="flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs rounded-sm hover:bg-primary/90 shadow-2xl"
+                      className="flex items-center gap-3 px-8 py-4 bg-violet-500 text-white font-black uppercase tracking-widest text-xs rounded-sm hover:bg-violet-500/90 shadow-2xl"
                     >
                       <Share2 className="w-4 h-4" />
                       Map Complete: Start Shuffle
@@ -850,8 +849,8 @@ export const MapReduceScheduler: React.FC = () => {
                         <div className="inline-flex p-4 bg-emerald-500/10 rounded-full border-2 border-emerald-500/30 mb-4">
                           <CheckCircle2 className="w-12 h-12 text-emerald-500" />
                         </div>
-                        <h2 className="text-2xl font-black uppercase tracking-tighter">Job_Complete</h2>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Distributed_Processing_Finished</p>
+                        <h2 className="text-2xl font-black uppercase tracking-tighter">Job Complete</h2>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Distributed Processing Finished</p>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -861,25 +860,25 @@ export const MapReduceScheduler: React.FC = () => {
                         </div>
                         <div className="p-4 bg-muted/50 rounded-lg border border-border">
                           <div className="text-[8px] font-bold text-muted-foreground uppercase mb-1">Data Locality</div>
-                          <div className="text-xl font-black text-primary">{metrics.dataLocalityPercent.toFixed(0)}%</div>
+                          <div className="text-xl font-black text-violet-500">{metrics.dataLocalityPercent.toFixed(0)}%</div>
                         </div>
                       </div>
 
                       <div className="space-y-4">
                         <div className="flex justify-between items-center text-[10px] font-bold uppercase">
                           <span className="text-muted-foreground">Network Overhead</span>
-                          <span className="text-amber-500">{metrics.networkCost} units</span>
+                          <span className="text-violet-500">{metrics.networkCost} units</span>
                         </div>
                         <div className="w-full h-1 bg-border rounded-full overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: '100%' }} />
+                          <div className="h-full bg-violet-500" style={{ width: '100%' }} />
                         </div>
                       </div>
 
                       <button 
                         onClick={initSimulation}
-                        className="w-full py-4 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs rounded-sm hover:bg-primary/90 transition-all shadow-lg"
+                        className="w-full py-4 bg-violet-500 text-white font-black uppercase tracking-widest text-xs rounded-sm hover:bg-violet-500/90 transition-all shadow-lg"
                       >
-                        Run_New_Scenario
+                        Done
                       </button>
                     </div>
                   </motion.div>
@@ -887,11 +886,10 @@ export const MapReduceScheduler: React.FC = () => {
               </AnimatePresence>
 
               {/* Task Queue Panel */}
-              <div className="mt-2 space-y-3">
+              <div className="mt-16 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 opacity-60">
-                    <Layers className="w-4 h-4 text-primary" />
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Pending_Tasks</h3>
+                  <div className="flex items-center opacity-60">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">Pending Tasks</h3>
                   </div>
                 </div>
 
@@ -933,7 +931,7 @@ export const MapReduceScheduler: React.FC = () => {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="bg-background/95 backdrop-blur-md border border-border px-3 py-1.5 rounded-sm inline-flex items-center gap-2 shadow-xl"
                   >
-                    <Activity className="w-3 h-3 text-primary animate-pulse" />
+                    <Activity className="w-3 h-3 text-violet-500 animate-pulse" />
                     <span className="text-[9px] font-bold uppercase tracking-widest text-foreground">{lastAction}</span>
                   </motion.div>
                 )}
@@ -942,13 +940,16 @@ export const MapReduceScheduler: React.FC = () => {
           </main>
         </div>
 
-        <DragOverlay>
-          {activeTask ? (
-            <div className="scale-110 rotate-3 shadow-2xl">
-              <TaskCard task={activeTask} isAutoMode={isAutoMode} />
-            </div>
-          ) : null}
-        </DragOverlay>
+        {createPortal(
+          <DragOverlay>
+            {activeTask ? (
+              <div className="scale-110 rotate-3 shadow-2xl">
+                <TaskCard task={activeTask} isAutoMode={isAutoMode} />
+              </div>
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
       </DndContext>
     </div>
   );

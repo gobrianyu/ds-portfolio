@@ -1,8 +1,7 @@
 {
-  "title": "Design Document – Lab 1: Simple RPC",
+  "title": "System 01: Exactly-Once RPC",
   "author": "Brian S. Yu",
-  "date": "1/14/2026",
-  "course": "CSE 452",
+  "date": "2026.01.14",
   "sections": [
     {
       "title": "Preface",

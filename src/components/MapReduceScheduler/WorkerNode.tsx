@@ -22,7 +22,7 @@ export const WorkerNode: React.FC<WorkerNodeProps> = ({ worker, currentTask }) =
       id={`worker-${worker.id}`}
       className={cn(
         "relative flex flex-col p-2 sm:p-4 rounded-lg border-2 transition-all duration-200 h-44 sm:h-48",
-        isOver ? "border-primary bg-primary/10 scale-105" : "border-border bg-card",
+        isOver ? "border-violet-500 bg-violet-500/10 scale-105" : "border-border bg-card",
         worker.status === 'busy' ? "shadow-md" : "opacity-80"
       )}
     >
@@ -32,10 +32,9 @@ export const WorkerNode: React.FC<WorkerNodeProps> = ({ worker, currentTask }) =
             "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full",
             worker.status === 'busy' ? "bg-primary animate-pulse" : "bg-muted-foreground"
           )} />
-          <span className="text-[9px] sm:text-xs font-black uppercase tracking-widest">W_{worker.id}</span>
+          <span className="text-[9px] sm:text-xs font-black uppercase tracking-widest">WORKER_{worker.id}</span>
         </div>
         <div className="flex items-center gap-1 opacity-60">
-          <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           <span className="text-[8px] sm:text-[10px] font-bold">{worker.speed.toFixed(1)}x</span>
         </div>
       </div>
@@ -47,7 +46,7 @@ export const WorkerNode: React.FC<WorkerNodeProps> = ({ worker, currentTask }) =
             key={blockId} 
             className="px-1.5 py-0.5 bg-muted rounded-sm border border-border flex items-center gap-1"
           >
-            <Database className="w-2.5 h-2.5 text-primary" />
+            <Database className="w-2.5 h-2.5 text-violet-500" />
             <span className="text-[8px] font-bold uppercase">{blockId}</span>
           </div>
         ))}
@@ -70,12 +69,12 @@ export const WorkerNode: React.FC<WorkerNodeProps> = ({ worker, currentTask }) =
                     "text-[10px] font-black uppercase px-1.5 py-0.5 rounded-sm w-fit",
                     currentTask.type === 'map' ? "bg-blue-500/20 text-blue-500" : "bg-emerald-500/20 text-emerald-500"
                   )}>
-                    {currentTask.type}_{currentTask.id}
+                    {currentTask.type.toUpperCase()}_{currentTask.id}
                   </span>
                   {currentTask.type === 'map' && currentTask.dataBlockId && (
                     <span className={cn(
                       "text-[8px] font-black uppercase mt-1",
-                      worker.localDataBlocks.has(currentTask.dataBlockId) ? "text-emerald-500" : "text-amber-500"
+                      worker.localDataBlocks.has(currentTask.dataBlockId) ? "text-emerald-500" : "text-primary"
                     )}>
                       {worker.localDataBlocks.has(currentTask.dataBlockId) ? "● LOCAL_EXEC" : "○ REMOTE_FETCH"}
                     </span>
@@ -100,15 +99,14 @@ export const WorkerNode: React.FC<WorkerNodeProps> = ({ worker, currentTask }) =
               </div>
               <div className="flex items-center justify-between">
                 {currentTask.isStraggler && (
-                  <div className="flex items-center gap-1 text-amber-500 animate-pulse">
+                  <div className="flex items-center gap-1 text-primary animate-pulse">
                     <AlertTriangle className="w-3 h-3" />
                     <span className="text-[8px] font-black uppercase">Straggler</span>
                   </div>
                 )}
                 {currentTask.isSpeculative && (
                   <div className="flex items-center gap-1 text-primary animate-pulse ml-auto">
-                    <Zap className="w-3 h-3" />
-                    <span className="text-[8px] font-black uppercase">Speculative</span>
+                    <span className="text-[8px] font-black uppercase">Speculative</span> 
                   </div>
                 )}
               </div>
@@ -118,9 +116,13 @@ export const WorkerNode: React.FC<WorkerNodeProps> = ({ worker, currentTask }) =
               key="idle"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="h-12 flex items-center justify-center border border-dashed border-border rounded-sm opacity-40"
+              className={cn(
+                "h-12 flex flex-col items-center justify-center border-2 border-dotted rounded-sm transition-all duration-300",
+                isOver ? "border-violet-500 bg-violet-500/20 opacity-100" : "border-violet-500/30 opacity-60"
+              )}
             >
-              <span className="text-[10px] font-bold uppercase tracking-widest">Idle</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-violet-500/80">Idle</span>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">Drop Task Here</span>
             </motion.div>
           )}
         </AnimatePresence>

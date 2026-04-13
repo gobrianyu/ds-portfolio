@@ -5,16 +5,14 @@ import {
   ArrowLeft, 
   ExternalLink, 
   Github, 
-  Layers, 
-  Code2, 
   CheckCircle2, 
   Terminal, 
-  Cpu, 
-  ChevronRight,
-  ArrowUp,
-  Menu,
-  X,
-  FileText
+  Cpu,
+  Layers,
+  Zap,
+  Shield,
+  Activity,
+  ChevronRight
 } from 'lucide-react';
 import { projects } from '../data/projects';
 import TabbedCodeViewer from '../components/TabbedCodeViewer';
@@ -95,9 +93,9 @@ export default function ProjectPage() {
         style={{ scaleX }}
       />
 
-      {/* Sticky Left Navigation */}
+      {/* Sticky Left Navigation - Fixed to viewport edge */}
       <nav className="fixed left-0 top-48 z-40 hidden xl:flex flex-col items-start pointer-events-none">
-        <div className="pointer-events-auto bg-card/80 backdrop-blur-xl border-y border-r border-border rounded-r-2xl py-10 px-6 shadow-2xl space-y-10 min-w-[200px]">
+        <div className="pointer-events-auto bg-card/80 backdrop-blur-xl border-y border-r border-border rounded-r-2xl py-10 px-6 shadow-2xl space-y-10 w-[260px]">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             <span className="text-[10px] font-black text-foreground uppercase tracking-[0.3em]">Navigation</span>
@@ -137,7 +135,7 @@ export default function ProjectPage() {
                       <div key={idx} className="flex items-center gap-3 group/item cursor-default">
                         <div className="w-1 h-1 bg-muted rounded-full group-hover/item:bg-primary transition-colors" />
                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest group-hover/item:text-foreground transition-colors">
-                          {section.title}
+                          {section.title === 'Correctness/Liveness Analysis' ? 'C/L Analysis' : section.title}
                         </span>
                       </div>
                     ))}
@@ -159,15 +157,7 @@ export default function ProjectPage() {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <Link
-          to="/projects"
-          className="inline-flex items-center text-muted-foreground hover:text-primary mb-12 transition-colors font-bold uppercase tracking-widest text-[10px] group"
-        >
-          <ArrowLeft className="mr-2 w-3 h-3 group-hover:-translate-x-1 transition-transform" /> 
-          <span>cd ..</span>
-        </Link>
-
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[280px] py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -176,6 +166,13 @@ export default function ProjectPage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-24">
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-6">
+                <Link
+                  to="/projects"
+                  className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px] group"
+                >
+                  <ArrowLeft className="mr-2 w-3 h-3 group-hover:-translate-x-1 transition-transform" /> 
+                  <span>cd ..</span>
+                </Link>
                 <div className="px-3 py-1 bg-primary/10 rounded-md border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
                   <Terminal className="w-3 h-3" />
                   <span>Process: {project.id}</span>
@@ -211,58 +208,105 @@ export default function ProjectPage() {
           <div className="space-y-32">
             {/* Overview Section */}
             <section id="overview" className="scroll-mt-24">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                 <div className="lg:col-span-8">
                   <div className="flex items-center space-x-4 mb-10">
-                    <div className="p-3 bg-primary/10 rounded-xl">
-                      <Layers className="w-6 h-6 text-primary" />
-                    </div>
                     <h2 className="text-3xl font-black text-foreground tracking-tight uppercase tracking-widest">Architecture Overview</h2>
                   </div>
-                  <div className="terminal-window p-8 md:p-12 bg-muted/30 border-border relative overflow-hidden mb-8">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/30" />
-                    <p className="text-xl text-muted-foreground leading-relaxed font-medium mb-10">
-                      {project.longDescription}
-                    </p>
-                    <div className="p-8 bg-muted/50 rounded-xl border border-border leading-relaxed text-muted-foreground text-lg italic">
-                      {project.architecture}
+                  
+                  <div className="space-y-8">
+                    <div className="terminal-window p-8 md:p-12 bg-muted/20 border-border relative overflow-hidden group">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary/20 to-transparent" />
+                      <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700" />
+                      
+                      <div className="relative z-10">                      
+                        <p className="text-xl md:text-2xl text-foreground/90 leading-relaxed font-medium mb-8">
+                          {project.longDescription}
+                        </p>
+                        <div className="p-6 bg-background/50 border border-border rounded-xl hover:border-primary/30 transition-colors">
+                          <div className="flex items-center gap-3 mb-4">
+                            <ChevronRight className="w-4 h-4 text-orange-500" />
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Core Logic</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed italic">
+                            {project.architecture}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="lg:col-span-4 space-y-8">
-                  {/* Features Sidebar */}
-                  <div className="terminal-window p-8 bg-muted/30 border-border shadow-xl">
-                    <div className="terminal-header mb-8">
-                      <div className="flex items-center space-x-2">
-                        <Cpu className="w-4 h-4 text-emerald-500" />
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">System Capabilities</span>
+                <div className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8">
+                  <div className="space-y-8">
+                    {/* System Status Card */}
+                    <motion.div 
+                      animate={{ y: [0, -4, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      className="p-6 bg-card border border-primary/10 rounded-2xl shadow-[0_0_30px_rgba(242,125,38,0.15)] relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-primary/[0.05] pointer-events-none" />
+                      <div className="relative flex items-center gap-4">
+                        <div className="relative">
+                          <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                            <Activity className="w-6 h-6 text-primary" />
+                          </div>
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-background rounded-full" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-primary uppercase tracking-widest">System Health</p>
+                          <p className="text-sm font-bold text-foreground">Operational</p>
+                        </div>
                       </div>
-                    </div>
-                    <ul className="space-y-6">
-                      {project.features.map((feature, i) => (
-                        <li key={i} className="flex items-start text-sm text-muted-foreground font-medium group">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 mr-4 shrink-0 group-hover:scale-150 transition-transform" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                    </motion.div>
 
-                  {/* Technologies Sidebar */}
-                  <div className="terminal-window p-8 bg-muted/30 border-border shadow-xl">
-                    <div className="terminal-header mb-8">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Tech Stack</span>
+                    {/* Technologies Sidebar */}
+                    <div className="terminal-window bg-primary/[0.02] bg-gradient-to-br from-primary/[0.05] to-transparent border-border shadow-2xl relative overflow-hidden group">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-transparent" />
+                      <div className="pt-6 px-6 py-5 border-b border-border bg-muted/50">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Tech Stack</span>
+                          <div className="flex gap-1 opacity-50">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <div className="flex flex-wrap gap-2">
+                          {project.technologies.map((tech, i) => (
+                            <span key={i} className="px-3 py-1.5 bg-background/50 rounded-lg border border-border text-[9px] font-black text-muted-foreground uppercase tracking-widest hover:border-primary/30 hover:text-primary transition-all cursor-default">
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {project.technologies.map((tech, i) => (
-                        <span key={i} className="px-3 py-1.5 bg-muted rounded-lg border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                          {tech}
-                        </span>
-                      ))}
+                  </div>
+                  
+                  {/* Features Sidebar */}
+                  <div className="md:row-span-2 lg:row-span-1">
+                    <div className="terminal-window bg-emerald-500/[0.02] bg-gradient-to-br from-emerald-500/[0.05] to-transparent border-border shadow-2xl relative overflow-hidden group h-full">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 to-transparent" />
+                      <div className="pt-6 px-6 py-5 border-b border-border bg-muted/50">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Features</span>
+                          <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-8">
+                        <ul className="space-y-6">
+                          {project.features.map((feature, i) => (
+                            <li key={i} className="flex items-start text-sm text-muted-foreground font-medium">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500/60 mr-3 mt-0.5" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -273,10 +317,7 @@ export default function ProjectPage() {
             {project.designDocUrl && (
               <section id="design-doc" className="scroll-mt-24">
                 <div className="flex items-center space-x-4 mb-10">
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <FileText className="w-6 h-6 text-primary" />
-                  </div>
-                  <h2 className="text-3xl font-black text-foreground tracking-tight uppercase tracking-widest">Design Specification</h2>
+                  <h2 className="text-3xl font-black text-foreground tracking-tight uppercase tracking-widest">Design Document</h2>
                 </div>
                 <DesignDoc url={project.designDocUrl} />
               </section>
@@ -285,9 +326,6 @@ export default function ProjectPage() {
             {/* Implementation Section */}
             <section id="implementation" className="scroll-mt-24">
               <div className="flex items-center space-x-4 mb-10">
-                <div className="p-3 bg-primary/10 rounded-xl">
-                  <Code2 className="w-6 h-6 text-primary" />
-                </div>
                 <h2 className="text-3xl font-black text-foreground tracking-tight uppercase tracking-widest">Implementation Details</h2>
               </div>
               <TabbedCodeViewer files={project.codeFiles} />

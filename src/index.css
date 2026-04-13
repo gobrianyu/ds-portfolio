@@ -13,6 +13,8 @@
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   --accent: #F27D26;
+  --violet-500: #8b5cf6;
+  --violet-500-rgb: 139, 92, 246;
 }
 
 .dark {
@@ -27,6 +29,8 @@
   --muted: #18181b;
   --muted-foreground: #a1a1aa;
   --accent: #F27D26;
+  --violet-500: #8b5cf6;
+  --violet-500-rgb: 139, 92, 246;
 }
 
 @theme {
@@ -123,18 +127,18 @@ input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   width: 12px;
   height: 12px;
-  background: var(--accent);
+  background: var(--violet-500);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 10px var(--accent);
+  box-shadow: 0 0 10px var(--violet-500);
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 12px;
   height: 12px;
-  background: var(--accent);
+  background: var(--violet-500);
   border-radius: 50%;
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 10px var(--accent);
+  box-shadow: 0 0 10px var(--violet-500);
 }

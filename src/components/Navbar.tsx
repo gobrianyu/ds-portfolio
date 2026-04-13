@@ -11,10 +11,28 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: Home, cmd: 'cd ~' },
-    { name: 'Projects', path: '/projects', icon: Server, cmd: 'ls ./projects' },
-    { name: 'Blog', path: '/blog', icon: BookOpen, cmd: 'cat ./research' },
+    { name: 'Home', path: '/', icon: Home, cmd: 'cd ~', color: 'text-primary' },
+    { name: 'Projects', path: '/projects', icon: Server, cmd: 'ls ./projects', color: 'text-orange-500' },
+    { name: 'Blog', path: '/blog', icon: BookOpen, cmd: 'ls ./research', color: 'text-violet-500' },
   ];
+
+  const getActiveColor = () => {
+    if (location.pathname.startsWith('/blog')) return 'text-violet-500';
+    if (location.pathname.startsWith('/projects')) return 'text-orange-500';
+    return 'text-primary';
+  };
+
+  const getActiveBg = () => {
+    if (location.pathname.startsWith('/blog')) return 'bg-violet-500/10';
+    if (location.pathname.startsWith('/projects')) return 'bg-orange-500/10';
+    return 'bg-primary/10';
+  };
+
+  const getIndicatorColor = () => {
+    if (location.pathname.startsWith('/blog')) return 'bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]';
+    if (location.pathname.startsWith('/projects')) return 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]';
+    return 'bg-primary shadow-[0_0_10px_rgba(242,125,38,0.5)]';
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border h-14 flex items-center transition-colors">
@@ -22,9 +40,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="flex items-center space-x-2 px-3 py-1 bg-muted rounded-md border border-border group-hover:border-primary/50 transition-colors">
-              <Terminal className="w-4 h-4 text-primary" />
+              <Terminal className={cn("w-4 h-4", getActiveColor())} />
               <span className="font-mono text-xs font-bold tracking-tighter text-foreground">
-                brian@dist-sys:<span className="text-primary">~</span>$
+                brian@dist-sys:<span className={getActiveColor()}>~</span>$
               </span>
             </div>
           </Link>
@@ -37,14 +55,14 @@ export default function Navbar() {
                 to={link.path}
                 className={cn(
                   "relative px-4 py-1.5 text-[10px] font-black transition-all hover:bg-muted rounded-md uppercase tracking-[0.2em] flex items-center space-x-2",
-                  location.pathname === link.path ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
+                  location.pathname === link.path ? cn(link.color, "bg-muted") : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <span className="opacity-50 font-mono">{link.cmd}</span>
                 {location.pathname === link.path && (
                   <motion.div
                     layoutId="nav-indicator"
-                    className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(242,125,38,0.5)]"
+                    className={cn("absolute -bottom-[17px] left-0 right-0 h-0.5", getIndicatorColor())}
                   />
                 )}
               </Link>
@@ -54,7 +72,7 @@ export default function Navbar() {
 
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+              className={cn("p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:", getActiveColor())}
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -72,7 +90,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-muted-foreground hover:text-primary hover:bg-muted focus:outline-none"
+              className={cn("p-2 rounded-md text-muted-foreground hover:bg-muted focus:outline-none hover:", getActiveColor())}
             >
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -95,7 +113,7 @@ export default function Navbar() {
               className={cn(
                 "flex items-center justify-between px-4 py-4 rounded-md text-xs font-black uppercase tracking-widest border border-transparent",
                 location.pathname === link.path
-                  ? "bg-primary/10 text-primary border-primary/20"
+                  ? cn(getActiveBg(), getActiveColor(), "border-primary/20")
                   : "text-muted-foreground hover:bg-muted"
               )}
             >

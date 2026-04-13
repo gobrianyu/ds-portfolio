@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Terminal, Cpu, Server, Zap, Activity, ShieldCheck, Globe, BookOpen } from 'lucide-react';
+import { ArrowRight, Terminal, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { projects } from '../data/projects';
+import { blogPosts } from '../data/blogs';
 import ProjectCard from '../components/ProjectCard';
+import BlogCard from '../components/BlogCard';
 import SystemStatus from '../components/SystemStatus';
 
 export default function Home() {
   const [typedBio, setTypedBio] = useState('');
-  const fullBio = "I specialize in Distributed Systems and Cloud Infrastructure. My work focuses on building resilient, high-performance computing systems that solve complex synchronization and consistency challenges at scale.";
+  const fullBio = "This portfolio showcases my work in Distributed Systems and Cloud Infrastructure. It features a collection of projects implementing core distributed protocols, alongside in-depth analyses of seminal research papers that have shaped the field of large-scale computing.";
 
   useEffect(() => {
     let index = 0;
@@ -63,7 +65,7 @@ export default function Home() {
               <div className="space-y-8">
                 <div>
                   <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter text-foreground">
-                    Brian S. Yu <span className="text-primary">_</span>
+                    Distributed Systems Portfolio<span className="text-primary">_</span>
                   </h1>
                   <p className="text-xl md:text-2xl text-emerald-500/80 font-bold tracking-tight">
                     Computer Science @ University of Washington
@@ -72,7 +74,7 @@ export default function Home() {
 
                 <div className="max-w-3xl space-y-6 text-muted-foreground text-lg leading-relaxed">
                   <p>
-                    <span className="text-amber-500 font-bold"># About Me</span>
+                    <span className="text-amber-500 font-bold"># About the Portfolio</span>
                     <br />
                     {typedBio}
                     <span className="inline-block w-2 h-5 bg-primary ml-1 animate-pulse align-middle" />
@@ -103,9 +105,6 @@ export default function Home() {
       {/* Core Goals as "System Modules" */}
       <section className="mb-32">
         <div className="flex items-center space-x-4 mb-12">
-          <div className="p-3 bg-primary/10 rounded-2xl">
-            <Cpu className="w-8 h-8 text-primary" />
-          </div>
           <div>
             <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">System Modules</h2>
             <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Core Technical Competencies</p>
@@ -114,19 +113,16 @@ export default function Home() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <ModuleCard 
-            icon={<Server className="w-8 h-8" />}
             title="Distributed Consensus"
             description="Implementing Paxos and Raft protocols to ensure state machine replication and fault tolerance across unreliable networks."
             tag="MODULE_01"
           />
           <ModuleCard 
-            icon={<Zap className="w-8 h-8" />}
             title="High-Performance RPC"
             description="Building custom binary protocols with exactly-once semantics, optimizing for low latency and high throughput."
             tag="MODULE_02"
           />
           <ModuleCard 
-            icon={<ShieldCheck className="w-8 h-8" />}
             title="Fault Tolerance"
             description="Designing systems that gracefully handle network partitions, server crashes, and data corruption without service interruption."
             tag="MODULE_03"
@@ -138,9 +134,6 @@ export default function Home() {
       <section className="mb-32">
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center space-x-4">
-            <div className="p-3 bg-primary/10 rounded-2xl">
-              <Activity className="w-8 h-8 text-primary" />
-            </div>
             <div>
               <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">Active Processes</h2>
               <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Featured Implementations</p>
@@ -161,20 +154,39 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Research Paper Blogs Section */}
+      <section className="mb-32">
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center space-x-4">
+            <div>
+              <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">Research Paper Blogs</h2>
+              <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Architectural Breakdowns</p>
+            </div>
+          </div>
+          <Link 
+            to="/blog" 
+            className="hidden md:flex items-center space-x-2 text-violet-400 font-bold uppercase tracking-widest text-xs hover:underline"
+          >
+            <span>View All Blogs</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          {blogPosts.slice(0, 3).map((post, i) => (
+            <BlogCard key={post.id} post={post} index={i} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
 
-function ModuleCard({ icon, title, description, tag }: { icon: React.ReactNode, title: string, description: string, tag: string }) {
+function ModuleCard({ title, description, tag }: { title: string, description: string, tag: string }) {
   return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      className="terminal-window p-8 border-border group"
-    >
+    <div className="terminal-window p-8 border-border">
       <div className="flex justify-between items-start mb-6">
-        <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-          {icon}
-        </div>
         <span className="text-[10px] font-black text-muted-foreground tracking-[0.3em]">{tag}</span>
       </div>
       <h3 className="text-xl font-black mb-4 text-foreground tracking-tight uppercase">{title}</h3>
@@ -185,6 +197,6 @@ function ModuleCard({ icon, title, description, tag }: { icon: React.ReactNode, 
         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         <span>Module Operational</span>
       </div>
-    </motion.div>
+    </div>
   );
 }

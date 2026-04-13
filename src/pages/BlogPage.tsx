@@ -1,5 +1,6 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
+import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, 
   Quote, 
@@ -28,11 +29,10 @@ import {
 import { blogPosts } from '../data/blogs';
 import BlogTerminal from '../components/BlogTerminal';
 import BigtableReadPath from '../components/interactive/BigtableReadPath';
-import GFSSimulator from '../components/GFSSimulator/GFSSimulator';
+import { GFSSimulator } from '../components/GFSSimulator/GFSSimulator';
 import { DynamoRing } from '../components/DynamoRing/DynamoRing';
 import BitcoinSimulator from '../components/BitcoinSimulator/BitcoinSimulator';
 import { MapReduceScheduler } from '../components/MapReduceScheduler/MapReduceScheduler';
-import TensorFlowGraph from '../components/TensorFlowGraph/TensorFlowGraph';
 import TensorFlowPlayground from '../components/TensorFlowPlayground/TensorFlowPlayground';
 import { RigidWrapper } from '../components/interactive/RigidWrapper';
 import { useState, useMemo, useEffect } from 'react';
@@ -45,6 +45,13 @@ export default function BlogPage() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     const checkMobile = () => {
@@ -101,10 +108,17 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-10">
+    <div className="min-h-screen relative bg-background text-foreground">
+      {/* Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-violet-400 z-50 origin-left"
+        style={{ scaleX }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-10">
       <Link
         to="/blog"
-        className="inline-flex items-center text-muted-foreground hover:text-primary mb-12 transition-colors font-bold uppercase tracking-widest text-[10px] group"
+        className="inline-flex items-center text-muted-foreground hover:text-violet-500 transition-colors font-bold uppercase tracking-widest text-[10px] group"
       >
         <ArrowLeft className="mr-2 w-3 h-3 group-hover:-translate-x-1 transition-transform" /> 
         <span>cd ..</span>
@@ -121,7 +135,7 @@ export default function BlogPage() {
               <Terminal className="w-3 h-3" />
               <span>Log: {post.id}</span>
             </div>
-            <div className="px-3 py-1 bg-primary/10 rounded-md border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
+            <div className="px-3 py-1 bg-violet-500/10 rounded-md border border-violet-500/20 text-violet-500 text-[10px] font-black uppercase tracking-widest">
               {post.date}
             </div>
             <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
@@ -131,7 +145,7 @@ export default function BlogPage() {
 
           <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[0.8] text-foreground tracking-tighter">
             {post.title.split(':').map((part, i) => (
-              <span key={i} className={i === 1 ? "block text-primary/80 text-4xl md:text-6xl mt-6 font-bold tracking-tight" : ""}>
+              <span key={i} className={i === 1 ? "block text-violet-500/80 text-4xl md:text-6xl mt-6 font-bold tracking-tight" : ""}>
                 {part}{i === 0 && post.title.includes(':') ? ':' : ''}
               </span>
             ))}
@@ -139,7 +153,7 @@ export default function BlogPage() {
         </header>
 
         <div className="mb-20">
-          <BlogTerminal text={post.aiSummary} />
+          <BlogTerminal text={post.aiSummary} color="violet" />
         </div>
 
         {/* Interactive Widget Section */}
@@ -147,7 +161,7 @@ export default function BlogPage() {
           <div className="max-w-7xl mx-auto overflow-visible">
             <div className="flex flex-col items-center mb-6">
               <h2 className="text-2xl font-black text-foreground uppercase tracking-[0.2em] text-center">{getInteractiveTitle()}</h2>
-              <div className="h-1 w-32 bg-gradient-to-r from-transparent via-primary to-transparent mt-2" />
+              <div className="h-1 w-32 bg-gradient-to-r from-transparent via-violet-500 to-transparent mt-2" />
             </div>
             {renderInteractive()}
           </div>
@@ -160,24 +174,63 @@ export default function BlogPage() {
                 <h2 className="text-4xl font-black m-0 text-foreground tracking-tight uppercase tracking-widest leading-none">Analysis & Discussion</h2>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {post.tags.map(tag => (
-                    <span key={tag} className="px-3 py-1 bg-primary/5 text-primary/70 rounded-full text-[9px] font-black uppercase tracking-widest border border-primary/10">
+                    <span key={tag} className="px-3 py-1 bg-violet-500/5 text-violet-500/70 rounded-full text-[9px] font-black uppercase tracking-widest border border-violet-500/10">
                       {tag}
                     </span>
                   ))}
                 </div>
               </div>
-              
-              <div className="text-muted-foreground leading-relaxed text-xl space-y-12 font-medium">
-                {post.content.split('\n\n').map((paragraph, i) => (
-                  <div key={i} className="relative group">
-                    <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
-                      <ChevronRight className="w-6 h-6" />
+
+              {/* Mobile Metrics - Shown only on mobile, between tags and content */}
+              <div className="lg:hidden block mb-12">
+                <div className="terminal-window p-6 bg-muted/40 border-border relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 to-transparent" />
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-border">
+                      <span className="text-[9px] text-muted-foreground uppercase font-black">Data Volume</span>
+                      <span className="text-xs font-mono text-muted-foreground">{(post.content.length / 1024).toFixed(1)} KB</span>
                     </div>
-                    <p className="relative">
-                      {paragraph}
-                    </p>
+                    <div className="flex justify-between items-center py-2 border-b border-border">
+                      <span className="text-[9px] text-muted-foreground uppercase font-black">Read Time</span>
+                      <span className="text-xs font-mono text-muted-foreground">{Math.ceil(post.content.split(/\s+/).length / 225)}m</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-[9px] text-muted-foreground uppercase font-black">Last Updated</span>
+                      <span className="text-xs font-mono text-violet-500">APR 2026</span>
+                    </div>
                   </div>
-                ))}
+                </div>
+              </div>
+              
+              <div className="text-muted-foreground leading-relaxed text-xl space-y-12 font-medium markdown-content">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <div className="relative group mb-12 last:mb-0">
+                        <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-violet-500 hidden lg:block">
+                          <ChevronRight className="w-6 h-6" />
+                        </div>
+                        <p className="relative m-0">
+                          {children}
+                        </p>
+                      </div>
+                    ),
+                    a: ({ children, href }) => (
+                      <a 
+                        href={href} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-violet-500 hover:text-violet-400 transition-colors underline underline-offset-4 font-black"
+                      >
+                        {children}
+                      </a>
+                    ),
+                    strong: ({ children }) => <strong className="text-foreground font-black">{children}</strong>,
+                    em: ({ children }) => <em className="text-violet-400/80 italic">{children}</em>,
+                  }}
+                >
+                  {post.content}
+                </ReactMarkdown>
               </div>
             </div>
 
@@ -195,7 +248,8 @@ export default function BlogPage() {
             </div>
 
           <div className="lg:col-span-4 space-y-10">
-            <div className="terminal-window p-6 bg-muted/40 border-border relative overflow-hidden">
+            {/* Desktop Metrics - Hidden on mobile */}
+            <div className="terminal-window p-6 bg-muted/40 border-border relative overflow-hidden hidden lg:block">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 to-transparent" />
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2 border-b border-border">
@@ -208,7 +262,7 @@ export default function BlogPage() {
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-[9px] text-muted-foreground uppercase font-black">Last Updated</span>
-                  <span className="text-xs font-mono text-primary">APR 2026</span>
+                  <span className="text-xs font-mono text-violet-500">APR 2026</span>
                 </div>
               </div>
             </div>
@@ -278,12 +332,12 @@ export default function BlogPage() {
                   className="overflow-hidden"
                 >
                   <div 
-                    className="terminal-window border-primary/30 bg-card shadow-2xl flex flex-col h-[800px] rounded-xl overflow-hidden relative z-0"
+                    className="terminal-window border-violet-500/30 bg-card shadow-2xl flex flex-col h-[800px] rounded-xl overflow-hidden relative z-0"
                     style={{ transform: 'translateZ(0)', isolation: 'isolate' }}
                   >
                     <div className="terminal-header bg-muted px-4 py-2 border-b border-border flex items-center justify-between rounded-t-xl">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-3 h-3 text-primary" />
+                        <FileText className="w-3 h-3 text-violet-500" />
                         <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Preview: {post.id}.pdf</span>
                       </div>
                       <div className="flex gap-1.5">
@@ -304,7 +358,7 @@ export default function BlogPage() {
                     <div className="p-4 bg-muted border-t border-border rounded-b-xl">
                       <button 
                         onClick={() => setIsPdfModalOpen(true)}
-                        className="w-full py-3 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 group"
+                        className="w-full py-3 bg-violet-500 text-white font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-violet-600 transition-all flex items-center justify-center gap-3 group"
                       >
                         <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
                         Expand Full-Scale Reader
@@ -337,7 +391,7 @@ export default function BlogPage() {
                 exit={{ opacity: 0, scale: 0.9, x: -100 }}
                 className="fixed top-10 left-10 bottom-10 w-[70%] z-[101] flex flex-col"
               >
-                <div className="terminal-window border-primary/30 bg-card shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
+                <div className="terminal-window border-violet-500/30 bg-card shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
                   <div className="terminal-header bg-muted flex items-center justify-between px-6 py-4 border-b border-border">
                     <div className="flex items-center space-x-4">
                       <div className="flex space-x-2">
@@ -347,7 +401,7 @@ export default function BlogPage() {
                       </div>
                       <div className="h-4 w-[1px] bg-border mx-2" />
                       <div className="flex items-center space-x-3">
-                        <FileText className="w-4 h-4 text-primary" />
+                        <FileText className="w-4 h-4 text-violet-500" />
                         <span className="text-xs font-black text-foreground uppercase tracking-widest">Document: {post.id}.pdf</span>
                       </div>
                     </div>
@@ -381,7 +435,7 @@ export default function BlogPage() {
                       <a 
                         href={post.pdfUrl} 
                         download 
-                        className="w-14 h-14 bg-primary text-primary-foreground rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
+                        className="w-14 h-14 bg-violet-500 text-white rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
                       >
                         <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
                       </a>
@@ -399,6 +453,7 @@ export default function BlogPage() {
           )}
         </AnimatePresence>
       </motion.article>
+      </div>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isDragging, isAutoMode
           "text-[8px] sm:text-[10px] font-black uppercase px-1 sm:px-1.5 py-0.5 rounded-sm truncate",
           task.type === 'map' ? "bg-blue-500/20 text-blue-500" : "bg-emerald-500/20 text-emerald-500"
         )}>
-          {task.type[0]}_{task.id}
+          {task.type.toUpperCase()}_{task.id}
         </span>
         {task.status === 'complete' ? (
           <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-500" />
@@ -51,7 +51,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isDragging, isAutoMode
       {task.type === 'map' && task.dataBlockId && (
         <div className="flex items-center gap-1 opacity-60">
           <Database className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          <span className="text-[7px] sm:text-[9px] font-bold uppercase tracking-widest truncate">B_{task.dataBlockId}</span>
+          <span className="text-[7px] sm:text-[9px] font-bold uppercase tracking-widest truncate">Block_{task.dataBlockId}</span>
         </div>
       )}
     </div>

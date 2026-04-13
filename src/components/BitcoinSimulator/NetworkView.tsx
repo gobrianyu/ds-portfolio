@@ -48,7 +48,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ miners, events, blocks
           <line 
             key={`${m1.id}-${m2.id}`}
             x1={m1.x} y1={m1.y} x2={m2.x} y2={m2.y}
-            stroke="var(--primary)"
+            stroke="var(--violet-500)"
             strokeWidth="1"
             strokeDasharray="4 4"
             opacity="0.1"
@@ -107,7 +107,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ miners, events, blocks
               {/* Outer Ring */}
               <motion.circle 
                 cx={pos.x} cy={pos.y} r={isSelected ? "48" : "40"} 
-                fill={isSelected ? "var(--primary-rgb)" : "var(--card)"} 
+                fill={isSelected ? "var(--violet-500-rgb)" : "var(--card)"} 
                 fillOpacity={isSelected ? 0.1 : 1}
                 stroke={miner.color} 
                 strokeWidth={isSelected ? "4" : "2.5"}
@@ -123,7 +123,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ miners, events, blocks
               <foreignObject x={pos.x - 15} y={pos.y - 15} width="30" height="30">
                 <div className="w-full h-full flex items-center justify-center">
                   {isSelected ? (
-                    <User className="w-6 h-6 text-primary" />
+                    <User className="w-6 h-6 text-violet-500" />
                   ) : (
                     <Cpu className="w-5 h-5" style={{ color: miner.color }} />
                   )}
@@ -131,7 +131,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ miners, events, blocks
               </foreignObject>
 
               {/* Label */}
-              <text x={pos.x} y={pos.y + 65} textAnchor="middle" fill="currentColor" className={`text-[11px] font-black uppercase tracking-widest ${isSelected ? 'text-primary' : ''}`}>
+              <text x={pos.x} y={pos.y + 65} textAnchor="middle" fill="currentColor" className={`text-[11px] font-black uppercase tracking-widest ${isSelected ? 'text-violet-500' : ''}`}>
                 {miner.id} {isSelected ? '(YOU)' : ''}
               </text>
               <text x={pos.x} y={pos.y + 80} textAnchor="middle" fill={miner.color} className="text-[10px] font-bold tabular-nums">{Math.round(miner.hashPower)}% HP</text>
