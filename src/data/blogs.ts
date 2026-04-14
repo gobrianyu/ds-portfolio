@@ -16,7 +16,7 @@ export const blogPosts: BlogPost[] = [
     id: "tensorflow",
     title: "TensorFlow: Large-Scale Machine Learning on Heterogeneous Distributed Systems",
     citation: "Abadi, M., et al. (2016). TensorFlow: Large-scale machine learning on heterogeneous distributed systems. OSDI.",
-    pdfUrl: "https://www.usenix.org/system/files/conference/osdi16/osdi16-abadi.pdf",
+    pdfUrl: "https://www.tensorflow.org/extras/tensorflow-whitepaper2015.pdf",
     preview: "TensorFlow is an interface for expressing machine learning algorithms, and an implementation for executing such algorithms.",
     overview: "Exploring the design of TensorFlow, a system that represents computations as dataflow graphs to enable efficient execution across diverse hardware.",
     content: `One of the central design ideas in the TensorFlow paper is its **dataflow graph abstraction**, which serves as the core programming and execution model. In TensorFlow, computations are represented as directed graphs where nodes correspond to operations (e.g., matrix multiplication, convolution) and edges represent tensors (multi-dimensional data arrays) flowing between them. This abstraction decouples *what* computation is performed from *where* and *how* it is executed. The runtime system is then responsible for mapping this graph onto a heterogeneous set of devices, such as CPUs, GPUs, and distributed machines across a cluster.
@@ -82,7 +82,7 @@ The Bitcoin paper is one of those rare pieces that launches an entire industry. 
     id: "dynamo",
     title: "Dynamo: Amazon's Highly Available Key-value Store",
     citation: "DeCandia, G., et al. (2007). Dynamo: Amazon's highly available key-value store. SOSP.",
-    pdfUrl: "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf",
+    pdfUrl: "https://cdn.amazon.science/ac/1d/eb50c4064c538c8ac440ce6a1d91/dynamo-amazons-highly-available-key-value-store.pdf",
     preview: "Dynamo is a highly available key-value storage system that some of Amazon's core services use to provide an 'always-on' experience.",
     overview: "Exploring Amazon's decentralised key-value store that pioneered eventual consistency and consistent hashing for high availability.",
     content: `A central hypothesis in the Dynamo paper is that **prioritising availability over strong consistency leads to better real-world performance** for large-scale, user-facing systems, especially in environments where failures are common and unavoidable. Rather than enforcing strict consistency across replicas (which can introduce latency and unavailability during partitions), Dynamo embraces an *eventual consistency* model, allowing the system to continue serving reads and writes even when parts of the system are down or disconnected.
