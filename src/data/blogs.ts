@@ -6,7 +6,6 @@ export interface BlogPost {
   overview: string;
   content: string;
   aiSummary: string;
-  imageUrl: string;
   pdfUrl?: string;
   date: string;
   tags: string[];
@@ -32,7 +31,6 @@ Another angle worth exploring is how TensorFlow's design reflects assumptions ab
 
 TensorFlow's design is undeniably influential as it essentially defined how large-scale machine learning systems were built for years. The dataflow graph abstraction is powerful and enabled an impressive level of scalability. But like many systems optimised for performance at scale, it came with usability tradeoffs that became more apparent as the field matured. The evolution toward more dynamic and user-friendly frameworks suggests that while TensorFlow got the “systems” part very right, the “human” part needed iteration.`,
     aiSummary: "TensorFlow is a flexible, large-scale machine learning system designed for building and deploying dataflow-based computation graphs across heterogeneous environments. It represents computations as graphs of operations on tensors, enabling automatic differentiation, parallel execution, and deployment across CPUs, GPUs, and distributed systems. TensorFlow supports both research and production use cases, providing scalability and portability for training and serving machine learning models.",
-    imageUrl: "https://picsum.photos/seed/tensorflow-paper/800/600",
     date: "2026.03.13",
     tags: ["Machine Learning", "Dataflow", "Distributed Systems"]
   },
@@ -55,7 +53,6 @@ That said, although [Martin Gorner declared MapReduce obsolete](https://jaxlondo
 
 MapReduce is one of those papers that feels almost too simple when you first read it, and then you realise how profound it actually is. By aggressively limiting the programming model, it unlocks massive scalability and fault tolerance almost for free. But that simplicity is also its biggest constraint, which later systems had to work around. In a way, MapReduce defined a new layer of abstraction that really shaped an entire generation of distributed systems.`,
     aiSummary: "MapReduce is a programming model and execution framework for processing large datasets in a distributed and parallel manner. It abstracts computation into two functions—map and reduce—allowing developers to focus on data transformations while the system handles task distribution, fault tolerance, and data shuffling. By automatically parallelizing workloads across clusters of machines, MapReduce enables scalable and efficient large-scale data processing.",
-    imageUrl: "https://picsum.photos/seed/mapreduce-paper/800/600",
     date: "2026.03.11",
     tags: ["Parallel Computing", "Big Data", "Google"]
   },
@@ -78,7 +75,6 @@ Another issue is the energy consumption. The paper frames proof-of-work as a nec
 
 The Bitcoin paper is one of those rare pieces that launches an entire industry. Its evaluation of security through probabilistic guarantees is both elegant and surprisingly intuitive once you wrap your head around it. But the gap between the paper's assumptions and real-world deployment raises important questions about scalability, centralisation, and sustainability. Even so, the core idea that trust can emerge from computation and incentives rather than institutions is undeniably powerful, and it continues to influence systems far beyond cryptocurrency.`,
     aiSummary: "Bitcoin is a decentralized digital currency system that enables peer-to-peer transactions without relying on a central authority. It introduces a distributed ledger called the blockchain, where transactions are grouped into blocks and secured using cryptographic hashing and a proof-of-work consensus mechanism. This design prevents double-spending and ensures trust through economic incentives, allowing a network of untrusted participants to agree on a consistent transaction history.",
-    imageUrl: "https://picsum.photos/seed/bitcoin-paper/800/600",
     date: "2026.03.09",
     tags: ["Blockchain", "Cryptography", "Decentralisation"]
   },
@@ -111,7 +107,6 @@ The hash ring itself, while elegant, also introduces tradeoffs. For instance, wh
 
 All in all, Dynamo is less about inventing entirely new mechanisms and more about combining existing ideas into a cohesive, availability-first philosophy. Its hypothesis of relaxed consistency has clearly influenced an entire generation of distributed systems. At the same time, Dynamo forces developers to confront the mess of distributed systems. From a more constructive perspective, Dynamo teaches the mindset that **staying alive is more important than being perfectly right**.`,
     aiSummary: "Amazon's Dynamo is a highly available, distributed key-value store designed to support always-on services like shopping carts. It prioritizes availability and partition tolerance over strong consistency, using techniques such as consistent hashing for data partitioning, replication across nodes, and versioning with vector clocks to reconcile conflicts. Dynamo embraces eventual consistency and employs decentralized coordination to remain operational even under failures.",
-    imageUrl: "https://picsum.photos/seed/dynamo-paper/800/600",
     date: "2026.03.06",
     tags: ["High Availability", "NoSQL", "Amazon"]
   },
@@ -122,11 +117,22 @@ All in all, Dynamo is less about inventing entirely new mechanisms and more abou
     pdfUrl: "https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp03.pdf",
     preview: "GFS is a scalable distributed file system for large distributed data-intensive applications.",
     overview: "Examining the architecture of GFS, designed to handle massive files on commodity hardware with high aggregate throughput and fault tolerance.",
-    content: `The Google File System (GFS) was a **radical departure** from traditional file system design. It was built with the assumption that *component failures are the norm* rather than the exception. By using a single master to manage metadata and multiple chunkservers to store data, GFS achieved massive scale. Files are divided into fixed-size chunks of **64MB**, each identified by an immutable and globally unique 64-bit chunk handle.
+    content: `One of the most defining aspects of the Google File System (GFS) is its chunk-based architecture combined with a single master design. Instead of treating files as continuous byte streams like traditional file systems, GFS splits files into large fixed-size chunks (64 MB if you're curious), each identified by a unique handle and stored across multiple chunkservers. A centralised master node maintains metadata such as the mapping from files to chunks, chunk locations, and access permissions, while the actual data is stored on distributed machines.
 
-One of the most interesting aspects of GFS is its **consistency model**. It was optimized for large sequential appends rather than random writes. This choice reflects the needs of Google's internal workloads, like the indexing of the web. The master maintains all file system metadata, including the namespace, access control information, and the mapping from files to chunks. To minimize the master's involvement in data transfers, clients cache chunk locations and communicate directly with chunkservers for data operations.`,
+This design enables both scalability and fault tolerance. Clients interact with the master only to retrieve metadata, after which they communicate directly with chunkservers to read or write data. Writes are coordinated through a primary replica chosen by the master, which also serialises updates and ensures a consistent order of operations across replicas. This separation of control (master) and data (chunkservers) reduces bottlenecks while still maintaining a global view of the system. Additionally, replication across multiple chunkservers ensures durability, even in the presence of frequent hardware failures. The result is a system optimised specifically for large-scale, append-heavy data processing tasks.
+
+What really stood out to me is how unapologetic GFS is with not serving as a general-purpose file system. It makes some very specific assumptions; files are huge and writes are mostly sequential appends. At first, this felt almost limiting… like designing a kitchen that only cooks rice. But the more I thought about it, the more it clicked—Google *only needed rice*, and they needed a lot of it, really fast.
+
+This specialisation is GFS's biggest strength. By tailoring the system to its workload, it avoids the overhead and complexity of supporting unnecessary features. For example, the relaxed consistency model would be unacceptable in something like a banking system, but for log processing or indexing, it's perfectly fine. It's a great reminder that in systems design, “one size fits all” is often worse than “one size fits perfectly.”
+
+Also, the idea of a single master initially sounded like a glaring bottleneck or single point of failure, but the paper argues that this is mitigated through replication and careful design. It's one of those things that made me instinctively nervous. In practice however, the mostly large streaming reads/writes workloads mean the master isn't on the critical path for most operations. This makes the design surprisingly robust.
+
+On the flip side, GFS leaves open questions about how well its design generalises. For example, how would it handle workloads with heavy random reads and writes, or strict consistency requirements? The system's relaxed consistency model and append-optimised design suggest it might struggle in these scenarios.
+
+Another open question is how the system evolves as hardware improves. GFS was designed in an era where failures were frequent and disks were slow. With modern SSDs and more reliable hardware, some of its tradeoffs might look different today. Could a more decentralised metadata system replace the single master? Or does the simplicity of that design still outweigh the potential scalability benefits of distributing metadata?
+
+All in all, GFS is a masterclass in designing for your workload instead of designing for everything. Its chunk-based architecture, relaxed consistency, and centralised metadata management all stem from a deep understanding of the problems Google needed to solve. Reading this paper feels like watching someone ignore conventional wisdom and then absolutely nail the landing anyway. It's trying to be the *right* file system rather than the perfect one, and that distinction makes a big difference.`,
     aiSummary: "The Google File System (GFS) is a scalable distributed file system designed to store and process large data-intensive workloads across commodity hardware. It departs from traditional file system assumptions by optimizing for large sequential reads/writes, fault tolerance, and high throughput rather than low latency. GFS uses a master–chunkserver architecture, where data is split into large chunks and replicated across machines, enabling reliability and efficient parallel access despite frequent component failures.",
-    imageUrl: "https://picsum.photos/seed/gfs-paper/800/600",
     date: "2026.03.04",
     tags: ["File Systems", "Scalability", "Google"]
   },
@@ -137,11 +143,8 @@ One of the most interesting aspects of GFS is its **consistency model**. It was 
     pdfUrl: "https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf",
     preview: "BigTable is a sparse, distributed, multi-dimensional sorted map designed to scale to petabytes of data across thousands of commodity servers.",
     overview: "An in-depth analysis of Google's foundational distributed storage system, exploring its hierarchical metadata structure and the impact of modern hardware on its original design assumptions.",
-    content: `One notable aspect of Bigtable's design is how it locates the machine that stores a requested piece of data without relying on a single centralised directory. Instead, it divides each table into row range partitions called **tablets**, and each tablet is served by exactly one tablet server. To track them, the system uses a **distributed metadata service** that maps row ranges to tablet servers. Through this, locating a tablet requires only a small number of network steps. Additionally, clients cache tablet locations in practice so most requests go directly to the correct tablet server without repeatedly traversing the metadata. In summary, Bigtable spreads metadata across multiple servers, avoiding a central bottleneck and is a key design component that enables it to scale to thousands of machines.
-
-One implicit technical assumption in the paper is that network transfers and reads from disk are the main performance bottlenecks. These seem to influence many of Bigtable's design choices such as **block caching**, **memtables**, and **Bloom filters**. When reading the paper, I noted the publish date of 2006 and could not help but wonder whether the improved SSDs and faster modern networks in 2026 would have any significant impact on the protocols and design choices made for the system if it were to be redesigned today. While I doubt the high-level architecture (i.e. tablets and metadata) would change fundamentally, perhaps shifts and fine-tuning of system parameters such as memory allocation to certain processes may be made. With cheaper random access, it may make sense to reduce read block sizes to avoid over-fetching data, as an example. Overall, core ideas would probably stay, but it is my opinion that the **cost model** may benefit from slight updates to optimise for newer hardware.`,
+    content: ``,
     aiSummary: "BigTable is a distributed storage system for managing structured data at massive scale, designed to power many of Google's core services. It organizes data into a sparse, multidimensional map indexed by row keys, column families, and timestamps, allowing efficient storage and retrieval of large datasets. Built on top of Google File System and using a distributed architecture with tablets and a master server, BigTable provides high scalability, performance, and fault tolerance for diverse applications.",
-    imageUrl: "https://picsum.photos/seed/bigtable-paper/800/600",
     date: "2026.03.02",
     tags: ["Distributed Systems", "Storage", "Google"]
   }
