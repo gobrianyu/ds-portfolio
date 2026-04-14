@@ -177,9 +177,6 @@ export default function ProjectPage() {
                   <Terminal className="w-3 h-3" />
                   <span>Process: {project.id}</span>
                 </div>
-                <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
-                  Status: Running
-                </div>
               </div>
 
               <h1 className="text-5xl md:text-9xl font-black text-foreground tracking-tighter leading-[0.8] mb-8">

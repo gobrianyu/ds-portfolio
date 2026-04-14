@@ -116,13 +116,7 @@ export default function BlogPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-10">
-      <Link
-        to="/blog"
-        className="inline-flex items-center text-muted-foreground hover:text-violet-500 transition-colors font-bold uppercase tracking-widest text-[10px] group"
-      >
-        <ArrowLeft className="mr-2 w-3 h-3 group-hover:-translate-x-1 transition-transform" /> 
-        <span>cd ..</span>
-      </Link>
+      
 
       <motion.article
         initial={{ opacity: 0, y: 20 }}
@@ -131,15 +125,19 @@ export default function BlogPage() {
       >
         <header className="mb-16">
           <div className="flex flex-wrap items-center gap-3 mb-8">
+            <Link
+              to="/blog"
+              className="inline-flex items-center text-muted-foreground hover:text-violet-500 transition-colors font-bold uppercase tracking-widest text-[10px] group"
+            >
+              <ArrowLeft className="mr-2 w-3 h-3 group-hover:-translate-x-1 transition-transform" /> 
+              <span>cd ..</span>
+            </Link>
             <div className="px-3 py-1 bg-violet-500/10 rounded-md border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
               <Terminal className="w-3 h-3" />
               <span>Log: {post.id}</span>
             </div>
             <div className="px-3 py-1 bg-violet-500/10 rounded-md border border-violet-500/20 text-violet-500 text-[10px] font-black uppercase tracking-widest">
               {post.date}
-            </div>
-            <div className="px-3 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
-              Status: Reviewed
             </div>
           </div>
 
@@ -226,7 +224,7 @@ export default function BlogPage() {
                       </a>
                     ),
                     strong: ({ children }) => <strong className="text-foreground font-black">{children}</strong>,
-                    em: ({ children }) => <em className="text-violet-400/80 italic">{children}</em>,
+                    em: ({ children }) => <em className="italic">{children}</em>,
                   }}
                 >
                   {post.content}
