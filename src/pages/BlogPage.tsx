@@ -213,16 +213,19 @@ export default function BlogPage() {
                         </p>
                       </div>
                     ),
-                    a: ({ children, href }) => (
-                      <a 
-                        href={href} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-violet-500 hover:text-violet-400 transition-colors underline underline-offset-4 font-black"
-                      >
-                        {children}
-                      </a>
-                    ),
+                    a: ({ children, href }) => {
+                      const isInternal = href?.startsWith('/');
+                      return (
+                        <a 
+                          href={href} 
+                          target={isInternal ? undefined : "_blank"} 
+                          rel={isInternal ? undefined : "noopener noreferrer"}
+                          className="text-violet-500 hover:text-violet-400 transition-colors underline underline-offset-4 font-black"
+                        >
+                          {children}
+                        </a>
+                      );
+                    },
                     strong: ({ children }) => <strong className="text-foreground font-black">{children}</strong>,
                     em: ({ children }) => <em className="italic">{children}</em>,
                   }}
