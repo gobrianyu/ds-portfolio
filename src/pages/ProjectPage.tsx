@@ -220,7 +220,7 @@ export default function ProjectPage() {
                         <p className="text-xl md:text-2xl text-foreground/90 leading-relaxed font-medium mb-8">
                           {project.longDescription}
                         </p>
-                        <div className="p-6 bg-background/50 border border-border rounded-xl hover:border-primary/30 transition-colors">
+                        <div className="p-6 bg-background/50 border border-border rounded-xl">
                           <div className="flex items-center gap-3 mb-4">
                             <ChevronRight className="w-4 h-4 text-orange-500" />
                             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Core Logic</span>
@@ -272,7 +272,7 @@ export default function ProjectPage() {
                       <div className="p-6">
                         <div className="flex flex-wrap gap-2">
                           {project.technologies.map((tech, i) => (
-                            <span key={i} className="px-3 py-1.5 bg-background/50 rounded-lg border border-border text-[9px] font-black text-muted-foreground uppercase tracking-widest hover:border-primary/30 hover:text-primary transition-all cursor-default">
+                            <span key={i} className="px-3 py-1.5 bg-background/50 rounded-lg border border-border text-[9px] font-black text-muted-foreground uppercase tracking-widest transition-all cursor-default">
                               {tech}
                             </span>
                           ))}

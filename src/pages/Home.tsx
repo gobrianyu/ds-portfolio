@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Terminal, BookOpen } from 'lucide-react';
+import { ArrowRight, Terminal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { projects } from '../data/projects';
 import { blogPosts } from '../data/blogs';
@@ -23,7 +23,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* System Status Bar */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -48,7 +48,7 @@ export default function Home() {
             </div>
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center space-x-2">
               <Terminal className="w-3 h-3" />
-              <span>bash — GoBrianYu@uw-cs: ~</span>
+              <span>BASH — yusbrian@DIST-SYS: ~</span>
             </div>
             <div className="w-12" />
           </div>
@@ -59,16 +59,16 @@ export default function Home() {
             <div className="relative z-10">
               <div className="mb-8 flex items-center space-x-3 text-emerald-500">
                 <span className="font-bold">$</span>
-                <span className="typing-cursor">cat README.md</span>
+                <span>cat README.md</span>
               </div>
 
               <div className="space-y-8">
                 <div>
                   <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter text-foreground">
-                    Distributed Systems Portfolio<span className="text-primary">_</span>
+                    Distributed Systems Portfolio
                   </h1>
                   <p className="text-xl md:text-2xl text-emerald-500/80 font-bold tracking-tight">
-                    Computer Science @ University of Washington
+                    Brian S. Yu, UW CSE
                   </p>
                 </div>
 
@@ -136,14 +136,14 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             <div>
               <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">Active Processes</h2>
-              <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Featured Implementations</p>
+              <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Featured Projects</p>
             </div>
           </div>
           <Link 
             to="/projects" 
             className="hidden md:flex items-center space-x-2 text-primary font-bold uppercase tracking-widest text-xs hover:underline"
           >
-            <span>View All Processes</span>
+            <span>View All Projects</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -160,8 +160,8 @@ export default function Home() {
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center space-x-4">
             <div>
-              <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">Research Paper Blogs</h2>
-              <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Architectural Breakdowns</p>
+              <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">Research Paper Logs</h2>
+              <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest">Breakdown Blogs</p>
             </div>
           </div>
           <Link 

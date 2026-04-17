@@ -57,7 +57,7 @@ const TabbedCodeViewer: React.FC<TabbedCodeViewerProps> = ({ files }) => {
         <div className="px-2 sm:px-4 flex items-center shrink-0">
           <button
             onClick={() => setShowComments(!showComments)}
-            className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all border ${
+            className={`cursor-pointer flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all border ${
               showComments 
                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
                 : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'

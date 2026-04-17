@@ -42,7 +42,7 @@ export default function Navbar() {
             <div className="flex items-center space-x-2 px-3 py-1 bg-muted rounded-md border border-border group-hover:border-primary/50 transition-colors">
               <Terminal className={cn("w-4 h-4", getActiveColor())} />
               <span className="font-mono text-xs font-bold tracking-tighter text-foreground">
-                brian@dist-sys:<span className={getActiveColor()}>~</span>$
+                yusbrian@dist-sys:<span className={getActiveColor()}>~</span>$
               </span>
             </div>
           </Link>

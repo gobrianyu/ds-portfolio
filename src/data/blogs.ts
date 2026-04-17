@@ -1,3 +1,9 @@
+export interface WidgetDetails {
+  overview: string;
+  whatToLookFor: string;
+  disclaimer: string;
+}
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -9,6 +15,7 @@ export interface BlogPost {
   pdfUrl?: string;
   date: string;
   tags: string[];
+  widgetDetails?: WidgetDetails;
 }
 
 export const blogPosts: BlogPost[] = [
@@ -32,7 +39,12 @@ Another angle worth exploring is how TensorFlow's design reflects assumptions ab
 TensorFlow's design is undeniably influential as it essentially defined how large-scale machine learning systems were built for years. The dataflow graph abstraction is powerful and enabled an impressive level of scalability. But like many systems optimised for performance at scale, it came with usability tradeoffs that became more apparent as the field matured. The evolution toward more dynamic and user-friendly frameworks suggests that while TensorFlow got the “systems” part very right, the “human” part needed iteration.`,
     aiSummary: "TensorFlow is a flexible, large-scale machine learning system designed for building and deploying dataflow-based computation graphs across heterogeneous environments. It represents computations as graphs of operations on tensors, enabling automatic differentiation, parallel execution, and deployment across CPUs, GPUs, and distributed systems. TensorFlow supports both research and production use cases, providing scalability and portability for training and serving machine learning models.",
     date: "2026.03.13",
-    tags: ["Machine Learning", "Dataflow", "Distributed Systems"]
+    tags: ["Machine Learning", "Dataflow", "Distributed Systems"],
+    widgetDetails: {
+      overview: "This neural network playground demonstrates the iterative training process of a deep learning model using backpropagation and gradient descent. Built with a custom lightweight TypeScript neural engine, the widget simulates both forward and backward passes directly in your browser. It visualizes how Stochastic Gradient Descent (SGD) updates weights and biases in real-time as the model attempts to find the optimal decision boundary for a set of 2D data points. This implementation captures the spirit of TensorFlow's early dataflow-based execution, where computations are executed as a discrete set of graph operations.",
+      whatToLookFor: "Watch how the background decision boundary shifts and becomes more defined as the 'Epoch' count increases. The loss curve in the corner visualizes the error minimization process—as it flattens, the model has reached a point of stability in its learning.",
+      disclaimer: "This is a simplified 2D visualization for educational purposes. Real-world TensorFlow models typically operate on tensors with thousands of dimensions and utilize advanced optimization algorithms like Adam or RMSProp with varying learning rate schedules."
+    }
   },
   {
     id: "mapreduce",
@@ -54,7 +66,12 @@ That said, although [Martin Gorner declared MapReduce obsolete](https://jaxlondo
 MapReduce is one of those papers that feels almost too simple when you first read it, and then you realise how profound it actually is. By aggressively limiting the programming model, it unlocks massive scalability and fault tolerance almost for free. But that simplicity is also its biggest constraint, which later systems had to work around. In a way, MapReduce defined a new layer of abstraction that really shaped an entire generation of distributed systems.`,
     aiSummary: "MapReduce is a programming model and execution framework for processing large datasets in a distributed and parallel manner. It abstracts computation into two functions—map and reduce—allowing developers to focus on data transformations while the system handles task distribution, fault tolerance, and data shuffling. By automatically parallelizing workloads across clusters of machines, MapReduce enables scalable and efficient large-scale data processing.",
     date: "2026.03.11",
-    tags: ["Parallel Computing", "Big Data", "Google"]
+    tags: ["Parallel Computing", "Big Data", "Google"],
+    widgetDetails: {
+      overview: "This task scheduler provides a high-level visualization of the master-worker architecture used in a MapReduce job. The simulation uses a state-machine to manage task lifecycle stages: Idle, In-Progress, and Completed. It models the system's ability to coordinate Map tasks (which process individual shards) and Reduce tasks (which aggregate results). The implementation specifically highlights the master's role in monitoring worker health and reassigning tasks—especially useful for dealing with 'stragglers' (slow workers) that would otherwise delay the entire job.",
+      whatToLookFor: "Observe how the Reduce phase remains inactive until a significant number of Map tasks have completed, representing the real-world dependency on intermediate data. Watch for worker status changes if a task is marked as stalled, triggering the master to reassign it to a different node.",
+      disclaimer: "The internal shuffling of data and low-level network communication between workers are represented by progress states for clarity. In production systems like Google's early MapReduce implementation, data locality and rack-aware scheduling are critical performance factors not fully modeled here."
+    }
   },
   {
     id: "bitcoin",
@@ -76,7 +93,12 @@ Another issue is the energy consumption. The paper frames proof-of-work as a nec
 The Bitcoin paper is one of those rare pieces that launches an entire industry. Its evaluation of security through probabilistic guarantees is both elegant and surprisingly intuitive once you wrap your head around it. But the gap between the paper's assumptions and real-world deployment raises important questions about scalability, centralisation, and sustainability. Even so, the core idea that trust can emerge from computation and incentives rather than institutions is undeniably powerful, and it continues to influence systems far beyond cryptocurrency.`,
     aiSummary: "Bitcoin is a decentralized digital currency system that enables peer-to-peer transactions without relying on a central authority. It introduces a distributed ledger called the blockchain, where transactions are grouped into blocks and secured using cryptographic hashing and a proof-of-work consensus mechanism. This design prevents double-spending and ensures trust through economic incentives, allowing a network of untrusted participants to agree on a consistent transaction history.",
     date: "2026.03.09",
-    tags: ["Blockchain", "Cryptography", "Decentralisation"]
+    tags: ["Blockchain", "Cryptography", "Decentralisation"],
+    widgetDetails: {
+      overview: "This mining simulator provides a hands-on look at the Proof-of-Work (PoW) algorithm used to secure the Bitcoin blockchain. It utilizes a simulated SHA-256 hashing function to find a valid 'nonce'—a number that, when combined with the block data, results in a hash value below a specific threshold. This represents the 'mining' process where nodes compete to solve a computational puzzle. The implementation tracks your browser's hash rate, showing how many combinations are tested per second to satisfy the network's current difficulty requirements.",
+      whatToLookFor: "Watch the 'Nonce' counter increment as your browser brute-forces millions of possibilities. Notice how increasing the 'Difficulty' slider makes the target hash range much smaller, requiring significantly more attempts (and time) to find a valid block.",
+      disclaimer: "This simulation uses a simplified JavaScript implementation of SHA-256 running in a single worker thread. Real Bitcoin mining is performed on specialized ASIC hardware capable of trillions of hashes per second, utilizing massive amounts of energy to secure the global network."
+    }
   },
   {
     id: "dynamo",
@@ -108,7 +130,12 @@ The hash ring itself, while elegant, also introduces tradeoffs. For instance, wh
 All in all, Dynamo is less about inventing entirely new mechanisms and more about combining existing ideas into a cohesive, availability-first philosophy. Its hypothesis of relaxed consistency has clearly influenced an entire generation of distributed systems. At the same time, Dynamo forces developers to confront the mess of distributed systems. From a more constructive perspective, Dynamo teaches the mindset that **staying alive is more important than being perfectly right**.`,
     aiSummary: "Amazon's Dynamo is a highly available, distributed key-value store designed to support always-on services like shopping carts. It prioritizes availability and partition tolerance over strong consistency, using techniques such as consistent hashing for data partitioning, replication across nodes, and versioning with vector clocks to reconcile conflicts. Dynamo embraces eventual consistency and employs decentralized coordination to remain operational even under failures.",
     date: "2026.03.06",
-    tags: ["High Availability", "NoSQL", "Amazon"]
+    tags: ["High Availability", "NoSQL", "Amazon"],
+    widgetDetails: {
+      overview: "This interactive ring visualizes Amazon Dynamo's architectural foundation: decentralized partitioning via consistent hashing. The ring represents a unified hash space where both keys and nodes are mapped. To ensure uniform data distribution and handle hardware heterogeneity, the implementation uses 'Virtual Nodes' (vnodes), where a single physical machine occupies multiple positions on the ring. This system enables data to be replicated clockwise across neighbors, ensuring that when nodes fail or join, the resulting data movement is localized rather than cluster-wide.",
+      whatToLookFor: "Try 'failing' a node and observe how the data it was responsible for is automatically routed to the next healthy node in the ring. Notice how adding a new node only requires taking over small segments of hash space from its immediate neighbors, minimizing reshuffling overhead.",
+      disclaimer: "While this widget captures the geometric elegance of the hash ring, it simplifies the quorum-based replication (N, R, W) and the Merkle-tree based anti-entropy protocols used in production Dynamo clusters to sync data after partitions are healed."
+    }
   },
   {
     id: "gfs",
@@ -134,7 +161,12 @@ Another open question is how the system evolves as hardware improves. GFS was de
 All in all, GFS is a masterclass in designing for your workload instead of designing for everything. Its chunk-based architecture, relaxed consistency, and centralised metadata management all stem from a deep understanding of the problems Google needed to solve. Reading this paper feels like watching someone ignore conventional wisdom and then absolutely nail the landing anyway. It's trying to be the *right* file system rather than the perfect one, and that distinction makes a big difference.`,
     aiSummary: "The Google File System (GFS) is a scalable distributed file system designed to store and process large data-intensive workloads across commodity hardware. It departs from traditional file system assumptions by optimizing for large sequential reads/writes, fault tolerance, and high throughput rather than low latency. GFS uses a master–chunkserver architecture, where data is split into large chunks and replicated across machines, enabling reliability and efficient parallel access despite frequent component failures.",
     date: "2026.03.04",
-    tags: ["File Systems", "Scalability", "Google"]
+    tags: ["File Systems", "Scalability", "Google"],
+    widgetDetails: {
+      overview: "This simulation models the GFS master-chunkserver architecture, specifically focusing on how the system maintains data durability on unreliable commodity hardware. The implementation tracks chunk handles, locations, and replication status in a component-based model. It represents the GFS design requirement where data is split into 64MB chunks and replicated across multiple nodes. The logic demonstrates the Master node's responsibility in maintaining metadata and its proactive heartbeat mechanism to detect chunkserver failures and orchestrate recovery.",
+      whatToLookFor: "Click a chunkserver to force a 'Hardware Failure.' Observe the Master node detecting the loss of replicas and initiating a background recovery process, which copies the data from remaining healthy replicas to new servers to restore the target replication count.",
+      disclaimer: "This visualizer focuses on the master-chunkserver control plane. Real-world GFS clusters involve complex lease mechanisms for write consistency and handle millions of files; here, data volume and network throughput are simplified to show structural behavior."
+    }
   },
   {
     id: "bigtable",
@@ -145,7 +177,7 @@ All in all, GFS is a masterclass in designing for your workload instead of desig
     overview: "An in-depth analysis of Google's foundational distributed storage system, exploring its hierarchical metadata structure and the impact of modern hardware on its original design assumptions.",
     content: `The BigTable paper tackles the nightmare of storing and querying petabytes of structured data across thousands of commodity servers. This was a problem exploding at Google in the mid-2000s with apps like web indexing, Google Earth satellite imagery, and more. BigTable stepped in to alleviate the traditional databases choking on this scale.
 
-One thing that initially felt a bit hand-wavy in the paper was the concept of **sparse, distributed, persistent multidimensional sorted maps**, which sounds impressive but also like something you'd say to win a buzzword bingo contest. Breaking it down, BigTable is essentially a map indexed by **(row key, column key, timestamp)**, where each value is just a byte array. The “sparse” part means that not every row has every column, which is actually super important for efficiency. Instead of storing tons of empty cells, Bigtable only stores what exists.
+One thing that initially felt a bit hand-wavy in the paper was the concept of **sparse, distributed, persistent multidimensional sorted maps**, which sounds impressive but also like something you'd say to win a buzzword bingo contest. Breaking it down, BigTable is essentially a map indexed by *(row key, column key, timestamp)*, where each value is just a byte array. The “sparse” part means that not every row has every column, which is actually super important for efficiency. Instead of storing tons of empty cells, Bigtable only stores what exists.
 
 Its core design revolves around its tablet-based partitioning: each table splits into tablets, stored as immutable SSTables on [Google's File System](/blog/gfs) with a commit log for mutations. It consisted of a three-level hierarchy: root tablet (in Chubby lock service), METADATA tablets, and data tablets. The master handles assignments and load balancing while tabletservers serve reads/writes directly. This let clients locate any tablet fast without hammering a single master. SSTables stack in memory (memtables) and on disk, with Bloom filters and compression speeding scans, and compactions merging them to reclaim space and bound recovery time.
 
@@ -160,6 +192,11 @@ Another open question is how BigTable compares to fully relational systems when 
 Bigtable feels like a system that quietly redefined what a database could be. Its evaluation shows that it delivers on its promise of scalability and performance, but what's more interesting is how it changes the way developers think about structured data. It offers a flexible data model that can adapt to a wide range of use cases. At the same time, that flexibility comes with a cost: it's a powerful tool, but you have to know how to use it. Designing a good Bigtable schema likely feels more like planning a city; you need to think about layout, traffic, and growth ahead of time. And if you mess it up, well… enjoy your distributed traffic jam.`,
     aiSummary: "BigTable is a distributed storage system for managing structured data at massive scale, designed to power many of Google's core services. It organizes data into a sparse, multidimensional map indexed by row keys, column families, and timestamps, allowing efficient storage and retrieval of large datasets. Built on top of Google File System and using a distributed architecture with tablets and a master server, BigTable provides high scalability, performance, and fault tolerance for diverse applications.",
     date: "2026.03.02",
-    tags: ["Distributed Systems", "Storage", "Google"]
+    tags: ["Distributed Systems", "Storage", "Google"],
+    widgetDetails: {
+      overview: "This widget provides an interactive walkthrough of the BigTable 'Read Path'—the specific sequence of lookups a client performs to find a row. It represents the hierarchical metadata structure described in the paper: starting with the Root Tablet (stored in the Chubby lock service), moving to the METADATA tablets, and finally reaching the specific Tablet Server containing the desired row shard. The implementation illustrates how this distributed indexing system allows BigTable to serve requests for any row in a massive table with just a few network hops, regardless of the overall table size.",
+      whatToLookFor: "Trace the request as it travels through the hierarchy. Note how 'Chubby' acts as a gateway; in a real system, the client would cache these locations to avoid hitting the root and metadata tablets for every subsequent request.",
+      disclaimer: "This visualizer focuses strictly on the location resolution (finding where the data is). The internal complexity of a Tablet Server—such as Memtables, SSTables, Bloom filters, and the merge-on-read logic—is abstracted to focus on the distributed architectural layout."
+    }
   }
 ];

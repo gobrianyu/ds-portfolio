@@ -42,6 +42,7 @@ export default function BlogPage() {
   const { id } = useParams();
   const post = blogPosts.find(p => p.id === id);
   const [showPdf, setShowPdf] = useState(false);
+  const [showWidgetDetails, setShowWidgetDetails] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -162,6 +163,56 @@ export default function BlogPage() {
               <div className="h-1 w-32 bg-gradient-to-r from-transparent via-violet-500 to-transparent mt-2" />
             </div>
             {renderInteractive()}
+
+            {/* More Details Section */}
+            {post.widgetDetails && (
+              <div className="mt-8 flex flex-col items-center">
+                <button
+                  onClick={() => setShowWidgetDetails(!showWidgetDetails)}
+                  className="cursor-pointer flex items-center space-x-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-violet-500 transition-colors group"
+                >
+                  <Info className="w-3 h-3" />
+                  <span>Technical Specifications & Implementation Details</span>
+                  <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${showWidgetDetails ? 'rotate-90' : ''}`} />
+                </button>
+                
+                <AnimatePresence>
+                  {showWidgetDetails && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden w-full max-w-4xl mt-6"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-card border border-border rounded-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 via-transparent to-transparent" />
+                        
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-500 mb-2">Overview</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{post.widgetDetails.overview}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-500 mb-2">Key Notes</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{post.widgetDetails.whatToLookFor}</p>
+                          </div>
+                          <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-500 mb-2 flex items-center">
+                              <Info className="w-3 h-3 mr-2" />
+                              Disclaimer
+                            </h4>
+                            <p className="text-[11px] text-muted-foreground/80 leading-relaxed italic">{post.widgetDetails.disclaimer}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
         </div>
 
@@ -310,7 +361,7 @@ export default function BlogPage() {
                     {!isMobile && (
                       <button 
                         onClick={() => setShowPdf(!showPdf)}
-                        className="flex items-center justify-between w-full p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-400 text-[13px] font-bold hover:bg-violet-500/20 transition-all group whitespace-nowrap"
+                        className="cursor-pointer flex items-center justify-between w-full p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-400 text-[13px] font-bold hover:bg-violet-500/20 transition-all group whitespace-nowrap"
                       >
                         <span className="flex items-center">
                           <BookOpen className="w-4 h-4 mr-3" />
@@ -359,7 +410,7 @@ export default function BlogPage() {
                     <div className="p-4 bg-muted border-t border-border rounded-b-xl">
                       <button 
                         onClick={() => setIsPdfModalOpen(true)}
-                        className="w-full py-3 bg-violet-500 text-white font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-violet-600 transition-all flex items-center justify-center gap-3 group"
+                        className="cursor-pointer w-full py-3 bg-violet-500 text-white font-black uppercase tracking-widest text-[10px] rounded-lg hover:bg-violet-600 transition-all flex items-center justify-center gap-3 group"
                       >
                         <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
                         Expand Full-Scale Reader
@@ -409,14 +460,14 @@ export default function BlogPage() {
                     <div className="flex items-center space-x-4">
                       <button 
                         onClick={() => setPdfKey(prev => prev + 1)}
-                        className="p-2 hover:bg-muted-foreground/10 rounded-lg text-muted-foreground hover:text-foreground transition-all"
+                        className="cursor-pointer p-2 hover:bg-muted-foreground/10 rounded-lg text-muted-foreground hover:text-foreground transition-all"
                         title="Refresh View"
                       >
                         <RotateCcw className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => setIsPdfModalOpen(false)}
-                        className="p-2 hover:bg-red-500/20 rounded-lg text-muted-foreground hover:text-red-500 transition-all"
+                        className="cursor-pointer p-2 hover:bg-red-500/20 rounded-lg text-muted-foreground hover:text-red-500 transition-all"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -442,7 +493,7 @@ export default function BlogPage() {
                       </a>
                       <button 
                         onClick={() => setIsPdfModalOpen(false)}
-                        className="w-14 h-14 bg-card backdrop-blur-md border border-border text-foreground rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
+                        className="cursor-pointer w-14 h-14 bg-card backdrop-blur-md border border-border text-foreground rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
                       >
                         <Minimize2 className="w-6 h-6" />
                       </button>
