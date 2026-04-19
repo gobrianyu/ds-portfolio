@@ -23,18 +23,24 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative overflow-hidden">
+      {/* Background Blobs */}
+      <div className="absolute top-[10%] -left-64 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[40%] -right-64 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-[10%] -left-64 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+
       {/* System Status Bar */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="relative z-10"
       >
         <SystemStatus />
       </motion.div>
 
       {/* Terminal Hero / README */}
-      <section className="mb-32">
+      <section className="mb-32 relative z-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -103,7 +109,7 @@ export default function Home() {
       </section>
 
       {/* Core Goals as "System Modules" */}
-      <section className="mb-32">
+      <section className="mb-32 relative z-10">
         <div className="flex items-center space-x-4 mb-12">
           <div>
             <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">System Modules</h2>
@@ -131,7 +137,7 @@ export default function Home() {
       </section>
 
       {/* Featured Projects as "Active Processes" */}
-      <section className="mb-32">
+      <section className="mb-32 relative z-10">
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center space-x-4">
             <div>
@@ -156,7 +162,7 @@ export default function Home() {
       </section>
 
       {/* Research Paper Blogs Section */}
-      <section className="mb-32">
+      <section className="mb-32 relative z-10">
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center space-x-4">
             <div>
@@ -187,16 +193,13 @@ function ModuleCard({ title, description, tag }: { title: string, description: s
   return (
     <div className="group p-8 bg-muted/20 border border-border/40 rounded-3xl">
       <div className="flex justify-between items-start mb-8">
-        <span className="text-[10px] font-black text-muted-foreground/50 tracking-[0.3em] uppercase">{tag}</span>
+        <span className="text-[10px] font-black text-primary/60 tracking-[0.3em] uppercase">{tag}</span>
       </div>
       <h3 className="text-xl font-black mb-4 text-foreground tracking-tight uppercase">{title}</h3>
       <p className="text-muted-foreground leading-relaxed text-sm font-medium mb-8">
         {description}
       </p>
-      <div className="flex items-center space-x-2 text-[10px] font-black text-primary/60 uppercase tracking-[0.2em]">
-        <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-        <span>Status: Operational</span>
-      </div>
+
     </div>
   );
 }

@@ -72,7 +72,7 @@ export default function Navbar() {
 
             <button
               onClick={toggleTheme}
-              className={cn("p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:", getActiveColor())}
+              className={cn("p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground cursor-pointer hover:", getActiveColor())}
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -83,7 +83,7 @@ export default function Navbar() {
           <div className="md:hidden flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground"
+              className="p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground cursor-pointer"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}

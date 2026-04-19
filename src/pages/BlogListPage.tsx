@@ -90,8 +90,8 @@ export default function BlogListPage() {
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute top-[20%] -left-20 w-96 h-96 bg-violet-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[10%] -right-20 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[20%] -left-32 w-[600px] h-[600px] bg-violet-500/5 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[10%] -right-32 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 relative z-10">

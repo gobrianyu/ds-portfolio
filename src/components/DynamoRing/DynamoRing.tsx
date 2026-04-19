@@ -435,7 +435,7 @@ export const DynamoRing: React.FC = () => {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <Box className="w-5 h-5 text-violet-500" />
-            <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">DYNAMO_RING_SIM_V1.0</h1>
+            <h1 className="text-[15px] font-black uppercase tracking-[0.25em] text-foreground">DYNAMO_RING_SIM_V1.7</h1>
           </div>
         </div>
 

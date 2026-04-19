@@ -266,7 +266,7 @@ const BigtableReadPath: React.FC = () => {
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
             <Box className="w-5 h-5 text-violet-500" />
-            <h1 className="text-[14px] font-black uppercase tracking-[0.25em] text-foreground">BIGTABLE_READ_PATH_v1.0</h1>
+            <h1 className="text-[14px] font-black uppercase tracking-[0.25em] text-foreground">BIGTABLE_READ_PATH_v1.6</h1>
           </div>
         </div>
 

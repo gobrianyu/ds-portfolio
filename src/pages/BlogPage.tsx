@@ -15,7 +15,7 @@ import {
   Network,
   ChevronRight,
   Info,
-  Plus,
+  Bot,
   Minus,
   Zap,
   Lock,
@@ -26,6 +26,7 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react';
+import { cn } from '../lib/utils';
 import { blogPosts } from '../data/blogs';
 import BlogTerminal from '../components/BlogTerminal';
 import BigtableReadPath from '../components/interactive/BigtableReadPath';
@@ -96,6 +97,18 @@ export default function BlogPage() {
     }
   };
 
+  const getWidgetCodeName = () => {
+    switch (post.id) {
+      case 'bigtable': return "BigTable_Read_Path_v1.6";
+      case 'gfs': return "GFS_Failure_Sim_v1.3";
+      case 'dynamo': return "Dynamo_Ring_Sim_v1.7";
+      case 'bitcoin': return "Bitcoin_Consensus_Sim_v1.8";
+      case 'mapreduce': return "MapReduce_Scheduler_v1.4";
+      case 'tensorflow': return "TF_Playground_v1.6";
+      default: return `SIM_${post.id.toUpperCase()}_v2.4`;
+    }
+  };
+
   const renderInteractive = () => {
     switch (post.id) {
       case 'bigtable': return <RigidWrapper><BigtableReadPath /></RigidWrapper>;
@@ -109,14 +122,18 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen relative bg-background text-foreground">
+    <div className="min-h-screen relative bg-background text-foreground overflow-hidden">
+      {/* Background Blobs */}
+      <div className="absolute top-[10%] -left-64 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] -right-64 w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-[140px] pointer-events-none z-0" />
+
       {/* Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-violet-400 z-50 origin-left"
         style={{ scaleX }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-10 relative z-10">
       
 
       <motion.article
@@ -155,66 +172,125 @@ export default function BlogPage() {
           <BlogTerminal text={post.aiSummary} color="violet" />
         </div>
 
-        {/* Interactive Widget Section */}
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-[2vw] mb-24 py-16 bg-muted/30 border-y border-border transition-colors overflow-visible">
-          <div className="max-w-7xl mx-auto overflow-visible">
-            <div className="flex flex-col items-center mb-6">
-              <h2 className="text-2xl font-black text-foreground uppercase tracking-[0.2em] text-center">{getInteractiveTitle()}</h2>
-              <div className="h-1 w-32 bg-gradient-to-r from-transparent via-violet-500 to-transparent mt-2" />
-            </div>
-            {renderInteractive()}
+        {/* Reimagined Interactive Widget Section: The Simulation Lab */}
+        <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen mb-32 py-24 overflow-hidden group/lab">
+          {/* Lab Background Elements */}
+          <div className="absolute inset-0 bg-muted/30 dark:bg-[#0a0a0a] z-0 transition-colors duration-500" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 pointer-events-none z-0" />
+          <div className="absolute top-[10%] right-[10%] w-[400px] h-[400px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
+          <div className="absolute bottom-[10%] left-[10%] w-[400px] h-[400px] bg-violet-600/5 rounded-full blur-[120px] pointer-events-none z-0" />
 
-            {/* More Details Section */}
-            {post.widgetDetails && (
-              <div className="mt-8 flex flex-col items-center">
-                <button
-                  onClick={() => setShowWidgetDetails(!showWidgetDetails)}
-                  className="cursor-pointer flex items-center space-x-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-violet-500 transition-colors group"
-                >
-                  <Info className="w-3 h-3" />
-                  <span>Read More Details</span>
-                  <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${showWidgetDetails ? 'rotate-90' : ''}`} />
-                </button>
-                
-                <AnimatePresence>
-                  {showWidgetDetails && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden w-full max-w-4xl mt-6"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-card border border-border rounded-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500/50 via-transparent to-transparent" />
-                        
-                        <div className="space-y-6">
-                          <div>
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-500 mb-2">Overview</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{post.widgetDetails.overview}</p>
-                          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* Lab Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-violet-500/10 rounded-md border border-violet-500/20 text-violet-400">
+                    <Bot className="w-3 h-3 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Interactive Simulation</span>
+                  </div>
+                  <div className="h-px w-8 bg-violet-500/20" />
+                  <span className="text-[10px] font-mono text-muted-foreground/50 tracking-widest uppercase">{getWidgetCodeName()}</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tighter uppercase leading-none">
+                  {getInteractiveTitle()}
+                </h2>
+              </div>
+            </div>
+
+            <div className="space-y-12">
+              {/* Main Simulation Stage - Pure & Stretched */}
+              <div className="w-full flex justify-center">
+                <div className="w-full relative z-10">
+                  {renderInteractive()}
+                </div>
+              </div>
+
+              {/* Diagnostic Toggle Button - Simplified & Centered */}
+              {post.widgetDetails && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowWidgetDetails(!showWidgetDetails)}
+                    className={cn(
+                      "flex items-center space-x-3 px-8 py-3.5 rounded-2xl border transition-all duration-300 group/btn shadow-sm",
+                      showWidgetDetails 
+                        ? "bg-violet-500 border-violet-500 text-white shadow-lg shadow-violet-500/20" 
+                        : "bg-card dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground hover:bg-muted dark:hover:bg-white/10 hover:border-violet-500/30 hover:text-foreground"
+                    )}
+                  >
+                    <span className="text-xs font-black uppercase tracking-widest">Details Panel</span>
+                    <ChevronRight className={cn("w-4 h-4 transition-transform duration-500", showWidgetDetails ? "rotate-90" : "group-hover/btn:translate-x-1")} />
+                  </button>
+                </div>
+              )}
+
+              {/* Collapsible Diagnostic Panel - Full Width Below Widget */}
+              <AnimatePresence>
+                {showWidgetDetails && post.widgetDetails && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: 20, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                      {/* Overview Section */}
+                      <div className="p-8 bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl space-y-4">
+                        <div className="flex items-center space-x-3 text-violet-500">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest">Protocol Dynamics</h4>
                         </div>
-                        
-                        <div className="space-y-6">
-                          <div>
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-500 mb-2">Key Notes</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{post.widgetDetails.whatToLookFor}</p>
+                        <p className="text-sm text-foreground/70 dark:text-muted-foreground leading-relaxed font-medium">
+                          {post.widgetDetails.overview}
+                        </p>
+                      </div>
+
+                      {/* Observations Section */}
+                      <div className="space-y-6">
+                        <div className="p-8 bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl space-y-4">
+                          <div className="flex items-center space-x-3 text-violet-500">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest">Telemetry Indicators</h4>
                           </div>
-                          <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-500 mb-2 flex items-center">
-                              <Info className="w-3 h-3 mr-2" />
-                              Disclaimer
-                            </h4>
-                            <p className="text-[11px] text-muted-foreground/80 leading-relaxed italic">{post.widgetDetails.disclaimer}</p>
+                          <p className="text-sm text-foreground/70 dark:text-muted-foreground leading-relaxed font-medium">
+                            {post.widgetDetails.whatToLookFor}
+                          </p>
+                        </div>
+
+                        {/* System Disclaimer */}
+                        <div className="p-6 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
+                          <div className="flex items-center space-x-2 text-amber-500/80 mb-2">
+                            <Info className="w-3 h-3" />
+                            <span className="text-[9px] font-black uppercase tracking-widest">System Disclaimer</span>
                           </div>
+                          <p className="text-[11px] text-amber-700/70 dark:text-amber-500/60 leading-relaxed italic">
+                            {post.widgetDetails.disclaimer}
+                          </p>
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            
+            {/* Lab Footer Decoration */}
+            <div className="mt-12 pt-8 border-t border-border dark:border-white/5 flex items-center justify-between opacity-50 dark:opacity-30 transition-colors">
+              <div className="flex space-x-8">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-mono uppercase text-muted-foreground mb-1">Clock Sync</span>
+                  <span className="text-[10px] font-mono text-foreground dark:text-white">LOCKED_STRATUM_1</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-mono uppercase text-muted-foreground mb-1">State Consistency</span>
+                  <span className="text-[10px] font-mono text-foreground dark:text-white">LINEARISABLE</span>
+                </div>
               </div>
-            )}
+              <div className="flex items-center space-x-2">
+                <div className="h-1 w-24 bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500/40" />
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           <div className="lg:col-span-8">
