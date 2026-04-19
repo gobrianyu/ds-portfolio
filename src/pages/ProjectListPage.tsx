@@ -1,10 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Terminal, Cpu, Database, Activity, Server, Code, Zap, Search, ChevronRight, Box, ShieldCheck, Globe, BarChart3, Gauge, Network } from 'lucide-react';
+import { Terminal, Box } from 'lucide-react';
 import { projects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard';
 import BlogTerminal from '../components/BlogTerminal';
-import { cn } from '../lib/utils';
 
 const TECH_STACK = [
   "Java", "Distributed Systems", "RPC", "Paxos", "Raft", "Sharding", 
@@ -13,19 +11,6 @@ const TECH_STACK = [
   "Network Programming", "Concurrency", "Multithreading", "TCP/IP",
   "UDP", "Serialization", "Protobuf", "Apache Commons", "Lombok"
 ];
-
-function HealthMetric({ label, value, icon: Icon, color }: { label: string, value: string, icon: any, color: string }) {
-  return (
-    <div className="p-4 bg-card/30 border border-border rounded-xl relative overflow-hidden group">
-      <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/20 group-hover:bg-orange-500 transition-colors" />
-      <div className="flex items-center gap-3 mb-2">
-        <Icon className={cn("w-3 h-3", color)} />
-        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">{label}</span>
-      </div>
-      <div className="text-xl font-mono font-black text-foreground tabular-nums">{value}</div>
-    </div>
-  );
-}
 
 function DataStream() {
   const displayItems = [...TECH_STACK, ...TECH_STACK];
@@ -155,17 +140,12 @@ export default function ProjectListPage() {
 
             <div className="p-6 bg-orange-500/5 border border-orange-500/10 rounded-2xl space-y-4">
               <div className="flex items-center gap-3">
-                <Cpu className="w-4 h-4 text-orange-500" />
                 <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.3em]">Systems Stats</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Modules</span>
                   <span className="text-[10px] font-mono text-orange-500 font-bold">{projects.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Uptime</span>
-                  <span className="text-[10px] font-mono text-orange-500 font-bold">99.99%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Last Sync</span>

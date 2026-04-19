@@ -1,19 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
-import { 
-  ArrowLeft, 
-  ExternalLink, 
-  Github, 
-  CheckCircle2, 
-  Terminal, 
-  Cpu,
-  Layers,
-  Zap,
-  Shield,
-  Activity,
-  ChevronRight
-} from 'lucide-react';
+import { ArrowLeft, ExternalLink, Github, CheckCircle2, Terminal, Activity, ChevronRight } from 'lucide-react';
 import { projects } from '../data/projects';
 import TabbedCodeViewer from '../components/TabbedCodeViewer';
 import DesignDoc from '../components/DesignDoc';

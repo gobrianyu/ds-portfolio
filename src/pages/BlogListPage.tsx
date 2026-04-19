@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'motion/react';
-import { Terminal, BookOpen, Search, Filter, Hash, Calendar, FileText, ChevronRight, Activity, Database, Cpu, Zap } from 'lucide-react';
+import { Terminal, Search, Database } from 'lucide-react';
 import { blogPosts } from '../data/blogs';
 import BlogCard from '../components/BlogCard';
 import BlogTerminal from '../components/BlogTerminal';
@@ -181,17 +181,12 @@ export default function BlogListPage() {
 
             <div className="p-6 bg-violet-500/5 border border-violet-500/10 rounded-2xl space-y-4">
               <div className="flex items-center gap-3">
-                <Cpu className="w-4 h-4 text-violet-500" />
                 <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.3em]">Archive Stats</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Total Papers</span>
                   <span className="text-[10px] font-mono text-violet-500 font-bold">{blogPosts.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Archive Version</span>
-                  <span className="text-[10px] font-mono text-violet-500 font-bold">v2.4.0</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Last Indexed</span>

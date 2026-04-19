@@ -20,7 +20,7 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: "rpc-system",
+    id: "exactly-once rpc",
     title: "Exactly-Once RPC",
     shortDescription: "A robust Remote Procedure Call system ensuring exactly-once execution semantics.",
     longDescription: "This project implements a client-server key-value store that supports operations over an unreliable network. It uses exactly-once RPC semantics, ensuring commands are executed correctly despite message loss, duplication, or delay.",
@@ -57,7 +57,7 @@ export const projects: Project[] = [
   },
   {
     id: "primary-backup",
-    title: "Primary-Backup System",
+    title: "Primary-Backup",
     shortDescription: "A fault-tolerant system using primary-backup replication for high availability.",
     longDescription: "Implementation of a replicated state machine using a primary-backup approach. The system handles primary failures by promoting a backup and ensuring consistency through a view service.",
     architecture: "A centralised View Service monitors the health of servers. When the primary fails, the View Service promotes the backup and informs all clients of the new configuration.",

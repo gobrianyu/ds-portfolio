@@ -1,31 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import { 
-  ArrowLeft, 
-  Quote, 
-  BookOpen, 
-  FileText, 
-  Terminal, 
-  Cpu, 
-  ExternalLink, 
-  Download, 
-  Layers, 
-  Database, 
-  Network,
-  ChevronRight,
-  Info,
-  Bot,
-  Minus,
-  Zap,
-  Lock,
-  Share2,
-  Activity,
-  RotateCcw,
-  X,
-  Maximize2,
-  Minimize2
-} from 'lucide-react';
+import { ArrowLeft, Quote, BookOpen, FileText, Terminal, ExternalLink, Download, ChevronRight, Info, Bot, RotateCcw, X, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { blogPosts } from '../data/blogs';
 import BlogTerminal from '../components/BlogTerminal';
@@ -36,7 +12,7 @@ import BitcoinSimulator from '../components/BitcoinSimulator/BitcoinSimulator';
 import { MapReduceScheduler } from '../components/MapReduceScheduler/MapReduceScheduler';
 import TensorFlowPlayground from '../components/TensorFlowPlayground/TensorFlowPlayground';
 import { RigidWrapper } from '../components/interactive/RigidWrapper';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // --- Blog Page Component ---
 export default function BlogPage() {
@@ -87,12 +63,12 @@ export default function BlogPage() {
 
   const getInteractiveTitle = () => {
     switch (post.id) {
-      case 'bigtable': return "BigTable Read Path Explorer";
-      case 'gfs': return "GFS Failure Simulator";
-      case 'dynamo': return "Dynamo Ring Visualiser";
-      case 'bitcoin': return "Bitcoin Block Mining Simulator";
-      case 'mapreduce': return "MapReduce Task Scheduler";
-      case 'tensorflow': return "TensorFlow Neural Network Visualiser";
+      case 'bigtable': return "Read Path Explorer";
+      case 'gfs': return "Failure Simulator";
+      case 'dynamo': return "Hash Ring Visualiser";
+      case 'bitcoin': return "Mining Consensus Simulator";
+      case 'mapreduce': return "Task Scheduler";
+      case 'tensorflow': return "Neural Network Visualiser";
       default: return "Interactive Simulation Environment";
     }
   };
@@ -105,7 +81,7 @@ export default function BlogPage() {
       case 'bitcoin': return "Bitcoin_Consensus_Sim_v1.8";
       case 'mapreduce': return "MapReduce_Scheduler_v1.4";
       case 'tensorflow': return "TF_Playground_v1.6";
-      default: return `SIM_${post.id.toUpperCase()}_v2.4`;
+      default: return `SIM_${post.id.toUpperCase()}_v1.0`;
     }
   };
 
