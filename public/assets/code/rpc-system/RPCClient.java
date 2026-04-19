@@ -12,32 +12,30 @@
  *  - Only one request may be outstanding at a time
  *  - Sequence numbers uniquely identify requests
  *  - Timers implement the resend/discard pattern
- *  - Synchronisation ensures thread-safe blocking behavior
+ *  - Synchronisation ensures thread-safe blocking behaviour
  */
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
 class RPCClient extends Node implements Client {
 
-  /** Address of the server this client communicates with */
+  // Address of the server this client communicates with
   private final Address serverAddress;
 
   /* ---------------------------------------------------------------------------------------------
    *  Client State
    * -------------------------------------------------------------------------------------------*/
 
-  /** Next sequence number to assign to outgoing requests */
+  // Next sequence number to assign to outgoing requests
   private int nextSequenceNumber = 0;
 
-  /** Command currently awaiting a response */
+  // Command currently awaiting a response
   private Command currentCommand = null;
 
-  /** Result corresponding to the current command */
+  // Result corresponding to the current command
   private Result currentResult = null;
 
-  /** Sequence number of the current in-flight request */
+  // Sequence number of the current in-flight request
   private int currentSequenceNumber = -1;
 
-  /** Whether the client is waiting for a reply */
+  // Whether the client is waiting for a reply
   private boolean waitingForReply = false;
 
   /* ---------------------------------------------------------------------------------------------
@@ -49,11 +47,6 @@ class RPCClient extends Node implements Client {
     this.serverAddress = serverAddress;
   }
 
-  @Override
-  public synchronized void init() {
-    // No initialization required
-  }
-
   /* ---------------------------------------------------------------------------------------------
    *  Client API
    * -------------------------------------------------------------------------------------------*/
@@ -61,14 +54,12 @@ class RPCClient extends Node implements Client {
   /**
    * Sends a command to the server.
    * Throws an exception if another request is still pending.
-   *
    * Workflow:
    *  - Assign sequence number
    *  - Wrap command in AMOCommand
    *  - Send request
    *  - Start retry timer
    */
-  @Override
   public synchronized void sendCommand(Command command) {
     if (waitingForReply) {
       throw new IllegalStateException(
@@ -90,19 +81,15 @@ class RPCClient extends Node implements Client {
         ClientTimer.CLIENT_RETRY_MILLIS);
   }
 
-  /**
-   * Non-blocking check for result availability.
-   */
-  @Override
+  /** Non-blocking check for result availability. */
   public synchronized boolean hasResult() {
     return currentResult != null;
   }
 
   /**
    * Blocks until a result is available, then returns it.
-   * Uses Java wait/notify for synchronization.
+   * Uses Java wait/notify for synchronisation.
    */
-  @Override
   public synchronized Result getResult() throws InterruptedException {
     while (currentResult == null) {
       this.wait();
@@ -123,11 +110,9 @@ class RPCClient extends Node implements Client {
 
   /**
    * Handles replies from the server.
-   *
    * Ensures:
-   *  - Reply corresponds to this client</li>
-   *  - Sequence number matches current request</li>
-   *
+   *  - Reply corresponds to this client
+   *  - Sequence number matches current request
    * Duplicate or stale replies are ignored.
    */
   private synchronized void handleReply(Reply reply, Address sender) {
@@ -156,10 +141,9 @@ class RPCClient extends Node implements Client {
 
   /**
    * Retry timer handler.
-   *
    * Implements resend/discard pattern:
-   *  - If still waiting → resend request
-   *  - If completed → ignore timer
+   *  - If still waiting, resend request
+   *  - If completed, ignore timer
    */
   private synchronized void onClientTimer(ClientTimer timer) {
     if (!waitingForReply

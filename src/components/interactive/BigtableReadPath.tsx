@@ -365,7 +365,7 @@ const BigtableReadPath: React.FC = () => {
           </section>
         </aside>
 
-        {/* Main Area: Visualizer */}
+        {/* Main Area: Visualiser */}
         <main className="flex-1 p-12 flex flex-col items-center justify-center relative overflow-hidden bg-muted/10">
           {/* Grid Background for Center Area */}
           <div className="absolute inset-0 opacity-[0.2] dark:opacity-50 pointer-events-none bg-[linear-gradient(rgba(139,92,246,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.3)_1px,transparent_1px)] bg-[size:50px_50px]" />

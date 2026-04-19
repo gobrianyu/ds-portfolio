@@ -9,10 +9,10 @@ A high-performance, interactive portfolio showcasing implementations and simulat
 This portfolio is designed for engineers and researchers interested in the "how" behind large-scale systems. Instead of static descriptions, it provides **interactive simulation environments** where users can inject failures, observe consensus protocols, and visualize data flow across distributed nodes.
 
 ### Core Focus Areas
-- **Distributed Consensus:** Paxos, Sharded-KV, and multi-master synchronization.
+- **Distributed Consensus:** Paxos, Sharded-KV, and multi-master synchronisation.
 - **Fault Tolerance:** Automated recovery, re-replication, and partition handling.
 - **Scalability:** Consistent hashing, sharding, and load balancing.
-- **High-Performance RPC:** Exactly-once semantics and binary protocol optimization.
+- **High-Performance RPC:** Exactly-once semantics and binary protocol optimisation.
 
 ---
 
@@ -21,13 +21,13 @@ This portfolio is designed for engineers and researchers interested in the "how"
 The portfolio features several "System Modules" implemented as interactive React components:
 
 ### 1. GFS Failure Simulator
-A real-time visualization of the Google File System (GFS).
+A real-time visualisation of the Google File System (GFS).
 - **Failure Injection:** Manually fail chunkservers to observe the Master's re-replication logic.
 - **Auto-Recovery:** Configurable node recovery cycles (2-10s).
 - **Visual Metrics:** Live telemetry for system availability and replication health.
 
 ### 2. Bigtable Read Path Explorer
-Visualizes the multi-stage read path in Google's Bigtable.
+Visualises the multi-stage read path in Google's Bigtable.
 - **Cache Layers:** Observe interactions between Memtable, Block Cache, and SSTables.
 - **Bloom Filters:** Visual feedback on how Bloom filters prevent unnecessary disk I/O.
 
@@ -52,7 +52,7 @@ The project follows a modular, component-based architecture optimized for perfor
 ```text
 src/
 ├── components/
-│   ├── GFSSimulator/      # GFS logic and visualization
+│   ├── GFSSimulator/      # GFS logic and visualisation
 │   ├── interactive/       # Reusable simulation primitives
 │   ├── ui/                # Core design system components
 │   └── Layout/            # Global navigation and shell

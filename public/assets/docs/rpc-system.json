@@ -52,26 +52,25 @@
         {
           "title": "Kinds of Nodes",
           "list": [
-            "**Client node**: issues commands on behalf of an external user to the server, waits for a result, and retries if no result arrives within timeout.",
-            "**Server node**: receives requests from clients and executes commands on an application with at-most-once (AMO) semantics per client command."
+            "**Client**: Issues commands on behalf of an external user to the server, waits for a result, and retries if no result arrives within timeout.",
+            "**Server**: Receives requests from clients and executes commands on an application with at-most-once (AMO) semantics per client command."
           ],
           "content": "Each node is permanently of one kind. No temporary roles."
         },
         {
           "title": "Client State",
           "list": [
-            "**nextSequence**: Integer - Sequence number to assign to the next new command that will be sent. Initialised to 0. Increases by 1 each time client successfully completes a command.",
-            "**pendingCommand**: Command (optional) - The command currently attempting execution for this client, if any. Initialised to null.",
-            "**pendingResult**: Result (optional) - The result corresponding to the current pendingCommand, if already received from the server. Initialised to null.",
-            "**pendingSequence**: Integer - The sequence number associated with pendingCommand. Initialised to -1.",
-            "**awaitingReply**: Boolean - True or false value indicating whether this client is still awaiting a response from the server."
+            "**Sequence Number**: Integer - Sequence number to assign to the next new command that will be sent. Initialised to 0. Increases by 1 each time client successfully completes a command.",
+            "**Pending Command**: Command (optional) - The command currently attempting execution for this client, if any. Initialised to null.",
+            "**Pending Result**: Result (optional) - The result corresponding to the current pendingCommand, if already received from the server. Initialised to null.",
+            "**Pending Sequence**: Integer - The sequence number associated with pendingCommand. Initialised to -1.",
+            "**Awaiting Reply**: Boolean - True or false value indicating whether this client is still awaiting a response from the server."
           ]
         },
         {
           "title": "Server State",
           "list": [
-            "**application**: Application - Type: abstract application that supports execution of a command and returns a result.",
-            "**lastClientCommands**: Map<Address, Entry> - Type: finite map from Address to Entry. Stores the last executed sequence and result per client."
+            "**Application**: Application - Type: abstract application that supports exactly-once execution of a command and returns a result."
           ]
         }
       ]
@@ -81,8 +80,8 @@
       "table": {
         "headers": ["Message", "Delayed", "Dropped", "Duplicated", "Reordered"],
         "rows": [
-          ["**Request**", "Client keeps retrying; at-most-once via history; once a copy arrives, it is processed and replied.", "Client’s timer eventually fires; request is retried until some copy arrives.", "Duplicate requests detected by clientAddress, sequence pair; server re-sends stored results.", "Original and retries may arrive in any order; server’s history uses max sequence to distinguish new and old."],
-          ["**Reply**", "Client may wait longer; timer may cause more request retries; once matching reply arrives, retries stop.", "Client never sees this reply; timer resends request; server re-sends result without re-execution.", "Extra replies are discarded if they do not match current pending sequence or after client has moved on.", "Replies for older completed commands are dropped by client’s sequence check."]
+          ["**Request**", "Client keeps retrying; at-most-once via history; once a copy arrives, it is processed and replied.", "Client's timer eventually fires; request is retried until some copy arrives.", "Duplicate requests detected by clientAddress, sequence pair; server re-sends stored results.", "Original and retries may arrive in any order; server's history uses max sequence to distinguish new and old."],
+          ["**Reply**", "Client may wait longer; timer may cause more request retries; once matching reply arrives, retries stop.", "Client never sees this reply; timer resends request; server re-sends result without re-execution.", "Extra replies are discarded if they do not match current pending sequence or after client has moved on.", "Replies for older completed commands are dropped by client's sequence check."]
         ]
       }
     },

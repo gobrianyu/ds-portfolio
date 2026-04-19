@@ -1,11 +1,151 @@
 {
-  "title": "Design Document – Lab 2: Primary-Backup Replication",
+  "title": "System 02: Primary-Backup Replication",
   "author": "Brian S. Yu",
-  "date": "2/10/2026",
+  "date": "2026.01.23",
   "sections": [
     {
-      "title": "Overview",
-      "content": "This document outlines the design for a primary-backup replication system managed by a centralized View Service."
+      "title": "Preface",
+      "subsections": [
+        {
+          "title": "Goals",
+          "list": [
+            "Provide fault-tolerant linearisable service for client operations.",
+            "Provide exactly-once client-visible behavior via an at-most-once (AMO) wrapper.",
+            "Tolerate server crashes by maintaining a primary/backup configuration chosen by a view server."
+          ]
+        },
+        {
+          "title": "Desired Fault Model",
+          "list": [
+            "Tolerates primary, backup, or idle server crashes.",
+            "Tolerates network drops, delays, duplication, and message reordering; liveness relies on retries and eventual successful communication.",
+            "Clients may continue issuing requests during failures; each client maintains at most one outstanding request at a time.",
+            "Protocol does not tolerate failures of the view server."
+          ]
+        },
+        {
+          "title": "Challenges",
+          "list": [
+            "Ensuring a single active primary despite delays or lost messages from the view server.",
+            "Preventing split-brain behaviour where two servers believe they are primary.",
+            "Maintaining consistent state between primary and backup across failures and view changes.",
+            "Maintaining at-most-once execution under retries and message duplication.",
+            "Handling partially completed operations, e.g. when primary crashes after forwarding requests but before replying to the client.",
+            "Handling view changes safely."
+          ]
+        },
+        {
+          "title": "Assumptions",
+          "list": [
+            "The view server does not crash and follows the specified protocol.",
+            "Clients and servers follow the protocol exactly (including retry logic and view caching rules).",
+            "The network will eventually deliver messages.",
+            "Each client has at most one outstanding request.",
+            "Timeouts and timers are reliable."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Protocol",
+      "subsections": [
+        {
+          "title": "Kinds of Nodes",
+          "list": [
+            "**View Server**: Distinguished node that tracks which servers are alive and determines the current view.",
+            "**Client**: Node that submits requests to the service and awaits replies.",
+            "**Server**: Node that stores application state and may act as either a primary, backup, or idle server."
+          ],
+          "content": "Each node is permanently of one kind, however server nodes may temporarily have one of the following roles, depending on the current view:\n\n-  **>  Primary**: Executes client requests, forwards them to the backup, and replies to the clients.\n-  **>  Backup**: Receives forwarded requests from the primary and executes them in the same order.\n-  **>  Idle**: Servers that are alive but are neither the primary nor the backup in the current view.\n\nAt most one server is the primary and one server is the backup in any given view."
+        },
+        {
+          "title": "View Server State",
+          "list": [
+            "**Current View**: (view number, primary Address, backup Address). Initialised to (0, null, null). View number is monotonically increasing. Primary cannot be null after startup. Primary must be the previous view's primary or backup. Backup must be different from primary.",
+            "**Acked View Number**: The view number last acknowledged by the primary server. Initialised to 0. Must be <= current view number.",
+            "**Live Servers**: Address of all servers that have pinged the view server in the previous timer segment."
+          ]
+        },
+        {
+          "title": "Client State",
+          "list": [
+            "**Current View**: Current view that the client knows about. Initialised to 0. Updated on response from view server.",
+            "**Sequence Number**: Monotonically increasing identifier for the next client request. Initialised to 0. Provides unique identifier per command for deduplication.",
+            "**Pending Command**: The command currently attempting execution for this client, if any. Must complete before client sends another.",
+            "**Pending Result**: The result corresponding to the current pending command, if already received. Cleared when consumed.",
+            "**Awaiting View Update**: Whether the client is retrying ViewRequest."
+          ]
+        },
+        {
+          "title": "Server State",
+          "list": [
+            "**Current View**: Current view that the server knows about. Initialised to 0. Updated after ping response.",
+            "**Application**: Application interface with at-most-once semantics.",
+            "**Synced View Number**: Indicates whether the server view is synced (received full state transfer).",
+            "**Backup Synced**: Indicates whether backup is ready to process requests.",
+            "**In-Flight Request**: Single outstanding request. Initialised to null.",
+            "**In-Flight Client**: Client associated with the in-flight request."
+          ]
+        },
+        {
+          "title": "Messages",
+          "list": [
+            "**Ping**: Sent by server to view server to indicate liveness and acknowledge views. Destination records as live, updates ack if primary, and replies with ViewReply.",
+            "**Request**: Sent by client to primary, or primary to backup. Backup executes once and acks. Primary awaits backup ack before client reply.",
+            "**Reply**: Sent by backup to primary or primary to client after local execution. Client matches reply to pending request.",
+            "**ViewRequest**: Sent by client or server to view server to request the latest view. Replies with ViewReply.",
+            "**ViewReply**: Sent by view server providing current view status. Updates local state; initiates state transfer if primary-backup role established.",
+            "**StateTransfer**: Sent by primary to backup with view number and full application state. If newer view, backup replaces application state, updates synced view number, and sends StateTransferAck.",
+            "**StateTransferAck**: Sent by backup to primary in response to successful state transfer. Marks backup as synced and forwards pending requests."
+          ]
+        },
+        {
+          "title": "Timers",
+          "list": [
+            "**ClientTimer**: Resets on client to retry pending requests after querying latest view from view server.",
+            "**PingTimer**: Resets on servers to send periodic heartbeats to view server.",
+            "**PingCheckTimer**: Resets on view server to detect failed servers and advance views based on primary acknowledgement rule.",
+            "**StateTransferTimer**: Resets state transfer until acknowledged."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Correctness/Liveness Analysis",
+      "table": {
+        "headers": ["Message", "Delay", "Drop", "Duplicate", "Reorder"],
+        "rows": [
+          ["**Ping**", "View server relies on repeated pings over time; delayed pings are ignored if stale.", "Missed ping eventually causes the server to be considered dead.", "Idempotent; multiple identical pings do not change state.", "View server uses view numbers to ignore stale information."],
+          ["**ViewRequest**", "Client retries on timeout.", "Client retires via timer.", "Repeated queries return same current view.", "View numbers totally order views."],
+          ["**ViewReply**", "Client/server ignores replies for older views.", "Requesting client retries.", "Latest view overwrites old state.", "View numbers are monotonic; prevents regression."],
+          ["**Request**", "Retries are handled by exactly-once semantics.", "Retries eventually reach the correct primary through view change from view server.", "Deduplicated by client sequence numbers.", "Exactly-once semantics; primary server also enforces single total order."],
+          ["**Reply**", "Client waits or retries on timer.", "Client retries request on timer.", "Client ignores duplicate replies through sequence number comparison.", "Client matches reply to request metadata."]
+        ]
+      }
+    },
+    {
+      "title": "Conclusion",
+      "subsections": [
+        {
+          "title": "Goals Achieved",
+          "list": [
+            "**Linearisability**: Primary executes only after backup ack, ensuring single-copy history.",
+            "**Exactly-once behavior**: Client retries de-duplicated by AMO sequence numbers.",
+            "**Crash tolerance**: View server reconfigures views on failures.",
+            "**No split-brain**: View server's single authority and primary-ack rule prevent multiple active primaries.",
+            "**Network robustness**: Timers and retries handle drops/delays."
+          ]
+        },
+        {
+          "title": "Limitations",
+          "list": [
+            "The view server is a single point of failure.",
+            "Liveness stalls if primary fails before acknowledging the current view.",
+            "Full state transfer to backup is computationally expensive.",
+            "Serial request processing and synchronous backup acks limit system throughput."
+          ]
+        }
+      ]
     }
   ]
 }

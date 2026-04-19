@@ -112,8 +112,8 @@ export const GFSSimulator: React.FC = () => {
     ]);
   };
 
-  // --- Initialization ---
-  const initializeSystem = () => {
+  // --- Initialisation ---
+  const initSys = () => {
     const initialNodes: Node[] = Array.from({ length: NODE_COUNT }, (_, i) => ({
       id: `S${i + 1}`,
       status: "HEALTHY",
@@ -146,7 +146,7 @@ export const GFSSimulator: React.FC = () => {
     setChunks(initialChunks);
     setElapsedTime(0);
     setLogs([]);
-    addLog("System initialized. Ready for operation.", "success");
+    addLog("System initialised. Ready for operation.", "success");
   };
 
   // --- Core Logic: Re-replication ---
@@ -276,7 +276,7 @@ export const GFSSimulator: React.FC = () => {
       return;
     }
     if (systemStatus === "IDLE") {
-      initializeSystem();
+      initSys();
     }
     setSystemStatus("RUNNING");
     addLog("System started.", "success");
@@ -549,7 +549,7 @@ export const GFSSimulator: React.FC = () => {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => {
-                  if (systemStatus === 'IDLE') initializeSystem();
+                  if (systemStatus === 'IDLE') initSys();
                   if (systemStatus === 'RUNNING') stopSystem();
                   else startSystem();
                 }}
@@ -712,7 +712,7 @@ export const GFSSimulator: React.FC = () => {
             )}
           </aside>
 
-          {/* Center: Visualizer */}
+          {/* Center: Visualiser */}
           <main className="flex-1 p-8 flex flex-col relative overflow-hidden bg-muted/10">
             {/* Grid Background for Center Area */}
             <div className="absolute inset-0 opacity-[0.2] dark:opacity-50 pointer-events-none bg-[linear-gradient(rgba(139,92,246,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.3)_1px,transparent_1px)] bg-[size:50px_50px]" />

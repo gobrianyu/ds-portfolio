@@ -1,21 +1,43 @@
-public class RPCServer {
-    private final Map<String, Map<Integer, Response>> cache = new HashMap<>();
+/**
+ * RPCServer processes client requests and returns responses.
+ *
+ * This server delegates execution to an AMOApplication,
+ * which ensures at-most-once semantics. Combined with client retries,
+ * this achieves exactly-once execution.
+ *
+ * Design:
+ *  - Stateless request handling
+ *  - No retry logic on server side
+ *  - Deduplication handled by AMOApplication
+ */
+class RPCServer extends Node {
 
-    public Response handle(Request req) {
-        synchronized (cache) {
-            if (cache.containsKey(req.getClientId()) && 
-                cache.get(req.getClientId()).containsKey(req.getSeq())) {
-                return cache.get(req.getClientId()).get(req.getSeq());
-            }
-        }
+  // Application wrapper providing at-most-once execution
+  private final AMOApplication<?> amoApplication;
 
-        Object result = execute(req.getMethod(), req.getArgs());
-        Response resp = new Response(req.getSeq(), result);
+  /* ---------------------------------------------------------------------------------------------
+   *  Construction and Initialisation
+   * -------------------------------------------------------------------------------------------*/
 
-        synchronized (cache) {
-            cache.computeIfAbsent(req.getClientId(), k -> new HashMap<>())
-                 .put(req.getSeq(), resp);
-        }
-        return resp;
-    }
+  public RPC(Address address, Application application) {
+    super(address);
+
+    // Wrap application with at-most-once semantics
+    this.amoApplication = new AMOApplication<>(application);
+  }
+
+  /* ---------------------------------------------------------------------------------------------
+   *  Message Handlers
+   * -------------------------------------------------------------------------------------------*/
+
+  /**
+   * Handles incoming client requests.
+   * Execution flow:
+   *  - Execute command via AMOApplication
+   *  - Return result (cached if duplicate)
+   */
+  private void handleRequest(Request request, Address sender) {
+    AMOResult result = amoApplication.execute(request.command());
+    send(new Reply(result), sender);
+  }
 }

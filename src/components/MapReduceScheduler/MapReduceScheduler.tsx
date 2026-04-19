@@ -13,17 +13,13 @@ import {
 } from '@dnd-kit/core';
 import { 
   Play, 
-  Pause, 
   RotateCcw, 
   Activity, 
-  Layers, 
   Share2, 
-  Info, 
   Clock,
   CheckCircle2,
   Box,
   Database,
-  TrendingUp,
   Filter,
   Crown
 } from 'lucide-react';
@@ -78,7 +74,7 @@ export const MapReduceScheduler: React.FC = () => {
     }, 3000);
   }, []);
 
-  // --- Initialization ---
+  // --- Initialisation ---
   const initSimulation = useCallback(() => {
     // Create workers
     const newWorkers: Worker[] = Array.from({ length: WORKER_COUNT }).map((_, i) => ({
@@ -123,7 +119,7 @@ export const MapReduceScheduler: React.FC = () => {
     setIsShuffleComplete(false);
     setHistory([{ time: 0, completion: 0 }]);
     if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
-    triggerAction('System Initialized');
+    triggerAction('System Initialised');
   }, [triggerAction]);
 
   useEffect(() => {

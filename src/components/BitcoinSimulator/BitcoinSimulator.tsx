@@ -168,7 +168,7 @@ export const BitcoinSimulator: React.FC = () => {
               }
             }
             
-            // Propagate to neighbors (all-to-all with latency)
+            // Propagate to neighbours (all-to-all with latency)
             currentMiners.forEach(peer => {
               if (peer.id !== miner.id && !peer.knownBlockIds.has(event.blockId)) {
                 const inFlight = remainingEvents.some(re => re.toMinerId === peer.id && re.blockId === event.blockId);

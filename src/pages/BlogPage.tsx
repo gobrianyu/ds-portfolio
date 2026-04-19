@@ -172,7 +172,7 @@ export default function BlogPage() {
                   className="cursor-pointer flex items-center space-x-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-violet-500 transition-colors group"
                 >
                   <Info className="w-3 h-3" />
-                  <span>Technical Specifications & Implementation Details</span>
+                  <span>Read More Details</span>
                   <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${showWidgetDetails ? 'rotate-90' : ''}`} />
                 </button>
                 

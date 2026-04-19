@@ -368,7 +368,7 @@ export const DynamoRing: React.FC = () => {
         if (balanceRand < 0.65) {
           const increment = vnodeCount < 16 ? 4 : 8;
           setVnodeCount(prev => Math.min(64, prev + increment));
-          setSimulationMessage('Balancing: Increasing VNode density to equalize ownership');
+          setSimulationMessage('Balancing: Increasing VNode density to equalise ownership');
           setLastAction('change-vnodes');
         } 
         // Priority 2: Scale out (Add physical nodes)

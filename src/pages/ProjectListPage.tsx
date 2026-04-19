@@ -112,7 +112,7 @@ export default function ProjectListPage() {
             >
               <BlogTerminal 
                 title="SYSTEMS_ENGINE.log"
-                text="Initializing systems lab... 4 core modules active. Network topology verified. Consensus engines synchronized. Distributed key-value store operational. Ready for inspection."
+                text="Initialising systems lab... 4 core modules active. Network topology verified. Consensus engines synchronised. Distributed key-value store operational. Ready for inspection."
                 color="orange"
               />
             </motion.div>

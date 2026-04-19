@@ -87,7 +87,7 @@ export const TensorFlowPlayground: React.FC = () => {
     setNetwork(newNetwork);
     setEpoch(0);
     
-    // Initialize lastActivations to match new architecture
+    // Initialise lastActivations to match new architecture
     const lastInput = trainData[0] ? [trainData[0].x, trainData[0].y] : [0, 0];
     setLastActivations(newNetwork.forward(lastInput));
   }, [config.hiddenLayers, config.activation, trainData]);

@@ -90,7 +90,7 @@ export class NeuralNetwork {
           nodeWeights.push(Math.random() * 2 * limit - limit);
         }
         layerWeights.push(nodeWeights);
-        layerBiases.push(0); // Biases initialized to 0 is common with Xavier
+        layerBiases.push(0); // Biases initialised to 0 is common with Xavier
       }
       this.weights.push(layerWeights);
       this.biases.push(layerBiases);
