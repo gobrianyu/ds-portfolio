@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Cpu, Database, Globe, Zap } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 export default function SystemStatus() {
-  const [latency, setLatency] = useState<number>(0);
-  const [throughput, setThroughput] = useState<number>(0);
-  const [storage, setStorage] = useState<number>(84.2);
-  const [nodes, setNodes] = useState<number>(12);
+  const [latency, setLatency] = useState<number>(999);
 
   useEffect(() => {
-    // Real latency estimation
     const measureLatency = async () => {
       const start = performance.now();
       try {
@@ -21,67 +17,25 @@ export default function SystemStatus() {
     };
 
     measureLatency();
-    const interval = setInterval(() => {
-      measureLatency();
-      setThroughput(Math.floor(Math.random() * 500 + 1200));
-      setNodes(prev => Math.max(8, Math.min(16, prev + (Math.random() > 0.5 ? 1 : -1))));
-    }, 5000);
-
+    const interval = setInterval(measureLatency, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
-      <StatusItem 
-        icon={<Globe className="w-4 h-4" />} 
-        label="Latency" 
-        value={`${latency}ms`} 
-        color="text-emerald-500"
-      />
-      <StatusItem 
-        icon={<Zap className="w-4 h-4" />} 
-        label="Throughput" 
-        value={`${throughput} req/s`} 
-        color="text-amber-500"
-      />
-      <StatusItem 
-        icon={<Database className="w-4 h-4" />} 
-        label="Storage" 
-        value={`${storage}%`} 
-        color="text-violet-500"
-      />
-      <StatusItem 
-        icon={<Cpu className="w-4 h-4" />} 
-        label="Active Nodes" 
-        value={nodes.toString()} 
-        color="text-blue-500"
-      />
-      <StatusItem 
-        icon={<Activity className="w-4 h-4" />} 
-        label="Uptime" 
-        value="99.999%" 
-        color="text-rose-500"
-        className="hidden md:flex"
-      />
-    </div>
-  );
-}
-
-function StatusItem({ icon, label, value, color, className = "" }: { 
-  icon: React.ReactNode, 
-  label: string, 
-  value: string, 
-  color: string,
-  className?: string 
-}) {
-  return (
-    <div className={`glass p-4 rounded-2xl flex flex-col space-y-2 ${className}`}>
-      <div className="flex items-center space-x-2 text-muted-foreground">
-        {icon}
-        <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-      </div>
-      <div className={`text-xl font-black tracking-tighter ${color}`}>
-        {value}
+    <div className="flex items-center mb-10 group cursor-default select-none">
+      <div className="flex p-0.5 items-center border border-border/40 rounded-full transition-all duration-500  bg-transparent">
+        <div className="flex items-center space-x-2 px-3 py-1 bg-muted/20 border border-border/50 rounded-full backdrop-blur-md duration-300">
+          <div className="relative">
+            <Globe className="w-3 h-3 text-primary/60" />
+            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">
+            Latency
+          </span>
+        </div>
+        <span className="px-3 text-[11px] font-black tracking-tight text-foreground/60">
+          {latency}ms
+        </span>
       </div>
     </div>
   );

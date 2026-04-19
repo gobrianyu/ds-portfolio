@@ -141,8 +141,8 @@ export default function BlogListPage() {
               transition={{ delay: 0.2 }}
             >
               <BlogTerminal 
-                title="ARCHIVE_MANIFEST.log"
-                text="Synchronizing research nodes... 6 papers indexed. Metadata verified. Distributed systems archive is live. Accessing historical breakthroughs and architectural deconstructions."
+                title="ARCHIVE.log"
+                text="Synchronising research nodes... 6 papers indexed. Metadata verified. Distributed systems archive is live. Accessing research analyses and architectural simulations."
                 color="violet"
               />
             </motion.div>

@@ -97,7 +97,7 @@ export default function Footer() {
             </div>
             
             <div className="flex items-start md:items-center space-x-4 group">
-              <div className="mt-1 md:mt-0 p-2.5 bg-muted/50 rounded-xl group-hover:bg-primary/5 transition-colors">
+              <div className="mt-1 md:mt-0 p-2.5 bg-muted/50 rounded-xl">
                 {getWeatherIcon()}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">

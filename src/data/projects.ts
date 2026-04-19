@@ -21,7 +21,7 @@ export interface Project {
 export const projects: Project[] = [
   {
     id: "rpc-system",
-    title: "Exactly-Once RPC Client-Server",
+    title: "Exactly-Once RPC",
     shortDescription: "A robust Remote Procedure Call system ensuring exactly-once execution semantics.",
     longDescription: "This project implements a client-server key-value store that supports operations over an unreliable network. It uses exactly-once RPC semantics, ensuring commands are executed correctly despite message loss, duplication, or delay.",
     architecture: "The system uses a client-server architecture where clients send commands with unique identifiers and retry requests using timers to handle message loss. The server wraps the application in an at-most-once layer that tracks previously executed commands and returns cached results for duplicates.",
@@ -31,13 +31,13 @@ export const projects: Project[] = [
       "Automatic retransmissions",
       "Server-side result caching",
       "Timeout handling",
-      "Custom binary serialisation"
+      "Binary serialisation"
     ],
     technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Network"],
     codeFiles: [
       {
         filename: "RPCClient.java",
-        description: "Client stub implementation managing sequence numbers and retries.",
+        description: "Client implementation managing sequence numbers and retries.",
         codeUrl: "/assets/code/rpc-system/RPCClient.java"
       },
       {
@@ -52,7 +52,7 @@ export const projects: Project[] = [
       }
     ],
     links: [
-      { label: "GitHub Repository", url: "#" }
+      { label: "GitHub Repository", url: "https://github.com/gobrianyu/ds-portfolio/tree/main/public/assets/code/rpc-system" }
     ]
   },
   {
@@ -63,13 +63,12 @@ export const projects: Project[] = [
     architecture: "A centralised View Service monitors the health of servers. When the primary fails, the View Service promotes the backup and informs all clients of the new configuration.",
     designDocUrl: "/assets/docs/primary-backup.json",
     features: [
-      "View Service for membership management",
-      "State transfer between primary and backup",
+      "Membership management",
+      "Primary-backup state transfer",
       "Heartbeat monitoring",
-      "Client-side view caching",
-      "Consistency under network partitions"
+      "Client-side view caching"
     ],
-    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Replication", "Fault Tolerance"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Replication"],
     codeFiles: [
       {
         filename: "PBClient.java",
@@ -88,7 +87,7 @@ export const projects: Project[] = [
       }
     ],
     links: [
-      { label: "GitHub Repository", url: "#" }
+      { label: "GitHub Repository", url: "https://github.com/gobrianyu/ds-portfolio/tree/main/public/assets/code/primary-backup" }
     ]
   },
   {
@@ -101,25 +100,25 @@ export const projects: Project[] = [
     features: [
       "Leader election optimisation",
       "Log compaction and snapshots",
-      "Handling of network partitions",
+      "Network partition handling",
       "Dynamic membership changes",
       "Efficient message passing"
     ],
-    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Consensus Algorithms", "Paxos"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Paxos Consensus"],
     codeFiles: [
       {
         filename: "PaxosClient.java",
-        description: "Core Paxos logic for proposing and accepting values.",
+        description: "Implements a multi-instance Paxos replicated state machine with leader election and log agreement.",
         codeUrl: "/assets/code/multi-paxos/PaxosClient.java"
       },
       {
         filename: "PaxosServer.java",
-        description: "Core Paxos logic for proposing and accepting values.",
+        description: "Sends commands to Paxos servers and ensures linearisable request execution with retries.",
         codeUrl: "/assets/code/multi-paxos/PaxosServer.java"
       }
     ],
     links: [
-      { label: "GitHub Repository", url: "#" }
+      { label: "GitHub Repository", url: "https://github.com/gobrianyu/ds-portfolio/tree/main/public/assets/code/multi-paxos" }
     ]
   },
   {
@@ -130,23 +129,32 @@ export const projects: Project[] = [
     architecture: "A Shard Master manages the assignment of shards to replica groups. Each replica group uses Paxos to maintain consistency internally.",
     designDocUrl: "/assets/docs/sharded-kv.json",
     features: [
-      "Consistent hashing for sharding",
-      "Live data migration between shards",
-      "Shard Master for configuration management",
-      "Linearisable read/write operations",
+      "Consistent hashing",
+      "Live data migration",
+      "Configuration management",
+      "Linearisable reads/writes",
       "Fault-tolerant replica groups"
     ],
-    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Sharding", "Scalability"],
+    technologies: ["Java", "Apache Commons Lang", "Project Lombok", "Sharding"],
     codeFiles: [
       {
         filename: "ShardMaster.java",
         description: "Controller for shard assignments and group membership.",
         codeUrl: "/assets/code/sharded-kv/ShardMaster.java"
+      },
+      {
+        filename: "ShardStoreClient.java",
+        description: "Client that routes requests to shard groups and handles retries, configs, and transactions.",
+        codeUrl: "/assets/code/sharded-kv/ShardStoreClient.java"
+      },
+      {
+        filename: "ShardStoreServer.java",
+        description: "Replica server implementing sharded KV storage with Paxos replication, reconfiguration, and 2PC transactions.",
+        codeUrl: "/assets/code/sharded-kv/ShardStoreServer.java"
       }
     ],
     links: [
-      { label: "GitHub Repository", url: "#" },
-      { label: "System Design", url: "#" }
+      { label: "GitHub Repository", url: "https://github.com/gobrianyu/ds-portfolio/tree/main/public/assets/code/sharded-kv" },
     ]
   }
 ];

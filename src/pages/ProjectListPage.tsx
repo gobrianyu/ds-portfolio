@@ -111,7 +111,7 @@ export default function ProjectListPage() {
               transition={{ delay: 0.2 }}
             >
               <BlogTerminal 
-                title="SYSTEMS_ENGINE.log"
+                title="SYSTEMS.log"
                 text="Initialising systems lab... 4 core modules active. Network topology verified. Consensus engines synchronised. Distributed key-value store operational. Ready for inspection."
                 color="orange"
               />

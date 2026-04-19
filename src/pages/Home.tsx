@@ -10,7 +10,7 @@ import SystemStatus from '../components/SystemStatus';
 
 export default function Home() {
   const [typedBio, setTypedBio] = useState('');
-  const fullBio = "This portfolio showcases my work in Distributed Systems and Cloud Infrastructure. It features a collection of projects implementing core distributed protocols, alongside in-depth analyses of seminal research papers that have shaped the field of large-scale computing.";
+  const fullBio = "This portfolio showcases my work in Distributed Systems, featuring a collection of projects implementing core distributed protocols, alongside in-depth analyses of seminal research papers that have shaped the field of large-scale computing.";
 
   useEffect(() => {
     let index = 0;
@@ -119,7 +119,7 @@ export default function Home() {
           />
           <ModuleCard 
             title="High-Performance RPC"
-            description="Building custom binary protocols with exactly-once semantics, optimizing for low latency and high throughput."
+            description="Building custom binary protocols with exactly-once semantics, optimising for low latency and high throughput."
             tag="MODULE_02"
           />
           <ModuleCard 
@@ -185,17 +185,17 @@ export default function Home() {
 
 function ModuleCard({ title, description, tag }: { title: string, description: string, tag: string }) {
   return (
-    <div className="terminal-window p-8 border-border">
-      <div className="flex justify-between items-start mb-6">
-        <span className="text-[10px] font-black text-muted-foreground tracking-[0.3em]">{tag}</span>
+    <div className="group p-8 bg-muted/20 border border-border/40 rounded-3xl">
+      <div className="flex justify-between items-start mb-8">
+        <span className="text-[10px] font-black text-muted-foreground/50 tracking-[0.3em] uppercase">{tag}</span>
       </div>
       <h3 className="text-xl font-black mb-4 text-foreground tracking-tight uppercase">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed text-sm font-medium">
+      <p className="text-muted-foreground leading-relaxed text-sm font-medium mb-8">
         {description}
       </p>
-      <div className="mt-6 pt-6 border-t border-border flex items-center space-x-2 text-[10px] font-bold text-emerald-500/50 uppercase tracking-widest">
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span>Module Operational</span>
+      <div className="flex items-center space-x-2 text-[10px] font-black text-primary/60 uppercase tracking-[0.2em]">
+        <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+        <span>Status: Operational</span>
       </div>
     </div>
   );

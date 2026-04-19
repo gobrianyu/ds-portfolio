@@ -192,6 +192,7 @@ export default function ProjectPage() {
                 <a
                   key={i}
                   href={link.url}
+                  target="_blank"
                   className="flex items-center px-6 py-3 rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary transition-all text-[10px] font-black text-foreground border border-border hover:border-primary/20 group uppercase tracking-widest"
                 >
                   {link.label.includes('GitHub') ? <Github className="w-4 h-4 mr-3" /> : <ExternalLink className="w-4 h-4 mr-3" />}
@@ -298,7 +299,7 @@ export default function ProjectPage() {
                         <ul className="space-y-6">
                           {project.features.map((feature, i) => (
                             <li key={i} className="flex items-start text-sm text-muted-foreground font-medium">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500/60 mr-3 mt-0.5" />
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500/60 mr-3 mt-0.5 shrink-0" />
                               <span>{feature}</span>
                             </li>
                           ))}
