@@ -75,6 +75,10 @@ export default function ProjectPage() {
 
   return (
     <div className="min-h-screen relative bg-background text-foreground overflow-hidden">
+      {/* Background Blobs - positioned relative to the full-width viewport */}
+      <div className="absolute top-[5%] -left-32 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] -right-32 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-0" />
+
       {/* Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left"
@@ -146,10 +150,6 @@ export default function ProjectPage() {
       </nav>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[280px] py-24 relative">
-        {/* Background Blobs */}
-        <div className="absolute top-[5%] -left-32 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[140px] pointer-events-none z-0" />
-        <div className="absolute bottom-[20%] -right-32 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-0" />
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

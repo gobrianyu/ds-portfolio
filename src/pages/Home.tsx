@@ -23,14 +23,15 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative overflow-hidden">
-      {/* Background Blobs */}
-      <div className="absolute top-[10%] -left-64 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="absolute top-[40%] -right-64 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="absolute bottom-[10%] -left-64 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+    <div className="relative w-full overflow-hidden">
+      {/* Background Blobs - positioned relative to the full-width viewport */}
+      <div className="absolute top-[10%] -left-32 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[40%] -right-32 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-[10%] -left-32 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
-      {/* System Status Bar */}
-      <motion.div
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+        {/* System Status Bar */}
+        <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -186,6 +187,7 @@ export default function Home() {
         </div>
       </section>
     </div>
+  </div>
   );
 }
 

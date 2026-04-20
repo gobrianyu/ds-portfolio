@@ -99,9 +99,9 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen relative bg-background text-foreground overflow-hidden">
-      {/* Background Blobs */}
-      <div className="absolute top-[10%] -left-64 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="absolute bottom-[20%] -right-64 w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-[140px] pointer-events-none z-0" />
+      {/* Background Blobs - positioned relative to the full-width viewport */}
+      <div className="absolute top-[10%] -left-32 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] -right-32 w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-[140px] pointer-events-none z-0" />
 
       {/* Progress Bar */}
       <motion.div
