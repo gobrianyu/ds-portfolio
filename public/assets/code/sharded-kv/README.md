@@ -20,6 +20,9 @@ The system is divided into two hierarchical layers:
 - `ShardStoreServer.java`: A data node that participates in a replica group, storing shards and handling migration.
 - `ShardStoreClient.java`: A smart client that tracks configurations and routes requests to the correct replica groups.
 
+## Design Documentation
+For a detailed explanation of the reconfiguration protocol, 2PC, and sharding logic, see the [Sharded KV Design Document](../../docs/sharded-kv.md).
+
 ## Technologies
 - Java 11+
 - Apache Commons Lang

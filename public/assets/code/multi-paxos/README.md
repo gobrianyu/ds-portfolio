@@ -20,6 +20,9 @@ The implementation follows the classic Paxos roles (Proposer, Acceptor, Learner)
 - `PaxosServer.java`: The core consensus logic. Each server runs multiple instances of Paxos (one per log slot) to maintain the shared state.
 - `PaxosClient.java`: The client interface that handles leader discovery and ensures linearisable request execution using AMO semantics.
 
+## Design Documentation
+For a detailed explanation of the protocol, node states, and failure analysis, see the [Multi-Paxos Design Document](../../docs/multi-paxos.md).
+
 ## Technologies
 - Java 11+
 - Apache Commons Lang

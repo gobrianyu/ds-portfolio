@@ -1,11 +1,175 @@
 {
-  "title": "Design Document – Lab 3: Multi-Paxos Consensus",
-  "author": "Brian S. Yu",
-  "date": "3/05/2026",
+  "title": "System 03: Multi-Paxos Consensus",
+  "author": "Brian Yu",
+  "date": "2026.02.09",
   "sections": [
     {
-      "title": "Overview",
-      "content": "This document outlines the design for a Multi-Paxos consensus algorithm to maintain a consistent log across distributed nodes."
+      "title": "Preface",
+      "subsections": [
+        {
+          "title": "Goals",
+          "list": [
+            "Build a replicated state machine that processes client commands using multi-instance Paxos while providing linearisability.",
+            "Ensure all live servers execute commands in the same sequence.",
+            "Continue to make progress as long as a majority of servers can communicate without reliance on a centralised view server such as in primary-backup."
+          ]
+        },
+        {
+          "title": "Desired Fault Model",
+          "list": [
+            "As long as a majority of nodes can communicate with each other, the system continues processing client requests.",
+            "Handle temporary network failures, including network partitions, message drops, delays, duplication, and reordering.",
+            "Tolerate leader failure or unavailability, with automatic leader replacement.",
+            "Servers that fall behind due to failures or partitions should be able to catch up once back online."
+          ]
+        },
+        {
+          "title": "Challenges",
+          "list": [
+            "No longer a single trusted coordinator (view server from primary-backup) and replicas must agree on command ordering in a fully distributed manner.",
+            "Servers may have inconsistent views of the system state due to network unreliability.",
+            "Multiple servers may believe they are the leader simultaneously.",
+            "Paxos log can grow without bound without proper garbage collection coordinated across servers.",
+            "Must fill in log slots in the case of a leader crashing during an operation."
+          ]
+        },
+        {
+          "title": "Assumptions",
+          "list": [
+            "Crashed servers do not recover with persistent storage.",
+            "Set of Paxos servers is fixed and known to all participants.",
+            "Application executed by replicated state machine is deterministic.",
+            "At any given time, a majority of nodes can function and communicate.",
+            "Clients may resend requests and have at most one outstanding request at a time.",
+            "Network eventually becomes reliable enough for a majority of servers to communicate with bounded delay."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Protocol",
+      "subsections": [
+        {
+          "title": "Kinds of Nodes",
+          "list": [
+            "**PaxosClient**: A client that sends requests and waits for replies, retrying on timeout. Clients do not participate in consensus and do not maintain much protocol state. They do not change roles over time.",
+            "**PaxosServer**: A server node that implements Paxos and the replicated state machine. Each PaxosServer plays three logical roles: (1) an acceptor that promises/accepts based on ballot numbers, (2) a proposer that may attempt to become leader and propose values, and (3) a replica that learns chosen values and executes them in order."
+          ]
+        },
+        {
+          "title": "PaxosServer Roles",
+          "list": [
+            "**Acceptor**: Maintains the promise (highest promised ballot) and accepted values per slot. It replies to Prepare (p1a) and Accept (p2a) messages following the Paxos protocol.",
+            "**Proposer**: Can play two roles: leader (active proposer) or follower (inactive proposer). At start, all servers initiate Phase 1 to become the leader. Once a server is active, it proposes commands for slots via Phase 2 and drives values to be chosen by collecting majorities of p2b responses. The leader sends periodic heartbeats to other servers and coordinates log garbage collection and catch-up for lagging servers. Followers do not initiate Paxos rounds, respond to Paxos messages, and monitor for heartbeats to detect leader failure and potentially attempt leadership.",
+            "**Replica**: Stores chosen decisions, executes them in increasing slot order, and produces client replies while deduplicating with at-most-once semantics."
+          ]
+        },
+        {
+          "title": "Messages",
+          "list": [
+            "**Request**: Sent by client to issues a new command. If server has already executed, reply immediately with cached result. Otherwise, if leader, queue command for proposal.",
+            "**Reply**: Sent by server to client when the command is chosen and executed, or immediately if deduplicated.",
+            "**Prepare Request (P1A)**: Sent by proposer attempting leadership. Ask acceptors to promise not to accept lower ballots. Triggered by HeartbeatCheckTimer.",
+            "**Prepare Reply (P1B)**: Sent by acceptor in response to p1a. Contains Ballot and accepted/chosen values for log slots past GC point.",
+            "**Accept Request (P2A)**: Sent by active leader for new client commands and for re-proposing recovered values. Includes Ballot, slot, and command.",
+            "**Accept Reply (P2B)**: Sent by acceptor in response to accepted P2A to provide acknowledgements for majority detection.",
+            "**Decision**: Sent by leader when a slot becomes decided. Once a value is chosen, others must learn it.",
+            "**Heartbeat**: Sent periodically by leader to followers to declare liveness and share global cleared slot.",
+            "**HeartbeatReply**: Sent by follower in response to Heartbeat, letting leader learn follower execution progress (slot out)."
+          ]
+        },
+        {
+          "title": "Timers",
+          "list": [
+            "**ClientTimer**: Set by client. Resends the same Request to all PaxosServers on fire to ensure progress despite loss.",
+            "**HeartbeatTimer**: Set by active leader. Broadcasts Heartbeat messages periodically to stabilise leadership.",
+            "**HeartbeatCheckTimer**: Set by follower. Increments missed heartbeat counter; triggers leadership attempt after threshold.",
+            "**P1RetryTimer**: Set by candidate proposer. Re-broadcasts Prepare messages if phase 1 majority not reached.",
+            "**P2RetryTimer**: Set by active leader. Re-sends Accept messages for undecided slots until decision majority reached."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Node States",
+      "subsections": [
+        {
+          "title": "PaxosClient",
+          "list": [
+            "**Sequence Number**: Integer used to distinguish commands per client. Initialised to 0. Monotonically increasing.",
+            "**Pending Request**: Optional current in-flight request awaitng a reply. At most one outstanding."
+          ]
+        },
+        {
+          "title": "PaxosServer",
+          "list": [
+            "**Application**: Interface for deterministic server execution with at-most-once semantics.",
+            "**Current Ballot**: Highest ballot promised by this server. Any P2A with a lower ballot is rejected.",
+            "**Log**: Paxos state for each slot, tracking accepted ballot, command, and decided status.",
+            "**Slot In**: Smallest slot index not yet promised by this leader. Monotonically increasing.",
+            "**Slot Out**: Next slot to execute on the local state machine. Executes in increasing order.",
+            "**P1 Responses**: Map of Prepare responses received for the current leadership attempt ballot.",
+            "**P2 Responses**: Tracks accept acknowledgements per slot for the active leader.",
+            "**Slot Out by Server**: Highest executed slot reported by each server for garbage collection tracking."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Correctness/Liveness Analysis",
+      "table": {
+        "headers": ["Message", "Delay", "Drop", "Duplicate", "Reorder"],
+        "rows": [
+          ["**Request**", "Late arrival may be proposed in later slot.", "Client retries / broadcasts.", "At-most-once semantics deduplicate.", "Paxos slot order defines execution order."],
+          ["**Reply**", "Client waits or ignores stale reply.", "Client retries request.", "Client-side deduplication.", "Client matches reply to request."],
+          ["**P1A**", "Stale requests rejected by ballot check.", "Leader retries or increases ballot.", "Acceptor replies idempotently.", "Ballots impose total order."],
+          ["**P1B**", "Stale replies ignored.", "Leader retries phase 1 until majority consensus.", "Counted once per acceptor.", "Leader considers only current ballot."],
+          ["**P2A**", "Mismatched ballots are rejected.", "Retry if no majority consensus.", "Safe to re-accept same value.", "Slot and ballot uniquely identify proposal."],
+          ["**P2B**", "Late replies ignored.", "Retry if no majority.", "Counted once.", "Old P2B’s are ignored or processed."],
+          ["**Heartbeat**", "Higher ballot overrides old leader.", "Follower suspects failure and runs for election.", "Idempotent.", "Ballot ordering ignores stale heartbeats."],
+          ["**Decision**", "Applied when prior slots are known.", "Learned later via leader.", "Decision is immutable.", "Execution waits for slot continuity."]
+        ]
+      }
+    },
+    {
+      "title": "Node Crash and Recovery",
+      "subsections": [
+        {
+          "title": "PaxosClient",
+          "content": "**Crash**: Client crash cannot cause incorrect behaviour because clients do not participate in the Paxos agreement protocol. Commands are executed only after Paxos decides it. If a client restarts, it may reissue requests safely due to AMO semantics.\n\n**Disappear and Reconnect**: Client can continue to send messages after reconnection. The system continues to follow requirements and is unaffected by the disappearance."
+        },
+        {
+          "title": "PaxosServer",
+          "content": "**Crash**: Paxos requires only a majority of servers to ensure safety. If a server crashes while leader, any incomplete activity cannot result in a decision without majority, so no incorrect value is chosen. Values already chosen must have been accepted by a majority and future leaders will learn them. Conservative GC ensures log entries aren't lost prematurely.\n\n**Disappear and Reconnect**: If a server reconnects, it updates its log by asking others for missing entries. It will know which ones are decided based on majority replies. Liveness is maintained as long as a majority of servers can communicate."
+        }
+      ]
+    },
+    {
+      "title": "Network Partitions",
+      "content": "Paxos remains correct and live during and after a network partition because safety depends only on majority consensus. At most one partition can contain a majority and only that partition can decide values. Even if multiple leaders are suspected, acceptors enforce ballot ordering so no two servers ever decide different values for same slot. When partitions heal, isolated nodes catch up via heartbeats and decisions."
+    },
+    {
+      "title": "Conclusion",
+      "subsections": [
+        {
+          "title": "Goals Achieved",
+          "list": [
+            "**Linearisability**: Each server executes commands strictly in log order and only after they are decided by majority.",
+            "**Fault Tolerance**: As long as a majority of nodes can communicate, the system is alive and handles server crashes.",
+            "**Robustness**: Log merging and message sync allow nodes to recover even after long periods of inactivity.",
+            "**Anti Split-brain**: Consistent ballot logic ensures that even if multiple nodes think they are leader, consistency is maintained."
+          ]
+        },
+        {
+          "title": "Limitations",
+          "list": [
+            "A majority is required to guarantee progress; the system stalls if too many nodes fail.",
+            "Crashed servers do not recover from permanent disk failures in this model.",
+            "The set of servers is static; dynamic membership changes are not supported.",
+            "Specific race conditions in leadership contention could potentially delay progress."
+          ]
+        }
+      ]
     }
   ]
 }

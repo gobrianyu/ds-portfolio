@@ -21,6 +21,9 @@ The system uses a client-server architecture with several key components:
 - `RPCServer.java`: Handles incoming requests, duplicate detection, and result retrieval from the cache.
 - `AMOApplication.java`: A wrapper for the actual application (e.g., a KV Store) that enforces the at-most-once property.
 
+## Design Documentation
+For a detailed explanation of the at-most-once semantics and retry logic, see the [Exactly-Once RPC Design Document](../../docs/rpc-system.md).
+
 ## Technologies
 - Java 11+
 - Apache Commons Lang

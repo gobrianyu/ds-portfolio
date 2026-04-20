@@ -20,6 +20,9 @@ The system consists of three main roles:
 - `PBServer.java`: Implements the replication protocol, handling state transfer and request forwarding.
 - `ViewServer.java`: The control plane responsible for electing primaries/backups and monitoring node health.
 
+## Design Documentation
+For a detailed explanation of the protocol, node states, and failure analysis, see the [Primary-Backup Design Document](../../docs/primary-backup.md).
+
 ## Technologies
 - Java 11+
 - Apache Commons Lang
