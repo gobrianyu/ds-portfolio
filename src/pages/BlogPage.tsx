@@ -188,7 +188,7 @@ export default function BlogPage() {
                   <button
                     onClick={() => setShowWidgetDetails(!showWidgetDetails)}
                     className={cn(
-                      "flex items-center space-x-3 px-8 py-3.5 rounded-2xl border transition-all duration-300 group/btn shadow-sm",
+                      "flex items-center space-x-3 px-8 py-3.5 rounded-2xl border transition-all duration-300 group/btn shadow-sm cursor-pointer",
                       showWidgetDetails 
                         ? "bg-violet-500 border-violet-500 text-white shadow-lg shadow-violet-500/20" 
                         : "bg-card dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground hover:bg-muted dark:hover:bg-white/10 hover:border-violet-500/30 hover:text-foreground"
@@ -213,7 +213,7 @@ export default function BlogPage() {
                       {/* Overview Section */}
                       <div className="p-8 bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl space-y-4">
                         <div className="flex items-center space-x-3 text-violet-500">
-                          <h4 className="text-[10px] font-black uppercase tracking-widest">Protocol Dynamics</h4>
+                          <h4 className="text-[10px] font-black uppercase tracking-widest">Overview</h4>
                         </div>
                         <p className="text-sm text-foreground/70 dark:text-muted-foreground leading-relaxed font-medium">
                           {post.widgetDetails.overview}
@@ -224,7 +224,7 @@ export default function BlogPage() {
                       <div className="space-y-6">
                         <div className="p-8 bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl space-y-4">
                           <div className="flex items-center space-x-3 text-violet-500">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest">Telemetry Indicators</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest">What to Look For</h4>
                           </div>
                           <p className="text-sm text-foreground/70 dark:text-muted-foreground leading-relaxed font-medium">
                             {post.widgetDetails.whatToLookFor}
@@ -476,88 +476,90 @@ export default function BlogPage() {
           </div>
         </div>
 
-        <AnimatePresence>
-          {isPdfModalOpen && post.pdfUrl && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsPdfModalOpen(false)}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
-              />
-
-              {/* Modal Window */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, x: -100 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.9, x: -100 }}
-                className="fixed top-10 left-10 bottom-10 w-[70%] z-[101] flex flex-col"
-              >
-                <div className="terminal-window border-violet-500/30 bg-card shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
-                  <div className="terminal-header bg-muted flex items-center justify-between px-6 py-4 border-b border-border">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                        <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                        <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                      </div>
-                      <div className="h-4 w-[1px] bg-border mx-2" />
-                      <div className="flex items-center space-x-3">
-                        <FileText className="w-4 h-4 text-violet-500" />
-                        <span className="text-xs font-black text-foreground uppercase tracking-widest">Document: {post.id}.pdf</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <button 
-                        onClick={() => setPdfKey(prev => prev + 1)}
-                        className="cursor-pointer p-2 hover:bg-muted-foreground/10 rounded-lg text-muted-foreground hover:text-foreground transition-all"
-                        title="Refresh View"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => setIsPdfModalOpen(false)}
-                        className="cursor-pointer p-2 hover:bg-red-500/20 rounded-lg text-muted-foreground hover:text-red-500 transition-all"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-grow relative bg-background">
-                    <iframe 
-                      key={pdfKey}
-                      src={`${post.pdfUrl}#toolbar=1`} 
-                      className="w-full h-full dark:invert dark:hue-rotate-180"
-                      title="Research Paper PDF"
-                    />
-                    
-                    {/* Floating Controls */}
-                    <div className="absolute bottom-8 right-8 flex flex-col gap-4">
-                      <a 
-                        href={post.pdfUrl} 
-                        download 
-                        className="w-14 h-14 bg-violet-500 text-white rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
-                      >
-                        <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
-                      </a>
-                      <button 
-                        onClick={() => setIsPdfModalOpen(false)}
-                        className="cursor-pointer w-14 h-14 bg-card backdrop-blur-md border border-border text-foreground rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
-                      >
-                        <Minimize2 className="w-6 h-6" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        {/* Sidebar Index */}
       </motion.article>
       </div>
+
+      <AnimatePresence>
+        {isPdfModalOpen && post.pdfUrl && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsPdfModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1000]"
+            />
+
+            {/* Modal Window */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, x: -100 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.9, x: -100 }}
+              className="fixed top-4 left-4 bottom-4 w-[calc(100%-2rem)] md:w-[70%] z-[1010] flex flex-col"
+            >
+              <div className="terminal-window border-violet-500/30 bg-card shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col h-full overflow-hidden">
+                <div className="terminal-header bg-muted flex items-center justify-between px-6 py-4 border-b border-border">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                      <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                      <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                    </div>
+                    <div className="h-4 w-[1px] bg-border mx-2" />
+                    <div className="flex items-center space-x-3">
+                      <FileText className="w-4 h-4 text-violet-500" />
+                      <span className="text-xs font-black text-foreground uppercase tracking-widest">Document: {post.id}.pdf</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <button 
+                      onClick={() => setPdfKey(prev => prev + 1)}
+                      className="cursor-pointer p-2 hover:bg-muted-foreground/10 rounded-lg text-muted-foreground hover:text-foreground transition-all"
+                      title="Refresh View"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setIsPdfModalOpen(false)}
+                      className="cursor-pointer p-2 hover:bg-red-500/20 rounded-lg text-muted-foreground hover:text-red-500 transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex-grow relative bg-background">
+                  <iframe 
+                    key={pdfKey}
+                    src={`${post.pdfUrl}#toolbar=1`} 
+                    className="w-full h-full dark:invert dark:hue-rotate-180"
+                    title="Research Paper PDF"
+                  />
+                  
+                  {/* Floating Controls */}
+                  <div className="absolute bottom-8 right-8 flex flex-col gap-4">
+                    <a 
+                      href={post.pdfUrl} 
+                      download 
+                      className="w-14 h-14 bg-violet-500 text-white rounded-xl shadow-2xl hover:scale-110 hover:rotate-3 transition-transform flex items-center justify-center group"
+                    >
+                      <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
+                    </a>
+                    <button 
+                      onClick={() => setIsPdfModalOpen(false)}
+                      className="cursor-pointer w-14 h-14 bg-card backdrop-blur-md border border-border text-foreground rounded-xl shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
+                    >
+                      <Minimize2 className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
