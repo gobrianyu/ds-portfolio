@@ -5,13 +5,13 @@ import { ArrowLeft, Quote, BookOpen, FileText, Terminal, ExternalLink, Download,
 import { cn } from '../lib/utils';
 import { blogPosts } from '../data/blogs';
 import BlogTerminal from '../components/BlogTerminal';
-import BigtableReadPath from '../components/interactive/BigtableReadPath';
+import BigtableReadPath from '../components/BigtableReadPath/BigtableReadPath';
 import { GFSSimulator } from '../components/GFSSimulator/GFSSimulator';
 import { DynamoRing } from '../components/DynamoRing/DynamoRing';
 import BitcoinSimulator from '../components/BitcoinSimulator/BitcoinSimulator';
 import { MapReduceScheduler } from '../components/MapReduceScheduler/MapReduceScheduler';
 import TensorFlowPlayground from '../components/TensorFlowPlayground/TensorFlowPlayground';
-import { RigidWrapper } from '../components/interactive/RigidWrapper';
+import { RigidWrapper } from '../components/RigidWrapper';
 import { useState, useEffect } from 'react';
 
 // --- Blog Page Component ---

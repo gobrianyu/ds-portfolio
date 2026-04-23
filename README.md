@@ -18,20 +18,43 @@ This portfolio is designed for engineers and researchers interested in the "how"
 
 ## Interactive Simulators
 
-The portfolio features several "System Modules" implemented as interactive React components:
+The portfolio features several "System Modules" implemented as interactive React components, designed to visualise the internal mechanics of distributed protocols:
 
-### 1. GFS Failure Simulator
-A real-time visualisation of the Google File System (GFS).
-- **Failure Injection:** Manually fail chunkservers to observe the Master's re-replication logic.
-- **Auto-Recovery:** Configurable node recovery cycles (2-10s).
-- **Visual Metrics:** Live telemetry for system availability and replication health.
+### 1. GFS Failure Simulator (`GFS_Failure_Sim_v1.3`)
+A real-time visualisation of the Google File System (GFS) architecture.
+- **Failure Injection:** Manually simulate chunkserver crashes to observe the Master's automated re-replication logic.
+- **Auto-Recovery:** Monitor heartbeats and configurable node recovery cycles.
+- **Visual Metrics:** Live telemetry for system availability, chunk distribution, and replication health.
 
-### 2. Bigtable Read Path Explorer
-Visualises the multi-stage read path in Google's Bigtable.
-- **Cache Layers:** Observe interactions between Memtable, Block Cache, and SSTables.
-- **Bloom Filters:** Visual feedback on how Bloom filters prevent unnecessary disk I/O.
+### 2. Bigtable Read Path Explorer (`BigTable_Read_Path_v1.6`)
+Visualises the multi-stage read path in Google's Bigtable storage engine.
+- **Layered Caching:** Observe interaction between the Memtable (RAM), Block Cache, and immutable SSTables (Disk).
+- **Bloom Filters:** Real-time feedback on how Bloom filters prune search space to prevent unnecessary disk I/O.
+- **Compaction Logic:** Visual representations of how data transitions between different storage stages.
 
-More in progress!
+### 3. Dynamo Hash Ring Visualiser (`Dynamo_Ring_Sim_v1.7`)
+An interactive demonstration of Amazon's Dynamo consistent hashing architecture.
+- **Consistent Hashing:** Customises the hash ring to observe how keys are mapped to virtual nodes.
+- **Membership Changes:** Adds or removes nodes to trigger automatic re-sharding and data migration.
+- **Replication Strategy:** Visualises N-replication across clockwise neighbors in the preference list.
+
+### 4. Bitcoin Mining Consensus Simulator (`Bitcoin_Consensus_Sim_v1.8`)
+Simulates the Proof-of-Work (PoW) consensus mechanism used in the Bitcoin blockchain.
+- **PoW Demonstration:** Real-time hashing visualizations showing nonce discovery and difficulty adjustments.
+- **Chain Selection:** Observe the "longest chain" rule in action as multiple miners compete for the next block.
+- **Fork Resolution:** Injects network latency to see how temporary forks resolve automatically through consensus.
+
+### 5. MapReduce Task Scheduler (`MapReduce_Scheduler_v1.4`)
+A simulation of the MapReduce framework's orchestration and execution lifecycle.
+- **Job Partitioning:** Watch a job being decomposed into parallel Map and Reduce tasks.
+- **Master Orchestration:** Observe how the Master node assigns tasks to idle workers based on locality.
+- **Shuffle & Sort:** Visualises the intermediate data shuffle phase where data flows from Mappers to Reducers.
+
+### 6. TensorFlow Playground (`TF_Playground_v1.6`)
+A lightweight neural network visualiser inspired by the original TensorFlow playground.
+- **Network Configuration:** Real-time architectural changes to layers, neuron counts, and activation functions.
+- **Training Visuals:** Observe forward and backward passes with animated weight updates.
+- **Loss Convergence:** Live plotting of the training loss curve as the model converges on pattern recognition.
 
 ---
 
@@ -53,12 +76,18 @@ The project follows a modular, component-based architecture optimized for perfor
 src/
 ├── components/
 │   ├── GFSSimulator/      # GFS logic and visualisation
-│   ├── interactive/       # Reusable simulation primitives
-│   ├── ui/                # Core design system components
-│   └── Layout/            # Global navigation and shell
+│   ├── BigtableReadPath/  # Bigtable storage engine simulator
+│   ├── DynamoRing/        # Consistent hashing simulator
+│   ├── BitcoinSimulator/  # PoW consensus visualizer
+│   ├── MapReduceScheduler/# Task orchestration simulation
+│   ├── RigidWrapper.tsx   # Higher-level UI wrapper for widgets
+│   ├── Layout.tsx         # Main application wrapper
+│   └── Navbar.tsx         # Global navigation
 ├── pages/
 │   ├── Home.tsx           # Terminal-inspired landing page
+│   ├── ProjectListPage.tsx# Grid of system modules
 │   ├── ProjectPage.tsx    # Detailed architecture deep-dives
+│   ├── BlogListPage.tsx   # Index of research papers
 │   └── BlogPage.tsx       # Research analysis and interactive logs
 ├── data/                  # Static project and blog metadata
 └── context/               # Global state (Theme, Auth simulation)
